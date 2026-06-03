@@ -38,24 +38,24 @@ const leadFields: LeadField[] = [
     { icon: MapPin, label: 'Город', value: 'Волгоград' },
     { icon: Grid2X2, label: 'Тип работ', value: 'Замер + монтаж' },
     { icon: Wallet, label: 'Бюджет', value: 'до 150 000 ₽' },
-    { icon: CalendarClock, label: 'Срок', value: 'на этой неделе' },
+    { icon: CalendarClock, label: 'Срок', value: '01.02.26-18.02.26' },
 ];
 
 const serviceOptions = [
     {
-        label: 'Замена стеклопакета',
-        baseMin: 8000,
-        baseMax: 12000,
-    },
-    {
-        label: 'Установка окна',
+        label: 'Пластиковые окна',
         baseMin: 18000,
         baseMax: 30000,
     },
     {
-        label: 'Балконный блок',
+        label: 'Балкон',
         baseMin: 25000,
         baseMax: 45000,
+    },
+    {
+        label: 'Остекление дома',
+        baseMin: 32000,
+        baseMax: 70000,
     },
     {
         label: 'Замер',
@@ -73,7 +73,7 @@ const leadValueOptions: Record<string, string[]> = {
     Город: ['Волгоград', 'Волжский', 'Краснооктябрьский район'],
     'Тип работ': ['Замер + монтаж', 'Только замер', 'Ремонт/регулировка'],
     Бюджет: ['до 30 000 ₽', 'до 65 000 ₽', 'до 150 000 ₽'],
-    Срок: ['сегодня/завтра', 'до 3 дней', 'на этой неделе'],
+    Срок: ['01.02.26-18.02.26', 'сегодня/завтра', 'до 3 дней'],
 };
 
 const sortOptions = ['Самые дешевые', 'Высокий рейтинг', 'Быстрый монтаж'];
@@ -210,7 +210,7 @@ function Chip({
 }) {
     return (
         <button
-            className={`h-8 rounded-full border px-4 text-sm font-semibold transition hover:-translate-y-0.5 ${
+            className={`h-9 rounded-full border px-4 text-sm font-semibold transition hover:-translate-y-0.5 ${
                 active
                     ? 'border-[#247cff] bg-[#247cff] text-white shadow-[0_10px_24px_rgba(36,124,255,0.2)]'
                     : 'border-[#eaecf0] bg-white text-[#344054] hover:border-[#c9d6ea]'
@@ -236,18 +236,18 @@ function LeadFieldCard({
 
     return (
         <button
-            className="flex min-h-18 items-center gap-3 rounded-[18px] border border-[#eaecf0] bg-white p-4 text-left transition hover:border-[#c9d6ea] hover:shadow-[0_10px_26px_rgba(16,24,40,0.06)]"
+            className="flex h-[72px] min-w-0 items-center gap-3 rounded-[16px] border border-[#dfe5ee] bg-white px-4 text-left transition hover:border-[#c9d6ea] hover:shadow-[0_10px_26px_rgba(16,24,40,0.06)]"
             onClick={onClick}
             type="button"
         >
             <span className="flex size-8 shrink-0 items-center justify-center rounded-[10px] bg-[#eaf2ff] text-[#247cff]">
                 <Icon size={16} strokeWidth={2.4} />
             </span>
-            <span>
+            <span className="min-w-0">
                 <span className="block text-xs font-medium text-[#667085]">
                     {field.label}
                 </span>
-                <span className="mt-1 block text-base font-semibold text-[#101828]">
+                <span className="mt-1 block truncate text-lg leading-tight font-extrabold text-[#101828]">
                     {value}
                 </span>
             </span>
@@ -402,6 +402,7 @@ export default function OknaMarket() {
     );
     const [requestCreated, setRequestCreated] = useState(false);
     const [activeWorker, setActiveWorker] = useState<string | null>(null);
+    const [showCatalog, setShowCatalog] = useState(false);
 
     const estimatedRange = useMemo<[number, number]>(() => {
         const budgetFactor = leadValues.Бюджет === 'до 150 000 ₽' ? 1.12 : 1;
@@ -458,29 +459,42 @@ export default function OknaMarket() {
         (company) => company.name === selectedCompany,
     );
 
+    const scrollToSection = (
+        sectionId: string,
+        block: ScrollLogicalPosition,
+    ) => {
+        window.setTimeout(() => {
+            document.getElementById(sectionId)?.scrollIntoView({
+                behavior: 'smooth',
+                block,
+            });
+        }, 0);
+    };
+
     const scrollToLead = () => {
-        document.getElementById('lead-form')?.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center',
-        });
+        scrollToSection('lead-form', 'center');
     };
 
     const scrollToCompanies = () => {
-        document.getElementById('companies')?.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start',
-        });
+        setShowCatalog(true);
+        scrollToSection('companies', 'start');
+    };
+
+    const scrollToInfo = (sectionId: string) => {
+        setShowCatalog(false);
+        scrollToSection(sectionId, 'start');
+    };
+
+    const markCriteriaEntered = () => {
+        setShowCatalog(true);
     };
 
     return (
         <>
             <Head title="ОкнаМаркет" />
             <main className="relative min-h-screen overflow-x-clip bg-[#f4f7fb] font-sans text-[#101828]">
-                <div className="pointer-events-none absolute top-48 left-0 h-[360px] w-[360px] -translate-x-1/2 rounded-full bg-[#c7ddff] opacity-70 blur-[80px]" />
-                <div className="pointer-events-none absolute top-20 right-0 h-[320px] w-[320px] translate-x-1/3 rounded-full bg-[#d9f9e8] opacity-90 blur-[80px]" />
-
-                <div className="relative mx-auto w-full max-w-[1280px] px-5 py-5 sm:px-8 lg:px-10">
-                    <header className="flex items-center justify-between gap-5">
+                <div className="relative mx-auto w-full max-w-[1280px] px-5 pt-5 sm:px-8 lg:px-0">
+                    <header className="flex h-12 items-center justify-between gap-5 lg:px-6">
                         <div className="flex items-center gap-4">
                             <div className="flex size-10 items-center justify-center rounded-xl bg-[#247cff] text-xl font-extrabold text-white">
                                 О
@@ -488,17 +502,29 @@ export default function OknaMarket() {
                             <strong className="text-[22px] leading-none font-extrabold">
                                 ОКНА
                             </strong>
-                            <span className="hidden rounded-full bg-[#eaf2ff] px-5 py-2 text-sm font-semibold text-[#124fc4] sm:inline-flex">
+                            <span className="ml-2 hidden h-9 items-center rounded-full bg-[#eaf2ff] px-8 text-xs font-semibold text-[#124fc4] sm:inline-flex lg:ml-10">
                                 Волгоград
                             </span>
                         </div>
-                        <nav className="hidden items-center gap-9 text-base font-medium text-[#344054] lg:flex">
-                            <a href="#companies">Компании</a>
-                            <a href="#how">Как работает</a>
-                            <a href="#contractors">Для компаний</a>
+                        <nav className="hidden items-center gap-7 text-sm font-medium text-[#344054] lg:flex">
+                            <button onClick={scrollToCompanies} type="button">
+                                Компании
+                            </button>
+                            <button
+                                onClick={() => scrollToInfo('how')}
+                                type="button"
+                            >
+                                Как работает
+                            </button>
+                            <button
+                                onClick={() => scrollToInfo('contractors')}
+                                type="button"
+                            >
+                                Для компаний
+                            </button>
                         </nav>
                         <button
-                            className="hidden h-11 rounded-2xl bg-[#247cff] px-6 text-base font-semibold text-white shadow-[0_10px_24px_rgba(36,124,255,0.28)] transition hover:bg-[#1768e6] sm:block"
+                            className="hidden h-12 rounded-[16px] bg-[#247cff] px-8 text-sm font-bold text-white shadow-[0_18px_28px_rgba(16,24,40,0.22)] transition hover:bg-[#1768e6] sm:block"
                             onClick={scrollToLead}
                             type="button"
                         >
@@ -506,21 +532,77 @@ export default function OknaMarket() {
                         </button>
                     </header>
 
-                    <section className="pt-14 text-center sm:pt-20">
-                        <span className="inline-flex rounded-full border border-[#eaf2ff] bg-[#eaf2ff] px-4 py-2 text-sm font-semibold text-[#175cd3]">
-                            Сравнение оконных компаний за 2 минуты
-                        </span>
-                        <h1 className="mx-auto mt-7 max-w-[1090px] text-[38px] leading-[1.06] font-extrabold tracking-normal sm:text-[52px] lg:text-[58px]">
-                            Найдите лучшую оконную компанию без обзвона десятков
-                            сайтов
-                        </h1>
-                        <div className="mx-auto mt-7 grid max-w-[650px] gap-4 sm:grid-cols-3">
+                    <section className="flex min-h-[calc(78svh-68px)] flex-col justify-center py-8 sm:py-10 lg:py-6">
+                        <div className="lg:px-12">
+                            <h1 className="max-w-[1120px] text-left text-[30px] leading-[1.12] font-extrabold tracking-normal text-[#111827] sm:text-[36px] lg:text-[36px]">
+                                Рассчитайте стоимость установки стеклопакета за
+                                1 минуту
+                            </h1>
+                        </div>
+
+                        <section
+                            className="relative mx-auto mt-12 max-w-[1280px] rounded-[28px] border border-[#dfe5ee] bg-white px-6 py-7 sm:px-8 lg:mt-14"
+                            id="lead-form"
+                        >
+                            <div>
+                                <h2 className="text-[22px] leading-none font-extrabold">
+                                    Что нужно установить?
+                                </h2>
+                            </div>
+                            <div className="mt-5 flex flex-wrap justify-start gap-3">
+                                {serviceOptions.map((service) => (
+                                    <Chip
+                                        active={
+                                            service.label ===
+                                            activeService.label
+                                        }
+                                        key={service.label}
+                                        onClick={() => {
+                                            setActiveService(service);
+                                            markCriteriaEntered();
+                                        }}
+                                    >
+                                        {service.label}
+                                    </Chip>
+                                ))}
+                            </div>
+                            <div className="mt-3 grid min-w-0 gap-4 md:grid-cols-2 xl:grid-cols-[190px_248px_230px_248px_minmax(220px,1fr)]">
+                                {leadFields.map((field) => (
+                                    <LeadFieldCard
+                                        field={field}
+                                        key={field.label}
+                                        onClick={() => {
+                                            setLeadValues((currentValues) => ({
+                                                ...currentValues,
+                                                [field.label]: getNextOption(
+                                                    leadValueOptions[
+                                                        field.label
+                                                    ],
+                                                    currentValues[field.label],
+                                                ),
+                                            }));
+                                            markCriteriaEntered();
+                                        }}
+                                        value={leadValues[field.label]}
+                                    />
+                                ))}
+                                <button
+                                    className="relative h-[72px] overflow-hidden rounded-[16px] bg-[#247cff] px-6 text-lg font-bold text-white shadow-[0_10px_20px_rgba(36,124,255,0.2)] transition hover:bg-[#1768e6]"
+                                    onClick={scrollToCompanies}
+                                    type="button"
+                                >
+                                    Найти компании
+                                </button>
+                            </div>
+                        </section>
+
+                        <div className="mx-auto mt-7 grid max-w-[650px] gap-5 sm:grid-cols-3">
                             {metrics.map((metric) => (
                                 <div
-                                    className="rounded-[20px] border border-[#eaecf0] bg-white px-5 py-4 text-left"
+                                    className="min-h-[88px] rounded-[18px] border border-[#dfe5ee] bg-white px-5 py-4 text-left"
                                     key={metric.label}
                                 >
-                                    <strong className="block text-3xl leading-none font-extrabold">
+                                    <strong className="block text-[32px] leading-none font-extrabold">
                                         {metric.value}
                                     </strong>
                                     <span className="mt-2 block text-sm font-medium text-[#667085]">
@@ -529,299 +611,279 @@ export default function OknaMarket() {
                                 </div>
                             ))}
                         </div>
+                        
                     </section>
 
-                    <section
-                        className="relative mx-auto mt-10 max-w-[1060px] rounded-[24px] border border-[#eaecf0] bg-white p-5 shadow-[0_18px_50px_rgba(16,24,40,0.04)] sm:p-8"
-                        id="lead-form"
-                    >
-                        <div className="text-center">
-                            <h2 className="text-[24px] font-bold">
-                                Что нужно установить?
-                            </h2>
-                            <p className="mt-2 text-base font-medium text-[#667085]">
-                                Выберите услугу и примерные параметры для
-                                предварительного диапазона цены.
-                            </p>
-                        </div>
-                        <div className="mt-5 flex flex-wrap justify-center gap-3">
-                            {serviceOptions.map((service) => (
-                                <Chip
-                                    active={
-                                        service.label === activeService.label
-                                    }
-                                    key={service.label}
-                                    onClick={() => setActiveService(service)}
-                                >
-                                    {service.label}
-                                </Chip>
-                            ))}
-                        </div>
-                        <div className="mt-5 grid min-w-0 gap-4 md:grid-cols-2 xl:grid-cols-[repeat(5,minmax(0,1fr))]">
-                            {leadFields.map((field) => (
-                                <LeadFieldCard
-                                    field={field}
-                                    key={field.label}
-                                    onClick={() =>
-                                        setLeadValues((currentValues) => ({
-                                            ...currentValues,
-                                            [field.label]: getNextOption(
-                                                leadValueOptions[field.label],
-                                                currentValues[field.label],
-                                            ),
-                                        }))
-                                    }
-                                    value={leadValues[field.label]}
-                                />
-                            ))}
-                            <button
-                                className="relative min-h-18 overflow-hidden rounded-2xl bg-[#247cff] px-6 text-base font-semibold text-white shadow-[0_12px_30px_rgba(36,124,255,0.28)] transition hover:bg-[#1768e6]"
-                                onClick={scrollToCompanies}
-                                type="button"
+                    {showCatalog ? (
+                        <>
+                            <section
+                                className="mt-8 grid min-w-0 items-start gap-8 lg:grid-cols-[320px_minmax(0,1fr)]"
+                                id="companies"
                             >
-                                Найти компании
-                            </button>
-                        </div>
-                        <div className="mt-5 rounded-2xl bg-[#f4f7fb] p-4 text-center">
-                            <span className="block text-sm font-medium text-[#667085]">
-                                Предварительно
-                            </span>
-                            <strong className="mt-1 block text-2xl font-extrabold">
-                                от {formatRoubles(estimatedRange[0])} до{' '}
-                                {formatRoubles(estimatedRange[1])} ₽
-                            </strong>
-                            <span className="mt-1 block text-sm font-medium text-[#667085]">
-                                Точная цена после замера.
-                            </span>
-                        </div>
-                    </section>
-
-                    <section
-                        className="mt-20 grid min-w-0 items-start gap-8 lg:grid-cols-[320px_minmax(0,1fr)]"
-                        id="companies"
-                    >
-                        <aside className="rounded-[28px] border border-[#eaecf0] bg-white p-7 shadow-[0_12px_30px_rgba(16,24,40,0.05)]">
-                            <h2 className="text-2xl font-bold">Фильтры</h2>
-                            <div className="mt-7">
-                                <h3 className="font-bold">Цена</h3>
-                                <div className="mt-3 rounded-2xl border border-[#eaecf0] bg-[#f4f7fb] px-4 py-4 text-base font-semibold text-[#344054]">
-                                    {formatRoubles(estimatedRange[0])}-
-                                    {formatRoubles(estimatedRange[1])} ₽
-                                </div>
-                            </div>
-                            <div className="mt-8">
-                                <h3 className="font-bold">Рейтинг компании</h3>
-                                <div className="mt-4 space-y-4">
-                                    {filters.rating.map((item) => (
-                                        <FilterCheck
-                                            checked={Boolean(
-                                                ratingFilters[item.label],
-                                            )}
-                                            key={item.label}
-                                            label={item.label}
-                                            onClick={() =>
-                                                setRatingFilters((current) => ({
-                                                    ...current,
-                                                    [item.label]:
-                                                        !current[item.label],
-                                                }))
-                                            }
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-                            <div className="mt-8">
-                                <h3 className="font-bold">Сроки</h3>
-                                <div className="mt-4 space-y-4">
-                                    {filters.timing.map((item) => (
-                                        <FilterCheck
-                                            checked={Boolean(
-                                                timingFilters[item.label],
-                                            )}
-                                            key={item.label}
-                                            label={item.label}
-                                            onClick={() =>
-                                                setTimingFilters((current) => ({
-                                                    ...current,
-                                                    [item.label]:
-                                                        !current[item.label],
-                                                }))
-                                            }
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-                            <button
-                                className="mt-8 h-12 w-full rounded-2xl bg-[#247cff] text-base font-semibold text-white shadow-[0_10px_24px_rgba(36,124,255,0.28)] transition hover:bg-[#1768e6]"
-                                onClick={scrollToCompanies}
-                                type="button"
-                            >
-                                Применить
-                            </button>
-                        </aside>
-
-                        <div className="min-w-0 space-y-6">
-                            <div className="flex flex-wrap items-center gap-3 rounded-[22px] border border-[#eaecf0] bg-white p-5">
-                                <span className="mr-1 text-base font-medium text-[#667085]">
-                                    Сортировать:
-                                </span>
-                                {sortOptions.map((option) => (
-                                    <Chip
-                                        active={option === sortMode}
-                                        key={option}
-                                        onClick={() => setSortMode(option)}
-                                    >
-                                        {option}
-                                    </Chip>
-                                ))}
-                            </div>
-                            {visibleCompanies.map((company) => (
-                                <CompanyCard
-                                    company={company}
-                                    key={company.name}
-                                    detailsOpen={
-                                        openCompanyDetails === company.name
-                                    }
-                                    onChoose={() => {
-                                        setSelectedCompany(company.name);
-                                        setRequestCreated(false);
-                                    }}
-                                    onToggleDetails={() =>
-                                        setOpenCompanyDetails((currentName) =>
-                                            currentName === company.name
-                                                ? null
-                                                : company.name,
-                                        )
-                                    }
-                                    priceRange={[
-                                        estimatedRange[0],
-                                        estimatedRange[1],
-                                    ]}
-                                    selected={selectedCompany === company.name}
-                                />
-                            ))}
-                        </div>
-                    </section>
-
-                    {selectedCompanyData && (
-                        <section className="mx-auto mt-10 max-w-[1060px] rounded-[24px] border border-[#eaecf0] bg-white p-6 shadow-[0_14px_34px_rgba(16,24,40,0.06)]">
-                            <div className="grid gap-5 md:grid-cols-[1fr_auto] md:items-center">
-                                <div>
-                                    <span className="rounded-full bg-[#eaf2ff] px-4 py-2 text-sm font-semibold text-[#175cd3]">
-                                        {requestCreated
-                                            ? 'Заявка создана'
-                                            : 'Компания выбрана'}
-                                    </span>
-                                    <h2 className="mt-4 text-2xl font-extrabold">
-                                        {selectedCompanyData.name} получит
-                                        заявку на{' '}
-                                        {activeService.label.toLowerCase()}
+                                <aside className="rounded-[28px] border border-[#eaecf0] bg-white p-7 shadow-[0_12px_30px_rgba(16,24,40,0.05)]">
+                                    <h2 className="text-2xl font-bold">
+                                        Фильтры
                                     </h2>
-                                    <p className="mt-2 text-base font-medium text-[#667085]">
-                                        {leadValues['Тип работ']}, город:{' '}
-                                        {leadValues.Город}, срок:{' '}
-                                        {leadValues.Срок}. Предварительно от{' '}
-                                        {formatRoubles(estimatedRange[0])} до{' '}
-                                        {formatRoubles(estimatedRange[1])} ₽.
-                                    </p>
-                                </div>
-                                <button
-                                    className={`min-h-12 rounded-2xl px-6 text-base font-semibold transition ${
-                                        requestCreated
-                                            ? 'bg-[#eafbf2] text-[#027a48]'
-                                            : 'bg-[#247cff] text-white shadow-[0_10px_24px_rgba(36,124,255,0.28)] hover:bg-[#1768e6]'
-                                    }`}
-                                    onClick={() => setRequestCreated(true)}
-                                    type="button"
-                                >
-                                    {requestCreated
-                                        ? 'Ожидает подтверждения'
-                                        : 'Оставить заявку'}
-                                </button>
-                            </div>
-                        </section>
-                    )}
-
-                    <section
-                        className="mt-28 rounded-[34px] border border-[#eaecf0] bg-white p-6 shadow-[0_14px_34px_rgba(16,24,40,0.06)] sm:p-9"
-                        id="contractors"
-                    >
-                        <h2 className="max-w-[760px] text-[30px] leading-tight font-extrabold sm:text-[34px]">
-                            Для компаний: заявки, даты и статусы без сложной CRM
-                        </h2>
-                        <p className="mt-4 max-w-[720px] text-lg leading-[1.45] font-medium text-[#667085]">
-                            В MVP компания видит входящие заявки, подтверждает
-                            дату, предлагает другой слот и меняет статус заказа.
-                        </p>
-                        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-                            {workers.map((worker) => (
-                                <article
-                                    className="rounded-3xl border border-[#eaecf0] bg-white p-5 shadow-[0_10px_24px_rgba(16,24,40,0.05)]"
-                                    key={worker.name}
-                                >
-                                    <div className="flex items-center gap-4">
-                                        <div
-                                            className={`flex size-14 items-center justify-center rounded-[18px] text-lg font-extrabold text-white ${worker.color}`}
-                                        >
-                                            {worker.initials}
-                                        </div>
-                                        <div>
-                                            <h3 className="text-[17px] leading-tight font-bold">
-                                                {worker.name}
-                                            </h3>
-                                            <p className="mt-1 text-sm font-medium text-[#667085]">
-                                                {worker.role}
-                                            </p>
+                                    <div className="mt-7">
+                                        <h3 className="font-bold">Цена</h3>
+                                        <div className="mt-3 rounded-2xl border border-[#eaecf0] bg-[#f4f7fb] px-4 py-4 text-base font-semibold text-[#344054]">
+                                            {formatRoubles(estimatedRange[0])}-
+                                            {formatRoubles(estimatedRange[1])} ₽
                                         </div>
                                     </div>
-                                    <p className="mt-5 text-[15px] font-semibold text-[#344054]">
-                                        ★ {worker.rating} · {worker.price}
-                                    </p>
+                                    <div className="mt-8">
+                                        <h3 className="font-bold">
+                                            Рейтинг компании
+                                        </h3>
+                                        <div className="mt-4 space-y-4">
+                                            {filters.rating.map((item) => (
+                                                <FilterCheck
+                                                    checked={Boolean(
+                                                        ratingFilters[
+                                                            item.label
+                                                        ],
+                                                    )}
+                                                    key={item.label}
+                                                    label={item.label}
+                                                    onClick={() =>
+                                                        setRatingFilters(
+                                                            (current) => ({
+                                                                ...current,
+                                                                [item.label]:
+                                                                    !current[
+                                                                        item
+                                                                            .label
+                                                                    ],
+                                                            }),
+                                                        )
+                                                    }
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="mt-8">
+                                        <h3 className="font-bold">Сроки</h3>
+                                        <div className="mt-4 space-y-4">
+                                            {filters.timing.map((item) => (
+                                                <FilterCheck
+                                                    checked={Boolean(
+                                                        timingFilters[
+                                                            item.label
+                                                        ],
+                                                    )}
+                                                    key={item.label}
+                                                    label={item.label}
+                                                    onClick={() =>
+                                                        setTimingFilters(
+                                                            (current) => ({
+                                                                ...current,
+                                                                [item.label]:
+                                                                    !current[
+                                                                        item
+                                                                            .label
+                                                                    ],
+                                                            }),
+                                                        )
+                                                    }
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
                                     <button
-                                        className={`mt-4 h-9 w-full rounded-2xl text-base font-semibold ${
-                                            activeWorker === worker.name
-                                                ? 'bg-[#247cff] text-white'
-                                                : 'bg-[#eaf2ff] text-[#175cd3]'
-                                        }`}
-                                        onClick={() =>
-                                            setActiveWorker(worker.name)
-                                        }
+                                        className="mt-8 h-12 w-full rounded-2xl bg-[#247cff] text-base font-semibold text-white shadow-[0_10px_24px_rgba(36,124,255,0.28)] transition hover:bg-[#1768e6]"
+                                        onClick={scrollToCompanies}
                                         type="button"
                                     >
-                                        {activeWorker === worker.name
-                                            ? 'Выбрано'
-                                            : 'Показать роль'}
+                                        Применить
                                     </button>
-                                </article>
-                            ))}
-                        </div>
-                    </section>
+                                </aside>
 
-                    <section className="mt-20 pb-20" id="how">
-                        <h2 className="text-4xl font-extrabold">
-                            Как это работает
-                        </h2>
-                        <div className="mt-8 grid gap-6 lg:grid-cols-3">
-                            {steps.map((step, index) => (
-                                <article
-                                    className="flex min-h-[170px] gap-5 rounded-[28px] border border-[#eaecf0] bg-white p-7 shadow-[0_10px_24px_rgba(16,24,40,0.05)]"
-                                    key={step.title}
-                                >
-                                    <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-[#eaf2ff] text-xl font-extrabold text-[#175cd3]">
-                                        {index + 1}
+                                <div className="min-w-0 space-y-6">
+                                    <div className="flex flex-wrap items-center gap-3 rounded-[22px] border border-[#eaecf0] bg-white p-5">
+                                        <span className="mr-1 text-base font-medium text-[#667085]">
+                                            Сортировать:
+                                        </span>
+                                        {sortOptions.map((option) => (
+                                            <Chip
+                                                active={option === sortMode}
+                                                key={option}
+                                                onClick={() =>
+                                                    setSortMode(option)
+                                                }
+                                            >
+                                                {option}
+                                            </Chip>
+                                        ))}
                                     </div>
-                                    <div>
-                                        <h3 className="text-2xl leading-tight font-bold">
-                                            {step.title}
-                                        </h3>
-                                        <p className="mt-3 text-base leading-6 font-medium text-[#667085]">
-                                            {step.text}
-                                        </p>
+                                    {visibleCompanies.map((company) => (
+                                        <CompanyCard
+                                            company={company}
+                                            detailsOpen={
+                                                openCompanyDetails ===
+                                                company.name
+                                            }
+                                            key={company.name}
+                                            onChoose={() => {
+                                                setSelectedCompany(
+                                                    company.name,
+                                                );
+                                                setRequestCreated(false);
+                                            }}
+                                            onToggleDetails={() =>
+                                                setOpenCompanyDetails(
+                                                    (currentName) =>
+                                                        currentName ===
+                                                        company.name
+                                                            ? null
+                                                            : company.name,
+                                                )
+                                            }
+                                            priceRange={[
+                                                estimatedRange[0],
+                                                estimatedRange[1],
+                                            ]}
+                                            selected={
+                                                selectedCompany === company.name
+                                            }
+                                        />
+                                    ))}
+                                </div>
+                            </section>
+
+                            {selectedCompanyData && (
+                                <section className="mx-auto mt-10 max-w-[1060px] rounded-[24px] border border-[#eaecf0] bg-white p-6 shadow-[0_14px_34px_rgba(16,24,40,0.06)]">
+                                    <div className="grid gap-5 md:grid-cols-[1fr_auto] md:items-center">
+                                        <div>
+                                            <span className="rounded-full bg-[#eaf2ff] px-4 py-2 text-sm font-semibold text-[#175cd3]">
+                                                {requestCreated
+                                                    ? 'Заявка создана'
+                                                    : 'Компания выбрана'}
+                                            </span>
+                                            <h2 className="mt-4 text-2xl font-extrabold">
+                                                {selectedCompanyData.name}{' '}
+                                                получит заявку на{' '}
+                                                {activeService.label.toLowerCase()}
+                                            </h2>
+                                            <p className="mt-2 text-base font-medium text-[#667085]">
+                                                {leadValues['Тип работ']},
+                                                город: {leadValues.Город}, срок:{' '}
+                                                {leadValues.Срок}.
+                                                Предварительно от{' '}
+                                                {formatRoubles(
+                                                    estimatedRange[0],
+                                                )}{' '}
+                                                до{' '}
+                                                {formatRoubles(
+                                                    estimatedRange[1],
+                                                )}{' '}
+                                                ₽.
+                                            </p>
+                                        </div>
+                                        <button
+                                            className={`min-h-12 rounded-2xl px-6 text-base font-semibold transition ${
+                                                requestCreated
+                                                    ? 'bg-[#eafbf2] text-[#027a48]'
+                                                    : 'bg-[#247cff] text-white shadow-[0_10px_24px_rgba(36,124,255,0.28)] hover:bg-[#1768e6]'
+                                            }`}
+                                            onClick={() =>
+                                                setRequestCreated(true)
+                                            }
+                                            type="button"
+                                        >
+                                            {requestCreated
+                                                ? 'Ожидает подтверждения'
+                                                : 'Оставить заявку'}
+                                        </button>
                                     </div>
-                                </article>
-                            ))}
-                        </div>
-                    </section>
+                                </section>
+                            )}
+                        </>
+                    ) : (
+                        <>
+                            <section
+                                className="mt-8 rounded-[28px] border border-[#eaecf0] bg-white p-6 shadow-[0_14px_34px_rgba(16,24,40,0.05)] sm:p-9"
+                                id="contractors"
+                            >
+                                <h2 className="text-[30px] leading-tight font-extrabold sm:text-[34px]">
+                                    Для компаний
+                                </h2>
+                                <p className="mt-4 max-w-[760px] text-lg leading-[1.45] font-medium text-[#667085]">
+                                    Принимайте входящие заявки, подтверждайте
+                                    желаемую дату, предлагайте другое время и
+                                    меняйте статус заказа без сложной CRM.
+                                </p>
+                                <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                                    {workers.map((worker) => (
+                                        <article
+                                            className="rounded-3xl border border-[#eaecf0] bg-white p-5 shadow-[0_10px_24px_rgba(16,24,40,0.05)]"
+                                            key={worker.name}
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <div
+                                                    className={`flex size-14 items-center justify-center rounded-[18px] text-lg font-extrabold text-white ${worker.color}`}
+                                                >
+                                                    {worker.initials}
+                                                </div>
+                                                <div>
+                                                    <h3 className="text-[17px] leading-tight font-bold">
+                                                        {worker.name}
+                                                    </h3>
+                                                    <p className="mt-1 text-sm font-medium text-[#667085]">
+                                                        {worker.role}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <p className="mt-5 text-[15px] font-semibold text-[#344054]">
+                                                ★ {worker.rating} ·{' '}
+                                                {worker.price}
+                                            </p>
+                                            <button
+                                                className={`mt-4 h-9 w-full rounded-2xl text-base font-semibold ${
+                                                    activeWorker === worker.name
+                                                        ? 'bg-[#247cff] text-white'
+                                                        : 'bg-[#eaf2ff] text-[#175cd3]'
+                                                }`}
+                                                onClick={() =>
+                                                    setActiveWorker(worker.name)
+                                                }
+                                                type="button"
+                                            >
+                                                {activeWorker === worker.name
+                                                    ? 'Выбрано'
+                                                    : 'Показать роль'}
+                                            </button>
+                                        </article>
+                                    ))}
+                                </div>
+                            </section>
+
+                            <section className="mt-8 pb-14" id="how">
+                                <h2 className="text-[30px] leading-tight font-extrabold sm:text-[34px]">
+                                    Как работает
+                                </h2>
+                                <div className="mt-8 grid gap-6 lg:grid-cols-3">
+                                    {steps.map((step, index) => (
+                                        <article
+                                            className="flex min-h-[170px] gap-5 rounded-[28px] border border-[#eaecf0] bg-white p-7 shadow-[0_10px_24px_rgba(16,24,40,0.05)]"
+                                            key={step.title}
+                                        >
+                                            <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-[#eaf2ff] text-xl font-extrabold text-[#175cd3]">
+                                                {index + 1}
+                                            </div>
+                                            <div>
+                                                <h3 className="text-2xl leading-tight font-bold">
+                                                    {step.title}
+                                                </h3>
+                                                <p className="mt-3 text-base leading-6 font-medium text-[#667085]">
+                                                    {step.text}
+                                                </p>
+                                            </div>
+                                        </article>
+                                    ))}
+                                </div>
+                            </section>
+                        </>
+                    )}
                 </div>
             </main>
         </>
