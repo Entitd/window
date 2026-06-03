@@ -8,6 +8,7 @@ import {
     Wallet,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 
 type LeadField = {
@@ -39,6 +40,43 @@ const leadFields: LeadField[] = [
     { icon: Wallet, label: 'Бюджет', value: 'до 150 000 ₽' },
     { icon: CalendarClock, label: 'Срок', value: 'на этой неделе' },
 ];
+
+const serviceOptions = [
+    {
+        label: 'Замена стеклопакета',
+        baseMin: 8000,
+        baseMax: 12000,
+    },
+    {
+        label: 'Установка окна',
+        baseMin: 18000,
+        baseMax: 30000,
+    },
+    {
+        label: 'Балконный блок',
+        baseMin: 25000,
+        baseMax: 45000,
+    },
+    {
+        label: 'Замер',
+        baseMin: 0,
+        baseMax: 1500,
+    },
+    {
+        label: 'Ремонт/регулировка',
+        baseMin: 2500,
+        baseMax: 7000,
+    },
+];
+
+const leadValueOptions: Record<string, string[]> = {
+    Город: ['Волгоград', 'Волжский', 'Краснооктябрьский район'],
+    'Тип работ': ['Замер + монтаж', 'Только замер', 'Ремонт/регулировка'],
+    Бюджет: ['до 30 000 ₽', 'до 65 000 ₽', 'до 150 000 ₽'],
+    Срок: ['сегодня/завтра', 'до 3 дней', 'на этой неделе'],
+};
+
+const sortOptions = ['Самые дешевые', 'Высокий рейтинг', 'Быстрый монтаж'];
 
 const filters = {
     rating: [
@@ -151,12 +189,24 @@ const steps = [
     },
 ];
 
+function formatRoubles(value: number) {
+    return new Intl.NumberFormat('ru-RU').format(Math.round(value));
+}
+
+function getNextOption(options: string[], currentValue: string) {
+    const currentIndex = options.indexOf(currentValue);
+
+    return options[currentIndex === options.length - 1 ? 0 : currentIndex + 1];
+}
+
 function Chip({
     children,
     active = false,
+    onClick,
 }: {
     children: ReactNode;
     active?: boolean;
+    onClick: () => void;
 }) {
     return (
         <button
@@ -165,6 +215,7 @@ function Chip({
                     ? 'border-[#247cff] bg-[#247cff] text-white shadow-[0_10px_24px_rgba(36,124,255,0.2)]'
                     : 'border-[#eaecf0] bg-white text-[#344054] hover:border-[#c9d6ea]'
             }`}
+            onClick={onClick}
             type="button"
         >
             {children}
@@ -172,12 +223,21 @@ function Chip({
     );
 }
 
-function LeadFieldCard({ field }: { field: LeadField }) {
+function LeadFieldCard({
+    field,
+    value,
+    onClick,
+}: {
+    field: LeadField;
+    value: string;
+    onClick: () => void;
+}) {
     const Icon = field.icon;
 
     return (
         <button
             className="flex min-h-18 items-center gap-3 rounded-[18px] border border-[#eaecf0] bg-white p-4 text-left transition hover:border-[#c9d6ea] hover:shadow-[0_10px_26px_rgba(16,24,40,0.06)]"
+            onClick={onClick}
             type="button"
         >
             <span className="flex size-8 shrink-0 items-center justify-center rounded-[10px] bg-[#eaf2ff] text-[#247cff]">
@@ -188,16 +248,28 @@ function LeadFieldCard({ field }: { field: LeadField }) {
                     {field.label}
                 </span>
                 <span className="mt-1 block text-base font-semibold text-[#101828]">
-                    {field.value}
+                    {value}
                 </span>
             </span>
         </button>
     );
 }
 
-function FilterCheck({ label, checked }: { label: string; checked: boolean }) {
+function FilterCheck({
+    label,
+    checked,
+    onClick,
+}: {
+    label: string;
+    checked: boolean;
+    onClick: () => void;
+}) {
     return (
-        <label className="flex cursor-pointer items-center gap-3 text-[15px] font-medium text-[#344054]">
+        <button
+            className="flex cursor-pointer items-center gap-3 text-left text-[15px] font-medium text-[#344054]"
+            onClick={onClick}
+            type="button"
+        >
             <span
                 className={`flex size-5 items-center justify-center rounded-md border ${
                     checked
@@ -208,13 +280,33 @@ function FilterCheck({ label, checked }: { label: string; checked: boolean }) {
                 {checked && <Check size={14} strokeWidth={3} />}
             </span>
             {label}
-        </label>
+        </button>
     );
 }
 
-function CompanyCard({ company }: { company: Company }) {
+function CompanyCard({
+    company,
+    selected,
+    detailsOpen,
+    priceRange,
+    onChoose,
+    onToggleDetails,
+}: {
+    company: Company;
+    selected: boolean;
+    detailsOpen: boolean;
+    priceRange: [number, number];
+    onChoose: () => void;
+    onToggleDetails: () => void;
+}) {
     return (
-        <article className="rounded-[26px] border border-[#eaecf0] bg-white p-5 shadow-[0_12px_30px_rgba(16,24,40,0.06)]">
+        <article
+            className={`rounded-[26px] border bg-white p-5 shadow-[0_12px_30px_rgba(16,24,40,0.06)] ${
+                selected
+                    ? 'border-[#247cff] ring-2 ring-[#247cff]/20'
+                    : 'border-[#eaecf0]'
+            }`}
+        >
             <div className="grid gap-5 lg:grid-cols-[1fr_auto]">
                 <div className="flex gap-4">
                     <div
@@ -242,17 +334,23 @@ function CompanyCard({ company }: { company: Company }) {
                 <div className="flex items-start justify-between gap-4 lg:min-w-[190px] lg:flex-col lg:items-end">
                     <div className="lg:text-right">
                         <span className="block text-sm font-medium text-[#667085]">
-                            от
+                            предварительно
                         </span>
                         <strong className="block text-3xl leading-tight font-extrabold text-[#101828]">
-                            {company.price}
+                            {formatRoubles(priceRange[0])}-
+                            {formatRoubles(priceRange[1])} ₽
                         </strong>
                     </div>
                     <button
-                        className="h-12 rounded-2xl bg-[#247cff] px-6 text-base font-semibold text-white shadow-[0_10px_24px_rgba(36,124,255,0.28)] transition hover:bg-[#1768e6]"
+                        className={`h-12 rounded-2xl px-6 text-base font-semibold shadow-[0_10px_24px_rgba(36,124,255,0.28)] transition ${
+                            selected
+                                ? 'bg-[#eafbf2] text-[#027a48]'
+                                : 'bg-[#247cff] text-white hover:bg-[#1768e6]'
+                        }`}
+                        onClick={onChoose}
                         type="button"
                     >
-                        Выбрать
+                        {selected ? 'Выбрана' : 'Выбрать'}
                     </button>
                 </div>
             </div>
@@ -264,22 +362,122 @@ function CompanyCard({ company }: { company: Company }) {
             </div>
             <button
                 className="mt-5 inline-flex items-center gap-2 text-[15px] font-semibold text-[#175cd3]"
+                onClick={onToggleDetails}
                 type="button"
             >
-                Смотреть условия и рабочих
+                {detailsOpen ? 'Скрыть условия' : 'Смотреть условия'}
                 <ArrowUpRight size={16} />
             </button>
+            {detailsOpen && (
+                <div className="mt-5 rounded-2xl bg-[#f4f7fb] p-4 text-sm leading-6 font-medium text-[#344054]">
+                    Компания подтвердит желаемую дату или предложит другое
+                    время. Точная цена фиксируется после замера.
+                </div>
+            )}
         </article>
     );
 }
 
 export default function OknaMarket() {
+    const [activeService, setActiveService] = useState(serviceOptions[0]);
+    const [leadValues, setLeadValues] = useState(
+        Object.fromEntries(
+            leadFields.map((field) => [field.label, field.value]),
+        ) as Record<string, string>,
+    );
+    const [ratingFilters, setRatingFilters] = useState(
+        Object.fromEntries(
+            filters.rating.map((item) => [item.label, item.checked]),
+        ),
+    );
+    const [timingFilters, setTimingFilters] = useState(
+        Object.fromEntries(
+            filters.timing.map((item) => [item.label, item.checked]),
+        ),
+    );
+    const [sortMode, setSortMode] = useState(sortOptions[0]);
+    const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
+    const [openCompanyDetails, setOpenCompanyDetails] = useState<string | null>(
+        null,
+    );
+    const [requestCreated, setRequestCreated] = useState(false);
+    const [activeWorker, setActiveWorker] = useState<string | null>(null);
+
+    const estimatedRange = useMemo<[number, number]>(() => {
+        const budgetFactor = leadValues.Бюджет === 'до 150 000 ₽' ? 1.12 : 1;
+        const urgencyFactor = leadValues.Срок === 'сегодня/завтра' ? 1.15 : 1;
+
+        return [
+            activeService.baseMin * budgetFactor * urgencyFactor,
+            activeService.baseMax * budgetFactor * urgencyFactor,
+        ];
+    }, [activeService, leadValues]);
+
+    const visibleCompanies = useMemo(() => {
+        const filteredCompanies = companies.filter((company) => {
+            if (
+                ratingFilters['от 4.7 и выше'] &&
+                !company.rating.startsWith('4.')
+            ) {
+                return false;
+            }
+
+            if (
+                ratingFilters['много отзывов'] &&
+                !company.rating.includes('1')
+            ) {
+                return false;
+            }
+
+            if (
+                timingFilters['до 3 дней'] &&
+                !company.details[0].includes('3')
+            ) {
+                return false;
+            }
+
+            return true;
+        });
+
+        return filteredCompanies.sort((firstCompany, secondCompany) => {
+            if (sortMode === 'Высокий рейтинг') {
+                return secondCompany.rating.localeCompare(firstCompany.rating);
+            }
+
+            if (sortMode === 'Быстрый монтаж') {
+                return firstCompany.details[0].localeCompare(
+                    secondCompany.details[0],
+                );
+            }
+
+            return firstCompany.price.localeCompare(secondCompany.price);
+        });
+    }, [ratingFilters, sortMode, timingFilters]);
+
+    const selectedCompanyData = companies.find(
+        (company) => company.name === selectedCompany,
+    );
+
+    const scrollToLead = () => {
+        document.getElementById('lead-form')?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+        });
+    };
+
+    const scrollToCompanies = () => {
+        document.getElementById('companies')?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+        });
+    };
+
     return (
         <>
             <Head title="ОкнаМаркет" />
-            <main className="min-h-screen overflow-hidden bg-[#f4f7fb] font-sans text-[#101828]">
-                <div className="pointer-events-none absolute top-48 left-[-160px] h-[420px] w-[420px] rounded-full bg-[#c7ddff] opacity-70 blur-[80px]" />
-                <div className="pointer-events-none absolute top-20 right-[-120px] h-[360px] w-[360px] rounded-full bg-[#d9f9e8] opacity-90 blur-[80px]" />
+            <main className="relative min-h-screen overflow-x-clip bg-[#f4f7fb] font-sans text-[#101828]">
+                <div className="pointer-events-none absolute top-48 left-0 h-[360px] w-[360px] -translate-x-1/2 rounded-full bg-[#c7ddff] opacity-70 blur-[80px]" />
+                <div className="pointer-events-none absolute top-20 right-0 h-[320px] w-[320px] translate-x-1/3 rounded-full bg-[#d9f9e8] opacity-90 blur-[80px]" />
 
                 <div className="relative mx-auto w-full max-w-[1280px] px-5 py-5 sm:px-8 lg:px-10">
                     <header className="flex items-center justify-between gap-5">
@@ -297,10 +495,11 @@ export default function OknaMarket() {
                         <nav className="hidden items-center gap-9 text-base font-medium text-[#344054] lg:flex">
                             <a href="#companies">Компании</a>
                             <a href="#how">Как работает</a>
-                            <a href="#contractors">Для подрядчиков</a>
+                            <a href="#contractors">Для компаний</a>
                         </nav>
                         <button
                             className="hidden h-11 rounded-2xl bg-[#247cff] px-6 text-base font-semibold text-white shadow-[0_10px_24px_rgba(36,124,255,0.28)] transition hover:bg-[#1768e6] sm:block"
+                            onClick={scrollToLead}
                             type="button"
                         >
                             Оставить заявку
@@ -332,53 +531,73 @@ export default function OknaMarket() {
                         </div>
                     </section>
 
-                    <section className="relative mt-8 rounded-[30px] border border-[#eaecf0] bg-white p-5 shadow-[0_18px_50px_rgba(16,24,40,0.04)] sm:p-8">
-                        <h2 className="text-[22px] font-bold">
-                            Что нужно установить?
-                        </h2>
-                        <div className="mt-4 flex flex-wrap gap-3">
-                            <Chip active>Пластиковые окна</Chip>
-                            <Chip>Балкон</Chip>
-                            <Chip>Остекление дома</Chip>
+                    <section
+                        className="relative mx-auto mt-10 max-w-[1060px] rounded-[24px] border border-[#eaecf0] bg-white p-5 shadow-[0_18px_50px_rgba(16,24,40,0.04)] sm:p-8"
+                        id="lead-form"
+                    >
+                        <div className="text-center">
+                            <h2 className="text-[24px] font-bold">
+                                Что нужно установить?
+                            </h2>
+                            <p className="mt-2 text-base font-medium text-[#667085]">
+                                Выберите услугу и примерные параметры для
+                                предварительного диапазона цены.
+                            </p>
                         </div>
-                        <div className="mt-5 grid gap-4 lg:grid-cols-[190px_1fr_230px_1fr_236px]">
+                        <div className="mt-5 flex flex-wrap justify-center gap-3">
+                            {serviceOptions.map((service) => (
+                                <Chip
+                                    active={
+                                        service.label === activeService.label
+                                    }
+                                    key={service.label}
+                                    onClick={() => setActiveService(service)}
+                                >
+                                    {service.label}
+                                </Chip>
+                            ))}
+                        </div>
+                        <div className="mt-5 grid min-w-0 gap-4 md:grid-cols-2 xl:grid-cols-[repeat(5,minmax(0,1fr))]">
                             {leadFields.map((field) => (
                                 <LeadFieldCard
                                     field={field}
                                     key={field.label}
+                                    onClick={() =>
+                                        setLeadValues((currentValues) => ({
+                                            ...currentValues,
+                                            [field.label]: getNextOption(
+                                                leadValueOptions[field.label],
+                                                currentValues[field.label],
+                                            ),
+                                        }))
+                                    }
+                                    value={leadValues[field.label]}
                                 />
                             ))}
                             <button
                                 className="relative min-h-18 overflow-hidden rounded-2xl bg-[#247cff] px-6 text-base font-semibold text-white shadow-[0_12px_30px_rgba(36,124,255,0.28)] transition hover:bg-[#1768e6]"
+                                onClick={scrollToCompanies}
                                 type="button"
                             >
                                 Найти компании
                             </button>
                         </div>
-                        <svg
-                            aria-hidden="true"
-                            className="pointer-events-none absolute right-16 -bottom-24 hidden h-32 w-64 text-black lg:block"
-                            fill="none"
-                            viewBox="0 0 290 135"
-                        >
-                            <path
-                                d="M276 8C212 67 123 82 18 88"
-                                stroke="currentColor"
-                                strokeLinecap="round"
-                                strokeWidth="5"
-                            />
-                            <path
-                                d="M37 69 14 88l24 24"
-                                stroke="currentColor"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="5"
-                            />
-                        </svg>
+                        <div className="mt-5 rounded-2xl bg-[#f4f7fb] p-4 text-center">
+                            <span className="block text-sm font-medium text-[#667085]">
+                                Предварительно
+                            </span>
+                            <strong className="mt-1 block text-2xl font-extrabold">
+                                от {formatRoubles(estimatedRange[0])} до{' '}
+                                {formatRoubles(estimatedRange[1])} ₽
+                            </strong>
+                            <span className="mt-1 block text-sm font-medium text-[#667085]">
+                                Точная цена после замера.
+                            </span>
+                        </div>
                     </section>
 
                     <section
-                        className="mt-24 grid items-start gap-8 lg:grid-cols-[382px_1fr]"
+                        className="mt-20 grid min-w-0 items-start gap-8 lg:grid-cols-[320px_minmax(0,1fr)]"
                         id="companies"
                     >
                         <aside className="rounded-[28px] border border-[#eaecf0] bg-white p-7 shadow-[0_12px_30px_rgba(16,24,40,0.05)]">
@@ -386,8 +605,8 @@ export default function OknaMarket() {
                             <div className="mt-7">
                                 <h3 className="font-bold">Цена</h3>
                                 <div className="mt-3 rounded-2xl border border-[#eaecf0] bg-[#f4f7fb] px-4 py-4 text-base font-semibold text-[#344054]">
-                                    от 15 000 ₽&nbsp;&nbsp;&nbsp;&nbsp;до 65 000
-                                    ₽
+                                    {formatRoubles(estimatedRange[0])}-
+                                    {formatRoubles(estimatedRange[1])} ₽
                                 </div>
                             </div>
                             <div className="mt-8">
@@ -395,9 +614,18 @@ export default function OknaMarket() {
                                 <div className="mt-4 space-y-4">
                                     {filters.rating.map((item) => (
                                         <FilterCheck
-                                            checked={item.checked}
+                                            checked={Boolean(
+                                                ratingFilters[item.label],
+                                            )}
                                             key={item.label}
                                             label={item.label}
+                                            onClick={() =>
+                                                setRatingFilters((current) => ({
+                                                    ...current,
+                                                    [item.label]:
+                                                        !current[item.label],
+                                                }))
+                                            }
                                         />
                                     ))}
                                 </div>
@@ -407,51 +635,123 @@ export default function OknaMarket() {
                                 <div className="mt-4 space-y-4">
                                     {filters.timing.map((item) => (
                                         <FilterCheck
-                                            checked={item.checked}
+                                            checked={Boolean(
+                                                timingFilters[item.label],
+                                            )}
                                             key={item.label}
                                             label={item.label}
+                                            onClick={() =>
+                                                setTimingFilters((current) => ({
+                                                    ...current,
+                                                    [item.label]:
+                                                        !current[item.label],
+                                                }))
+                                            }
                                         />
                                     ))}
                                 </div>
                             </div>
                             <button
                                 className="mt-8 h-12 w-full rounded-2xl bg-[#247cff] text-base font-semibold text-white shadow-[0_10px_24px_rgba(36,124,255,0.28)] transition hover:bg-[#1768e6]"
+                                onClick={scrollToCompanies}
                                 type="button"
                             >
                                 Применить
                             </button>
                         </aside>
 
-                        <div className="space-y-6">
+                        <div className="min-w-0 space-y-6">
                             <div className="flex flex-wrap items-center gap-3 rounded-[22px] border border-[#eaecf0] bg-white p-5">
                                 <span className="mr-1 text-base font-medium text-[#667085]">
                                     Сортировать:
                                 </span>
-                                <Chip active>Самые дешевые</Chip>
-                                <Chip>Высокий рейтинг</Chip>
-                                <Chip>Быстрый монтаж</Chip>
-                                <Chip>Лучшие бригады</Chip>
+                                {sortOptions.map((option) => (
+                                    <Chip
+                                        active={option === sortMode}
+                                        key={option}
+                                        onClick={() => setSortMode(option)}
+                                    >
+                                        {option}
+                                    </Chip>
+                                ))}
                             </div>
-                            {companies.map((company) => (
+                            {visibleCompanies.map((company) => (
                                 <CompanyCard
                                     company={company}
                                     key={company.name}
+                                    detailsOpen={
+                                        openCompanyDetails === company.name
+                                    }
+                                    onChoose={() => {
+                                        setSelectedCompany(company.name);
+                                        setRequestCreated(false);
+                                    }}
+                                    onToggleDetails={() =>
+                                        setOpenCompanyDetails((currentName) =>
+                                            currentName === company.name
+                                                ? null
+                                                : company.name,
+                                        )
+                                    }
+                                    priceRange={[
+                                        estimatedRange[0],
+                                        estimatedRange[1],
+                                    ]}
+                                    selected={selectedCompany === company.name}
                                 />
                             ))}
                         </div>
                     </section>
+
+                    {selectedCompanyData && (
+                        <section className="mx-auto mt-10 max-w-[1060px] rounded-[24px] border border-[#eaecf0] bg-white p-6 shadow-[0_14px_34px_rgba(16,24,40,0.06)]">
+                            <div className="grid gap-5 md:grid-cols-[1fr_auto] md:items-center">
+                                <div>
+                                    <span className="rounded-full bg-[#eaf2ff] px-4 py-2 text-sm font-semibold text-[#175cd3]">
+                                        {requestCreated
+                                            ? 'Заявка создана'
+                                            : 'Компания выбрана'}
+                                    </span>
+                                    <h2 className="mt-4 text-2xl font-extrabold">
+                                        {selectedCompanyData.name} получит
+                                        заявку на{' '}
+                                        {activeService.label.toLowerCase()}
+                                    </h2>
+                                    <p className="mt-2 text-base font-medium text-[#667085]">
+                                        {leadValues['Тип работ']}, город:{' '}
+                                        {leadValues.Город}, срок:{' '}
+                                        {leadValues.Срок}. Предварительно от{' '}
+                                        {formatRoubles(estimatedRange[0])} до{' '}
+                                        {formatRoubles(estimatedRange[1])} ₽.
+                                    </p>
+                                </div>
+                                <button
+                                    className={`min-h-12 rounded-2xl px-6 text-base font-semibold transition ${
+                                        requestCreated
+                                            ? 'bg-[#eafbf2] text-[#027a48]'
+                                            : 'bg-[#247cff] text-white shadow-[0_10px_24px_rgba(36,124,255,0.28)] hover:bg-[#1768e6]'
+                                    }`}
+                                    onClick={() => setRequestCreated(true)}
+                                    type="button"
+                                >
+                                    {requestCreated
+                                        ? 'Ожидает подтверждения'
+                                        : 'Оставить заявку'}
+                                </button>
+                            </div>
+                        </section>
+                    )}
 
                     <section
                         className="mt-28 rounded-[34px] border border-[#eaecf0] bg-white p-6 shadow-[0_14px_34px_rgba(16,24,40,0.06)] sm:p-9"
                         id="contractors"
                     >
                         <h2 className="max-w-[760px] text-[30px] leading-tight font-extrabold sm:text-[34px]">
-                            Можно выбрать не только компанию, но и конкретную
-                            бригаду
+                            Для компаний: заявки, даты и статусы без сложной CRM
                         </h2>
                         <p className="mt-4 max-w-[720px] text-lg leading-[1.45] font-medium text-[#667085]">
-                            Смотрите опыт, рейтинг, ближайшие свободные даты и
-                            стоимость работ конкретных замерщиков и монтажников.
+                            В MVP компания видит входящие заявки, подтверждает
+                            дату, предлагает другой слот и меняет статус заказа.
                         </p>
                         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
                             {workers.map((worker) => (
@@ -478,10 +778,19 @@ export default function OknaMarket() {
                                         ★ {worker.rating} · {worker.price}
                                     </p>
                                     <button
-                                        className="mt-4 h-9 w-full rounded-2xl bg-[#eaf2ff] text-base font-semibold text-[#175cd3]"
+                                        className={`mt-4 h-9 w-full rounded-2xl text-base font-semibold ${
+                                            activeWorker === worker.name
+                                                ? 'bg-[#247cff] text-white'
+                                                : 'bg-[#eaf2ff] text-[#175cd3]'
+                                        }`}
+                                        onClick={() =>
+                                            setActiveWorker(worker.name)
+                                        }
                                         type="button"
                                     >
-                                        В профиль
+                                        {activeWorker === worker.name
+                                            ? 'Выбрано'
+                                            : 'Показать роль'}
                                     </button>
                                 </article>
                             ))}
