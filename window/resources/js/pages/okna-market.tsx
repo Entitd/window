@@ -1,15 +1,41 @@
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import {
-    ArrowUpRight,
+    ArrowRight,
+    BadgeCheck,
+    Building2,
     CalendarClock,
+    Camera,
     Check,
+    ChevronDown,
     Grid2X2,
+    Home,
     MapPin,
+    Ruler,
+    ShieldCheck,
+    Star,
     Wallet,
+    Wrench,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
+import { agreement, privacy } from '@/routes';
+
+type ServiceKey =
+    | 'glass_replacement'
+    | 'window_installation'
+    | 'balcony_block'
+    | 'measurement'
+    | 'repair';
+
+type Service = {
+    key: ServiceKey;
+    title: string;
+    description: string;
+    baseMin: number;
+    baseMax: number;
+    icon: LucideIcon;
+};
 
 type LeadField = {
     icon: LucideIcon;
@@ -19,181 +45,245 @@ type LeadField = {
 
 type Company = {
     name: string;
-    description: string;
-    initials: string;
-    logoClass: string;
     rating: string;
-    tag: string;
-    price: string;
-    details: string[];
+    orders: number;
+    multiplier: number;
+    nextDate: string;
+    guarantee: string;
+    districts: string;
+    review: string;
+    badge: string;
 };
 
-const metrics = [
-    { value: '120+', label: 'проверенных компаний' },
-    { value: '4.8', label: 'средний рейтинг' },
-    { value: '-18%', label: 'экономия на заказе' },
+type SectionHeaderProps = {
+    eyebrow: string;
+    title: string;
+    text?: string;
+};
+
+const services: Service[] = [
+    {
+        key: 'glass_replacement',
+        title: 'Замена стеклопакета',
+        description:
+            'Когда рама целая, но стеклопакет треснул, запотевает или плохо держит тепло.',
+        baseMin: 6500,
+        baseMax: 14500,
+        icon: Home,
+    },
+    {
+        key: 'window_installation',
+        title: 'Установка окна',
+        description: 'Полная установка нового окна с демонтажом старого.',
+        baseMin: 18000,
+        baseMax: 36000,
+        icon: Building2,
+    },
+    {
+        key: 'balcony_block',
+        title: 'Балконный блок',
+        description: 'Замена или установка окна и двери на балкон.',
+        baseMin: 38000,
+        baseMax: 76000,
+        icon: CalendarClock,
+    },
+    {
+        key: 'measurement',
+        title: 'Замер',
+        description:
+            'Выезд замерщика, проверка проёма и уточнение точной сметы.',
+        baseMin: 0,
+        baseMax: 1500,
+        icon: Ruler,
+    },
+    {
+        key: 'repair',
+        title: 'Ремонт и регулировка',
+        description:
+            'Если окно плохо закрывается, продувает или нужна настройка.',
+        baseMin: 2500,
+        baseMax: 8500,
+        icon: Wrench,
+    },
 ];
 
 const leadFields: LeadField[] = [
     { icon: MapPin, label: 'Город', value: 'Волгоград' },
     { icon: Grid2X2, label: 'Тип работ', value: 'Замер + монтаж' },
-    { icon: Wallet, label: 'Бюджет', value: 'до 150 000 ₽' },
-    { icon: CalendarClock, label: 'Срок', value: '01.02.26-18.02.26' },
-];
-
-const serviceOptions = [
-    {
-        label: 'Пластиковые окна',
-        baseMin: 18000,
-        baseMax: 30000,
-    },
-    {
-        label: 'Балкон',
-        baseMin: 25000,
-        baseMax: 45000,
-    },
-    {
-        label: 'Остекление дома',
-        baseMin: 32000,
-        baseMax: 70000,
-    },
-    {
-        label: 'Замер',
-        baseMin: 0,
-        baseMax: 1500,
-    },
-    {
-        label: 'Ремонт/регулировка',
-        baseMin: 2500,
-        baseMax: 7000,
-    },
+    { icon: Wallet, label: 'Бюджет', value: 'до 65 000 ₽' },
+    { icon: CalendarClock, label: 'Срок', value: 'на этой неделе' },
 ];
 
 const leadValueOptions: Record<string, string[]> = {
     Город: ['Волгоград', 'Волжский', 'Краснооктябрьский район'],
     'Тип работ': ['Замер + монтаж', 'Только замер', 'Ремонт/регулировка'],
     Бюджет: ['до 30 000 ₽', 'до 65 000 ₽', 'до 150 000 ₽'],
-    Срок: ['01.02.26-18.02.26', 'сегодня/завтра', 'до 3 дней'],
+    Срок: ['на этой неделе', 'сегодня/завтра', 'до 3 дней'],
 };
 
-const sortOptions = ['Самые дешевые', 'Высокий рейтинг', 'Быстрый монтаж'];
-
-const filters = {
-    rating: [
-        { label: 'от 4.7 и выше', checked: true },
-        { label: 'много отзывов', checked: false },
-        { label: 'есть фото работ', checked: true },
-    ],
-    timing: [
-        { label: 'сегодня/завтра', checked: false },
-        { label: 'до 3 дней', checked: true },
-        { label: 'на этой неделе', checked: false },
-    ],
-};
+const previewStats = [
+    { value: '4 параметра', label: 'достаточно для подбора' },
+    { value: '3 ответа', label: 'компании могут дать по дате' },
+    { value: '1 заявка', label: 'вместо ручного обзвона' },
+];
 
 const companies: Company[] = [
     {
         name: 'ОкнаПрофи',
-        description: 'Пластиковые окна и балконы',
-        initials: 'ОП',
-        logoClass: 'bg-[#eaf2ff] text-[#175cd3]',
-        rating: '4.9 / 231 отзывов',
-        tag: 'лучшие цены',
-        price: '18 900 ₽',
-        details: [
-            'Срок: 2-3 дня',
-            'Гарантия: 5 лет',
-            'Работников: 14',
-            'Выезд замерщика: бесплатно',
-        ],
+        rating: '4.8',
+        orders: 231,
+        multiplier: 1,
+        nextDate: 'завтра, 14:00-18:00',
+        guarantee: '1 год',
+        districts: 'Центр, Дзержинский, Ворошиловский',
+        review: 'Приехали в согласованное время, после замера цена почти не изменилась.',
+        badge: 'Быстрый замер',
     },
     {
         name: 'ТеплоДом',
-        description: 'Остекление квартир и домов',
-        initials: 'ТД',
-        logoClass: 'bg-[#eafbf2] text-[#027a48]',
-        rating: '4.8 / 184 отзывов',
-        tag: 'быстрый замер',
-        price: '20 400 ₽',
-        details: [
-            'Срок: 3 дня',
-            'Гарантия: 7 лет',
-            'Работников: 9',
-            'Выезд замерщика: бесплатно',
-        ],
+        rating: '4.8',
+        orders: 184,
+        multiplier: 1.08,
+        nextDate: '13 июня',
+        guarantee: '7 лет',
+        districts: 'Краснооктябрьский, Тракторозаводский',
+        review: 'Подробно объяснили, что входит в гарантию, и предложили удобное время.',
+        badge: 'Длинная гарантия',
     },
     {
         name: 'GlassCity',
-        description: 'Премиальные профили и монтаж',
-        initials: 'GC',
-        logoClass: 'bg-[#f1edff] text-[#7a5af8]',
-        rating: '4.7 / 96 отзывов',
-        tag: 'премиум',
-        price: '24 700 ₽',
-        details: [
-            'Срок: 4-5 дней',
-            'Гарантия: 10 лет',
-            'Работников: 6',
-            'Выезд замерщика: 1 000 ₽',
-        ],
+        rating: '4.7',
+        orders: 96,
+        multiplier: 1.16,
+        nextDate: '15 июня',
+        guarantee: '10 лет',
+        districts: 'Волгоград и Волжский',
+        review: 'Понравилось, что до визита показали понятный диапазон цены.',
+        badge: 'Есть фото работ',
     },
 ];
 
-const workers = [
+const benefits = [
     {
-        name: 'Алексей',
-        role: 'Монтажник',
-        rating: '4.9',
-        price: 'от 6 500 ₽',
-        initials: 'А',
-        color: 'bg-[#247cff]',
+        title: 'Предварительная цена',
+        text: 'Сразу видите примерный диапазон стоимости до вызова мастера.',
+        icon: Wallet,
     },
     {
-        name: 'Марат',
-        role: 'Замерщик',
-        rating: '4.8',
-        price: 'от 0 ₽',
-        initials: 'М',
-        color: 'bg-[#12b76a]',
+        title: 'Проверенные компании',
+        text: 'Выбираете исполнителя по рейтингу, отзывам, цене и гарантии.',
+        icon: BadgeCheck,
     },
     {
-        name: 'Ирина',
-        role: 'Менеджер',
-        rating: '4.9',
-        price: 'от 0 ₽',
-        initials: 'И',
-        color: 'bg-[#7a5af8]',
+        title: 'Удобная дата',
+        text: 'Указываете желаемое время, а компания подтверждает выезд.',
+        icon: CalendarClock,
     },
     {
-        name: 'Сергей',
-        role: 'Бригадир',
-        rating: '4.7',
-        price: 'от 8 000 ₽',
-        initials: 'С',
-        color: 'bg-[#f79009]',
+        title: 'Гарантия на работу',
+        text: 'После выполнения заказа данные о гарантии остаются в личном кабинете.',
+        icon: ShieldCheck,
     },
 ];
 
 const steps = [
     {
-        title: 'Укажите задачу',
-        text: 'Город, тип окон, бюджет и желаемый срок.',
+        title: 'Укажите параметры окна',
+        text: 'Выберите услугу, дату и примерные размеры.',
     },
     {
-        title: 'Сравните варианты',
-        text: 'Цена, рейтинг, гарантия, бригады и отзывы в одном списке.',
+        title: 'Получите предварительную цену',
+        text: 'Сервис покажет примерный диапазон стоимости.',
     },
     {
-        title: 'Выберите исполнителя',
-        text: 'Оставьте заявку и договоритесь о замере без лишних звонков.',
+        title: 'Выберите компанию',
+        text: 'Сравните исполнителей по цене, рейтингу, срокам и гарантии.',
+    },
+    {
+        title: 'Ожидайте подтверждения',
+        text: 'Компания подтвердит заявку или предложит другое время.',
     },
 ];
 
-function formatRoubles(value: number) {
-    return new Intl.NumberFormat('ru-RU').format(Math.round(value));
+const trustItems = [
+    'Компании проходят проверку перед публикацией.',
+    'Пользователь видит условия, цену и гарантию до подтверждения заявки.',
+    'Точная цена фиксируется только после замера.',
+];
+
+const heroFacts = [
+    'одна заявка вместо обзвона',
+    'диапазон цены до замера',
+    'выбор по рейтингу и гарантии',
+];
+
+const comparisonItems = [
+    {
+        title: 'Обычно',
+        items: [
+            'искать компании вручную',
+            'звонить каждой отдельно',
+            'объяснять размеры и услугу',
+            'ждать расчёт',
+            'не понимать, есть ли гарантия',
+        ],
+    },
+    {
+        title: 'Через сервис',
+        items: [
+            'одна заявка',
+            'несколько предложений',
+            'примерная цена сразу',
+            'выбор по рейтингу и срокам',
+            'гарантия в личном кабинете',
+        ],
+    },
+];
+
+const faqItems = [
+    {
+        question: 'Почему цена предварительная?',
+        answer: 'Точная цена зависит от состояния проёма, фурнитуры, профиля и фактических размеров. Поэтому на главной показывается диапазон, а окончательная смета фиксируется после замера.',
+    },
+    {
+        question: 'Можно ли подать заявку без точных размеров?',
+        answer: 'Да. Достаточно примерной ширины, высоты, типа окна и, если есть возможность, фотографии. Эти данные нужны только для первичного расчёта.',
+    },
+    {
+        question: 'Что происходит после выбора компании?',
+        answer: 'Заявка получает статус ожидания подтверждения. Компания может принять дату, отклонить заявку или предложить другое время.',
+    },
+    {
+        question: 'Когда появляется гарантия?',
+        answer: 'После статуса “выполнена” сервис показывает гарантию: компанию, связанную заявку, дату начала, дату окончания и условия.',
+    },
+];
+
+function formatRoubles(value: number): string {
+    const roundedValue = Math.round(value / 100) * 100;
+
+    return new Intl.NumberFormat('ru-RU').format(roundedValue);
 }
 
-function getNextOption(options: string[], currentValue: string) {
+function SectionHeader({ eyebrow, title, text }: SectionHeaderProps) {
+    return (
+        <div className="max-w-3xl">
+            <p className="text-sm font-bold text-[#0f766e] uppercase">
+                {eyebrow}
+            </p>
+            <h2 className="mt-3 text-3xl leading-tight font-extrabold text-[#152033] md:text-4xl">
+                {title}
+            </h2>
+            {text && (
+                <p className="mt-4 text-base leading-7 font-medium text-[#5d6b82]">
+                    {text}
+                </p>
+            )}
+        </div>
+    );
+}
+
+function getNextOption(options: string[], currentValue: string): string {
     const currentIndex = options.indexOf(currentValue);
 
     return options[currentIndex === options.length - 1 ? 0 : currentIndex + 1];
@@ -210,10 +300,10 @@ function Chip({
 }) {
     return (
         <button
-            className={`h-9 rounded-full border px-4 text-sm font-semibold transition hover:-translate-y-0.5 ${
+            className={`h-10 rounded-full border px-4 text-sm font-bold transition hover:-translate-y-0.5 ${
                 active
-                    ? 'border-[#247cff] bg-[#247cff] text-white shadow-[0_10px_24px_rgba(36,124,255,0.2)]'
-                    : 'border-[#eaecf0] bg-white text-[#344054] hover:border-[#c9d6ea]'
+                    ? 'border-[#0f766e] bg-[#0f766e] text-white shadow-[0_10px_24px_rgba(15,118,110,0.22)]'
+                    : 'border-[#dbe3ee] bg-white text-[#344054] hover:border-[#0f766e]/40'
             }`}
             onClick={onClick}
             type="button"
@@ -236,18 +326,18 @@ function LeadFieldCard({
 
     return (
         <button
-            className="flex h-[72px] min-w-0 items-center gap-3 rounded-[16px] border border-[#dfe5ee] bg-white px-4 text-left transition hover:border-[#c9d6ea] hover:shadow-[0_10px_26px_rgba(16,24,40,0.06)]"
+            className="flex h-[74px] min-w-0 items-center gap-3 rounded-[16px] border border-[#dbe3ee] bg-white px-4 text-left transition hover:border-[#0f766e]/45 hover:shadow-[0_10px_26px_rgba(16,24,40,0.06)]"
             onClick={onClick}
             type="button"
         >
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-[10px] bg-[#eaf2ff] text-[#247cff]">
-                <Icon size={16} strokeWidth={2.4} />
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-[12px] bg-[#ecfdf8] text-[#0f766e]">
+                <Icon size={17} strokeWidth={2.4} />
             </span>
             <span className="min-w-0">
-                <span className="block text-xs font-medium text-[#667085]">
+                <span className="block text-xs font-semibold text-[#667085]">
                     {field.label}
                 </span>
-                <span className="mt-1 block truncate text-lg leading-tight font-extrabold text-[#101828]">
+                <span className="mt-1 block truncate text-lg leading-tight font-extrabold text-[#152033]">
                     {value}
                 </span>
             </span>
@@ -255,157 +345,32 @@ function LeadFieldCard({
     );
 }
 
-function FilterCheck({
-    label,
-    checked,
-    onClick,
-}: {
-    label: string;
-    checked: boolean;
-    onClick: () => void;
-}) {
+function getServiceByKey(serviceKey: ServiceKey): Service {
     return (
-        <button
-            className="flex cursor-pointer items-center gap-3 text-left text-[15px] font-medium text-[#344054]"
-            onClick={onClick}
-            type="button"
-        >
-            <span
-                className={`flex size-5 items-center justify-center rounded-md border ${
-                    checked
-                        ? 'border-[#247cff] bg-[#247cff] text-white'
-                        : 'border-[#d0d5dd] bg-white'
-                }`}
-            >
-                {checked && <Check size={14} strokeWidth={3} />}
-            </span>
-            {label}
-        </button>
-    );
-}
-
-function CompanyCard({
-    company,
-    selected,
-    detailsOpen,
-    priceRange,
-    onChoose,
-    onToggleDetails,
-}: {
-    company: Company;
-    selected: boolean;
-    detailsOpen: boolean;
-    priceRange: [number, number];
-    onChoose: () => void;
-    onToggleDetails: () => void;
-}) {
-    return (
-        <article
-            className={`rounded-[26px] border bg-white p-5 shadow-[0_12px_30px_rgba(16,24,40,0.06)] ${
-                selected
-                    ? 'border-[#247cff] ring-2 ring-[#247cff]/20'
-                    : 'border-[#eaecf0]'
-            }`}
-        >
-            <div className="grid gap-5 lg:grid-cols-[1fr_auto]">
-                <div className="flex gap-4">
-                    <div
-                        className={`flex size-[72px] shrink-0 items-center justify-center rounded-[20px] text-2xl font-extrabold ${company.logoClass}`}
-                    >
-                        {company.initials}
-                    </div>
-                    <div className="min-w-0">
-                        <h3 className="text-2xl leading-tight font-bold text-[#101828]">
-                            {company.name}
-                        </h3>
-                        <p className="mt-1 text-[15px] font-medium text-[#667085]">
-                            {company.description}
-                        </p>
-                        <div className="mt-4 flex flex-wrap gap-3">
-                            <span className="rounded-full bg-[#fff4e5] px-4 py-2 text-sm font-semibold text-[#b54708]">
-                                ★ {company.rating}
-                            </span>
-                            <span className="rounded-full bg-[#eafbf2] px-4 py-2 text-sm font-semibold text-[#027a48]">
-                                {company.tag}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-                <div className="flex items-start justify-between gap-4 lg:min-w-[190px] lg:flex-col lg:items-end">
-                    <div className="lg:text-right">
-                        <span className="block text-sm font-medium text-[#667085]">
-                            предварительно
-                        </span>
-                        <strong className="block text-3xl leading-tight font-extrabold text-[#101828]">
-                            {formatRoubles(priceRange[0])}-
-                            {formatRoubles(priceRange[1])} ₽
-                        </strong>
-                    </div>
-                    <button
-                        className={`h-12 rounded-2xl px-6 text-base font-semibold shadow-[0_10px_24px_rgba(36,124,255,0.28)] transition ${
-                            selected
-                                ? 'bg-[#eafbf2] text-[#027a48]'
-                                : 'bg-[#247cff] text-white hover:bg-[#1768e6]'
-                        }`}
-                        onClick={onChoose}
-                        type="button"
-                    >
-                        {selected ? 'Выбрана' : 'Выбрать'}
-                    </button>
-                </div>
-            </div>
-            <div className="my-5 h-px bg-[#eaecf0]" />
-            <div className="grid gap-3 text-[15px] font-semibold text-[#344054] sm:grid-cols-2 lg:grid-cols-4">
-                {company.details.map((detail) => (
-                    <span key={detail}>{detail}</span>
-                ))}
-            </div>
-            <button
-                className="mt-5 inline-flex items-center gap-2 text-[15px] font-semibold text-[#175cd3]"
-                onClick={onToggleDetails}
-                type="button"
-            >
-                {detailsOpen ? 'Скрыть условия' : 'Смотреть условия'}
-                <ArrowUpRight size={16} />
-            </button>
-            {detailsOpen && (
-                <div className="mt-5 rounded-2xl bg-[#f4f7fb] p-4 text-sm leading-6 font-medium text-[#344054]">
-                    Компания подтвердит желаемую дату или предложит другое
-                    время. Точная цена фиксируется после замера.
-                </div>
-            )}
-        </article>
+        services.find((service) => service.key === serviceKey) ?? services[0]
     );
 }
 
 export default function OknaMarket() {
-    const [activeService, setActiveService] = useState(serviceOptions[0]);
+    const [serviceKey, setServiceKey] =
+        useState<ServiceKey>('glass_replacement');
     const [leadValues, setLeadValues] = useState(
         Object.fromEntries(
             leadFields.map((field) => [field.label, field.value]),
         ) as Record<string, string>,
     );
-    const [ratingFilters, setRatingFilters] = useState(
-        Object.fromEntries(
-            filters.rating.map((item) => [item.label, item.checked]),
-        ),
-    );
-    const [timingFilters, setTimingFilters] = useState(
-        Object.fromEntries(
-            filters.timing.map((item) => [item.label, item.checked]),
-        ),
-    );
-    const [sortMode, setSortMode] = useState(sortOptions[0]);
-    const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
-    const [openCompanyDetails, setOpenCompanyDetails] = useState<string | null>(
-        null,
-    );
+    const [selectedCompany, setSelectedCompany] = useState(companies[0].name);
     const [requestCreated, setRequestCreated] = useState(false);
-    const [activeWorker, setActiveWorker] = useState<string | null>(null);
-    const [showCatalog, setShowCatalog] = useState(false);
+
+    const activeService = getServiceByKey(serviceKey);
 
     const estimatedRange = useMemo<[number, number]>(() => {
-        const budgetFactor = leadValues.Бюджет === 'до 150 000 ₽' ? 1.12 : 1;
+        const budgetFactor =
+            leadValues.Бюджет === 'до 150 000 ₽'
+                ? 1.12
+                : leadValues.Бюджет === 'до 30 000 ₽'
+                  ? 0.88
+                  : 1;
         const urgencyFactor = leadValues.Срок === 'сегодня/завтра' ? 1.15 : 1;
 
         return [
@@ -414,477 +379,729 @@ export default function OknaMarket() {
         ];
     }, [activeService, leadValues]);
 
-    const visibleCompanies = useMemo(() => {
-        const filteredCompanies = companies.filter((company) => {
-            if (
-                ratingFilters['от 4.7 и выше'] &&
-                !company.rating.startsWith('4.')
-            ) {
-                return false;
-            }
+    const selectedCompanyData =
+        companies.find((company) => company.name === selectedCompany) ??
+        companies[0];
 
-            if (
-                ratingFilters['много отзывов'] &&
-                !company.rating.includes('1')
-            ) {
-                return false;
-            }
-
-            if (
-                timingFilters['до 3 дней'] &&
-                !company.details[0].includes('3')
-            ) {
-                return false;
-            }
-
-            return true;
-        });
-
-        return filteredCompanies.sort((firstCompany, secondCompany) => {
-            if (sortMode === 'Высокий рейтинг') {
-                return secondCompany.rating.localeCompare(firstCompany.rating);
-            }
-
-            if (sortMode === 'Быстрый монтаж') {
-                return firstCompany.details[0].localeCompare(
-                    secondCompany.details[0],
-                );
-            }
-
-            return firstCompany.price.localeCompare(secondCompany.price);
-        });
-    }, [ratingFilters, sortMode, timingFilters]);
-
-    const selectedCompanyData = companies.find(
-        (company) => company.name === selectedCompany,
+    const selectedCompanyPrice = useMemo<[number, number]>(
+        () => [
+            estimatedRange[0] * selectedCompanyData.multiplier,
+            estimatedRange[1] * selectedCompanyData.multiplier,
+        ],
+        [estimatedRange, selectedCompanyData],
     );
 
-    const scrollToSection = (
-        sectionId: string,
-        block: ScrollLogicalPosition,
-    ) => {
-        window.setTimeout(() => {
-            document.getElementById(sectionId)?.scrollIntoView({
-                behavior: 'smooth',
-                block,
-            });
-        }, 0);
-    };
-
-    const scrollToLead = () => {
-        scrollToSection('lead-form', 'center');
-    };
-
-    const scrollToCompanies = () => {
-        setShowCatalog(true);
-        scrollToSection('companies', 'start');
-    };
-
-    const scrollToInfo = (sectionId: string) => {
-        setShowCatalog(false);
-        scrollToSection(sectionId, 'start');
-    };
-
-    const markCriteriaEntered = () => {
-        setShowCatalog(true);
+    const scrollTo = (sectionId: string) => {
+        document.getElementById(sectionId)?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+        });
     };
 
     return (
         <>
-            <Head title="ОкнаМаркет" />
-            <main className="relative min-h-screen overflow-x-clip bg-[#f4f7fb] font-sans text-[#101828]">
-                <div className="relative mx-auto w-full max-w-[1280px] px-5 pt-5 sm:px-8 lg:px-0">
-                    <header className="flex h-12 items-center justify-between gap-5 lg:px-6">
-                        <div className="flex items-center gap-4">
-                            <div className="flex size-10 items-center justify-center rounded-xl bg-[#247cff] text-xl font-extrabold text-white">
-                                О
-                            </div>
-                            <strong className="text-[22px] leading-none font-extrabold">
-                                ОКНА
-                            </strong>
-                            <span className="ml-2 hidden h-9 items-center rounded-full bg-[#eaf2ff] px-8 text-xs font-semibold text-[#124fc4] sm:inline-flex lg:ml-10">
-                                Волгоград
+            <Head>
+                <title>ОкнаМаркет</title>
+                <meta
+                    content="Сервис подбора компаний для замены стеклопакета, установки окон, замера и ремонта с предварительным расчётом цены."
+                    name="description"
+                />
+            </Head>
+
+            <main className="min-h-screen overflow-x-clip bg-[#f4f7fb] font-sans text-[#152033]">
+                <header className="mx-auto flex w-full max-w-[1280px] items-center justify-between gap-4 px-5 py-5 sm:px-8">
+                    <button
+                        className="flex items-center gap-3 text-left"
+                        onClick={() => scrollTo('top')}
+                        type="button"
+                    >
+                        <span className="flex size-10 items-center justify-center rounded-lg bg-[#0f766e] text-lg font-extrabold text-white">
+                            О
+                        </span>
+                        <span>
+                            <span className="block text-lg leading-none font-extrabold">
+                                ОкнаМаркет
                             </span>
-                        </div>
-                        <nav className="hidden items-center gap-7 text-sm font-medium text-[#344054] lg:flex">
-                            <button onClick={scrollToCompanies} type="button">
-                                Компании
-                            </button>
-                            <button
-                                onClick={() => scrollToInfo('how')}
-                                type="button"
-                            >
-                                Как работает
-                            </button>
-                            <button
-                                onClick={() => scrollToInfo('contractors')}
-                                type="button"
-                            >
-                                Для компаний
-                            </button>
-                        </nav>
+                            <span className="mt-1 block text-xs font-bold text-[#667085]">
+                                заявка, цена, компания, гарантия
+                            </span>
+                        </span>
+                    </button>
+
+                    <nav className="hidden items-center gap-6 text-sm font-bold text-[#475467] lg:flex">
+                        <button onClick={() => scrollTo('how')} type="button">
+                            Как работает
+                        </button>
                         <button
-                            className="hidden h-12 rounded-[16px] bg-[#247cff] px-8 text-sm font-bold text-white shadow-[0_18px_28px_rgba(16,24,40,0.22)] transition hover:bg-[#1768e6] sm:block"
-                            onClick={scrollToLead}
+                            onClick={() => scrollTo('services')}
                             type="button"
                         >
-                            Оставить заявку
+                            Услуги
                         </button>
-                    </header>
+                        <button onClick={() => scrollTo('offer')} type="button">
+                            Компании
+                        </button>
+                        <button onClick={() => scrollTo('faq')} type="button">
+                            FAQ
+                        </button>
+                    </nav>
 
-                    <section className="flex min-h-[calc(78svh-68px)] flex-col justify-center py-8 sm:py-10 lg:py-6">
-                        <div className="lg:px-12">
-                            <h1 className="max-w-[1120px] text-left text-[30px] leading-[1.12] font-extrabold tracking-normal text-[#111827] sm:text-[36px] lg:text-[36px]">
-                                Рассчитайте стоимость установки стеклопакета за
-                                1 минуту
+                    <button
+                        className="inline-flex min-h-10 items-center gap-2 rounded-md bg-[#152033] px-4 text-sm font-bold text-white transition hover:bg-[#0f172a]"
+                        onClick={() => scrollTo('lead-form')}
+                        type="button"
+                    >
+                        Подобрать
+                        <ArrowRight size={16} />
+                    </button>
+                </header>
+
+                <section
+                    className="mx-auto w-full max-w-[1280px] px-5 pt-5 pb-12 sm:px-8 lg:pt-10"
+                    id="top"
+                >
+                    <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_390px]">
+                        <div className="min-w-0">
+                            <p className="inline-flex items-center gap-2 rounded-md border border-[#b7e4dd] bg-[#ecfdf8] px-3 py-2 text-sm font-bold text-[#0f766e]">
+                                <Check size={16} />
+                                Подбор компаний по установке и замене
+                                стеклопакетов
+                            </p>
+                            <h1 className="mt-6 max-w-4xl text-4xl leading-tight font-extrabold text-[#101828] md:text-5xl lg:text-6xl">
+                                Установка и замена стеклопакетов без долгого
+                                поиска подрядчиков
                             </h1>
+                            <p className="mt-5 max-w-2xl text-lg leading-8 font-medium text-[#5d6b82]">
+                                Укажите параметры окна, выберите удобную дату и
+                                получите предложения от проверенных компаний с
+                                предварительной ценой и гарантией.
+                            </p>
+
+                            <div className="mt-8 grid gap-3 sm:grid-cols-3">
+                                {heroFacts.map((item) => (
+                                    <div
+                                        className="rounded-[18px] border border-[#dbe3ee] bg-white px-4 py-4 text-sm font-bold text-[#475467]"
+                                        key={item}
+                                    >
+                                        {item}
+                                    </div>
+                                ))}
+                            </div>
                         </div>
 
-                        <section
-                            className="relative mx-auto mt-12 max-w-[1280px] rounded-[28px] border border-[#dfe5ee] bg-white px-6 py-7 sm:px-8 lg:mt-14"
-                            id="lead-form"
-                        >
+                        <div className="rounded-[28px] border border-[#dbe3ee] bg-white p-5 shadow-[0_14px_34px_rgba(16,24,40,0.06)]">
+                            <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-1">
+                                {previewStats.map((item) => (
+                                    <div
+                                        className="rounded-[18px] bg-[#f4f7fb] px-5 py-4"
+                                        key={item.label}
+                                    >
+                                        <strong className="block text-[26px] leading-none font-extrabold text-[#152033]">
+                                            {item.value}
+                                        </strong>
+                                        <span className="mt-2 block text-sm font-semibold text-[#667085]">
+                                            {item.label}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="mt-5 rounded-[20px] bg-[#152033] p-5 text-white">
+                                <p className="text-sm font-bold text-[#5eead4] uppercase">
+                                    Сценарий сервиса
+                                </p>
+                                <p className="mt-3 text-2xl leading-tight font-extrabold">
+                                    заявка → примерная цена → список компаний →
+                                    выбор → подтверждение → гарантия
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <section
+                        className="mt-8 rounded-[28px] border border-[#dbe3ee] bg-white p-5 shadow-[0_18px_50px_rgba(16,24,40,0.1)] sm:p-7"
+                        id="lead-form"
+                    >
+                        <div className="flex flex-wrap items-start justify-between gap-4">
                             <div>
-                                <h2 className="text-[22px] leading-none font-extrabold">
-                                    Что нужно установить?
+                                <p className="text-sm font-bold text-[#0f766e] uppercase">
+                                    Быстрый подбор
+                                </p>
+                                <h2 className="mt-2 text-[28px] leading-tight font-extrabold">
+                                    Укажите задачу
                                 </h2>
                             </div>
-                            <div className="mt-5 flex flex-wrap justify-start gap-3">
-                                {serviceOptions.map((service) => (
-                                    <Chip
-                                        active={
-                                            service.label ===
-                                            activeService.label
-                                        }
-                                        key={service.label}
-                                        onClick={() => {
-                                            setActiveService(service);
-                                            markCriteriaEntered();
-                                        }}
-                                    >
-                                        {service.label}
-                                    </Chip>
-                                ))}
-                            </div>
-                            <div className="mt-3 grid min-w-0 gap-4 md:grid-cols-2 xl:grid-cols-[190px_248px_230px_248px_minmax(220px,1fr)]">
-                                {leadFields.map((field) => (
-                                    <LeadFieldCard
-                                        field={field}
-                                        key={field.label}
-                                        onClick={() => {
-                                            setLeadValues((currentValues) => ({
-                                                ...currentValues,
-                                                [field.label]: getNextOption(
-                                                    leadValueOptions[
-                                                        field.label
-                                                    ],
-                                                    currentValues[field.label],
-                                                ),
-                                            }));
-                                            markCriteriaEntered();
-                                        }}
-                                        value={leadValues[field.label]}
-                                    />
-                                ))}
-                                <button
-                                    className="relative h-[72px] overflow-hidden rounded-[16px] bg-[#247cff] px-6 text-lg font-bold text-white shadow-[0_10px_20px_rgba(36,124,255,0.2)] transition hover:bg-[#1768e6]"
-                                    onClick={scrollToCompanies}
-                                    type="button"
-                                >
-                                    Найти компании
-                                </button>
-                            </div>
-                        </section>
+                            <span className="rounded-full bg-[#fff7ed] px-4 py-2 text-sm font-bold text-[#b45309]">
+                                цена после замера
+                            </span>
+                        </div>
 
-                        <div className="mx-auto mt-7 grid max-w-[650px] gap-5 sm:grid-cols-3">
-                            {metrics.map((metric) => (
-                                <div
-                                    className="min-h-[88px] rounded-[18px] border border-[#dfe5ee] bg-white px-5 py-4 text-left"
-                                    key={metric.label}
+                        <div className="mt-6 flex flex-wrap gap-3">
+                            {services.map((service) => (
+                                <Chip
+                                    active={service.key === serviceKey}
+                                    key={service.key}
+                                    onClick={() => {
+                                        setServiceKey(service.key);
+                                        setRequestCreated(false);
+                                    }}
                                 >
-                                    <strong className="block text-[32px] leading-none font-extrabold">
-                                        {metric.value}
-                                    </strong>
-                                    <span className="mt-2 block text-sm font-medium text-[#667085]">
-                                        {metric.label}
+                                    {service.title}
+                                </Chip>
+                            ))}
+                        </div>
+
+                        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                            {leadFields.map((field) => (
+                                <LeadFieldCard
+                                    field={field}
+                                    key={field.label}
+                                    onClick={() => {
+                                        setLeadValues((current) => ({
+                                            ...current,
+                                            [field.label]: getNextOption(
+                                                leadValueOptions[field.label],
+                                                current[field.label],
+                                            ),
+                                        }));
+                                        setRequestCreated(false);
+                                    }}
+                                    value={leadValues[field.label]}
+                                />
+                            ))}
+                        </div>
+
+                        <div className="mt-6 grid gap-4 border-t border-[#e4e9f2] pt-5 lg:grid-cols-[minmax(0,1fr)_260px] lg:items-center">
+                            <div className="rounded-[22px] border border-[#b7e4dd] bg-[#ecfdf8] p-5">
+                                <span className="block text-sm font-bold text-[#0f766e]">
+                                    Предварительно:
+                                </span>
+                                <strong className="mt-2 block text-[30px] leading-tight font-extrabold text-[#152033]">
+                                    от {formatRoubles(estimatedRange[0])} до{' '}
+                                    {formatRoubles(estimatedRange[1])} ₽
+                                </strong>
+                                <p className="mt-2 text-sm leading-6 font-semibold text-[#475467]">
+                                    Точная цена после замера. Компания
+                                    подтвердит дату или предложит другое время.
+                                </p>
+                            </div>
+
+                            <button
+                                className="inline-flex min-h-13 w-full items-center justify-center gap-2 rounded-2xl bg-[#0f766e] px-5 text-base font-extrabold text-white shadow-[0_10px_24px_rgba(15,118,110,0.28)] transition hover:bg-[#115e59]"
+                                onClick={() => scrollTo('offer')}
+                                type="button"
+                            >
+                                Подобрать компании
+                                <ArrowRight size={18} />
+                            </button>
+                        </div>
+                    </section>
+                </section>
+
+                <section className="bg-white py-14">
+                    <div className="mx-auto w-full max-w-[1280px] px-5 sm:px-8">
+                        <SectionHeader
+                            eyebrow="Главные выгоды"
+                            title="Цена, поиск, время и гарантия становятся понятнее"
+                            text="Сервис закрывает главные вопросы до заявки: сколько примерно стоит работа, кто её выполнит, когда возможен выезд и где потом найти гарантию."
+                        />
+                        <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                            {benefits.map((benefit) => {
+                                const Icon = benefit.icon;
+
+                                return (
+                                    <article
+                                        className="rounded-[24px] border border-[#e4e9f2] bg-white p-5 shadow-[0_10px_24px_rgba(16,24,40,0.05)]"
+                                        key={benefit.title}
+                                    >
+                                        <span className="flex size-10 items-center justify-center rounded-md bg-[#e0f2fe] text-[#0369a1]">
+                                            <Icon size={20} />
+                                        </span>
+                                        <h3 className="mt-5 text-lg leading-tight font-extrabold">
+                                            {benefit.title}
+                                        </h3>
+                                        <p className="mt-3 text-sm leading-6 font-medium text-[#667085]">
+                                            {benefit.text}
+                                        </p>
+                                    </article>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </section>
+
+                <section
+                    className="mx-auto w-full max-w-[1280px] px-5 py-14 sm:px-8"
+                    id="how"
+                >
+                    <SectionHeader
+                        eyebrow="Как работает сервис"
+                        title="Путь заявки от первого расчёта до гарантии"
+                    />
+                    <div className="mt-8 grid gap-4 lg:grid-cols-3">
+                        {steps.map((step, index) => (
+                            <article
+                                className="rounded-[24px] border border-[#dbe3ee] bg-white p-5 shadow-[0_10px_24px_rgba(16,24,40,0.05)]"
+                                key={step.title}
+                            >
+                                <span className="flex size-9 items-center justify-center rounded-md bg-[#152033] text-sm font-extrabold text-white">
+                                    {index + 1}
+                                </span>
+                                <h3 className="mt-5 text-xl leading-tight font-extrabold text-[#152033]">
+                                    {step.title}
+                                </h3>
+                                <p className="mt-3 text-base leading-7 font-bold text-[#344054]">
+                                    {step.text}
+                                </p>
+                            </article>
+                        ))}
+                    </div>
+                </section>
+
+                <section className="bg-white py-14" id="services">
+                    <div className="mx-auto w-full max-w-[1280px] px-5 sm:px-8">
+                        <SectionHeader
+                            eyebrow="Какие услуги можно заказать"
+                            title="Пять сценариев для первой версии сервиса"
+                            text="Главная показывает разные задачи, но не перегружает пользователя сложным конфигуратором."
+                        />
+
+                        <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+                            {services.map((service) => {
+                                const Icon = service.icon;
+                                const isActive = service.key === serviceKey;
+
+                                return (
+                                    <button
+                                        className={`rounded-[24px] border p-5 text-left transition ${
+                                            isActive
+                                                ? 'border-[#0f766e] bg-[#ecfdf8] shadow-[0_12px_30px_rgba(15,118,110,0.12)]'
+                                                : 'border-[#e4e9f2] bg-white hover:border-[#94a3b8]'
+                                        }`}
+                                        key={service.key}
+                                        onClick={() => {
+                                            setServiceKey(service.key);
+                                            scrollTo('lead-form');
+                                        }}
+                                        type="button"
+                                    >
+                                        <span
+                                            className={`flex size-10 items-center justify-center rounded-md ${
+                                                isActive
+                                                    ? 'bg-[#0f766e] text-white'
+                                                    : 'bg-[#f1f5f9] text-[#475467]'
+                                            }`}
+                                        >
+                                            <Icon size={20} />
+                                        </span>
+                                        <h3 className="mt-5 text-lg leading-tight font-extrabold">
+                                            {service.title}
+                                        </h3>
+                                        <p className="mt-3 text-sm leading-6 font-medium text-[#667085]">
+                                            {service.description}
+                                        </p>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </section>
+
+                <section
+                    className="mx-auto grid w-full max-w-[1280px] gap-8 px-5 py-14 sm:px-8 lg:grid-cols-[minmax(0,1fr)_380px]"
+                    id="offer"
+                >
+                    <div className="min-w-0">
+                        <SectionHeader
+                            eyebrow="Пример результата"
+                            title="Что пользователь увидит после расчёта"
+                            text="Даже на моковых данных этот блок объясняет главный результат: несколько предложений с ценой, сроком, рейтингом и гарантией."
+                        />
+                        <button
+                            className="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#152033] px-5 text-sm font-extrabold text-white transition hover:bg-[#0f172a]"
+                            onClick={() => scrollTo('offer')}
+                            type="button"
+                        >
+                            Посмотреть предложения
+                            <ArrowRight size={17} />
+                        </button>
+
+                        <div className="mt-8 grid gap-4">
+                            {companies.map((company) => {
+                                const isSelected =
+                                    company.name === selectedCompany;
+                                const companyRange: [number, number] = [
+                                    estimatedRange[0] * company.multiplier,
+                                    estimatedRange[1] * company.multiplier,
+                                ];
+
+                                return (
+                                    <article
+                                        className={`rounded-[24px] border bg-white p-5 transition ${
+                                            isSelected
+                                                ? 'border-[#0f766e] shadow-[0_16px_36px_rgba(15,118,110,0.13)]'
+                                                : 'border-[#dbe3ee]'
+                                        }`}
+                                        key={company.name}
+                                    >
+                                        <div className="grid gap-5 md:grid-cols-[1fr_auto] md:items-start">
+                                            <div className="min-w-0">
+                                                <div className="flex flex-wrap items-center gap-3">
+                                                    <h3 className="text-2xl leading-tight font-extrabold">
+                                                        {company.name}
+                                                    </h3>
+                                                    <span className="rounded-md bg-[#fff7ed] px-3 py-1.5 text-sm font-bold text-[#b45309]">
+                                                        {company.badge}
+                                                    </span>
+                                                </div>
+                                                <div className="mt-4 grid gap-3 text-sm font-bold text-[#475467] sm:grid-cols-2 lg:grid-cols-4">
+                                                    <span className="flex items-center gap-2">
+                                                        <Star
+                                                            className="text-[#f59e0b]"
+                                                            size={16}
+                                                        />
+                                                        {company.rating} /{' '}
+                                                        {company.orders} заказов
+                                                    </span>
+                                                    <span className="flex items-center gap-2">
+                                                        <CalendarClock
+                                                            size={16}
+                                                        />
+                                                        {company.nextDate}
+                                                    </span>
+                                                    <span className="flex items-center gap-2">
+                                                        <ShieldCheck
+                                                            size={16}
+                                                        />
+                                                        {company.guarantee}
+                                                    </span>
+                                                    <span className="flex items-center gap-2">
+                                                        <MapPin size={16} />
+                                                        {company.districts}
+                                                    </span>
+                                                </div>
+                                                <p className="mt-4 text-sm leading-6 font-medium text-[#667085]">
+                                                    “{company.review}”
+                                                </p>
+                                            </div>
+
+                                            <div className="md:min-w-[220px] md:text-right">
+                                                <span className="block text-sm font-bold text-[#667085]">
+                                                    Предварительно
+                                                </span>
+                                                <strong className="mt-1 block text-2xl leading-tight font-extrabold">
+                                                    {formatRoubles(
+                                                        companyRange[0],
+                                                    )}
+                                                    –
+                                                    {formatRoubles(
+                                                        companyRange[1],
+                                                    )}{' '}
+                                                    ₽
+                                                </strong>
+                                                <button
+                                                    className={`mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md px-4 text-sm font-extrabold transition md:w-auto ${
+                                                        isSelected
+                                                            ? 'bg-[#ecfdf8] text-[#0f766e]'
+                                                            : 'bg-[#152033] text-white hover:bg-[#0f172a]'
+                                                    }`}
+                                                    onClick={() => {
+                                                        setSelectedCompany(
+                                                            company.name,
+                                                        );
+                                                        setRequestCreated(
+                                                            false,
+                                                        );
+                                                    }}
+                                                    type="button"
+                                                >
+                                                    {isSelected
+                                                        ? 'Выбрана'
+                                                        : 'Выбрать'}
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                                            {[
+                                                'Фото работ',
+                                                'Отзывы',
+                                                'Условия гарантии',
+                                            ].map((label) => (
+                                                <span
+                                                    className="flex min-h-10 items-center gap-2 rounded-md bg-[#f8fafc] px-3 text-sm font-bold text-[#475467]"
+                                                    key={label}
+                                                >
+                                                    <Camera size={16} />
+                                                    {label}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </article>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    <aside className="rounded-[24px] border border-[#dbe3ee] bg-white p-5 shadow-[0_12px_30px_rgba(16,24,40,0.05)] lg:sticky lg:top-5 lg:h-fit">
+                        <p className="text-sm font-bold text-[#0f766e] uppercase">
+                            Черновик заявки
+                        </p>
+                        <h3 className="mt-2 text-2xl leading-tight font-extrabold">
+                            {activeService.title}
+                        </h3>
+                        <div className="mt-5 space-y-3 text-sm font-bold text-[#475467]">
+                            {leadFields.map((field) => (
+                                <p
+                                    className="flex items-center justify-between gap-3"
+                                    key={field.label}
+                                >
+                                    <span>{field.label}</span>
+                                    <span className="text-right text-[#152033]">
+                                        {leadValues[field.label]}
                                     </span>
+                                </p>
+                            ))}
+                        </div>
+
+                        <div className="mt-5 rounded-[18px] bg-[#f8fafc] p-4">
+                            <span className="text-sm font-bold text-[#667085]">
+                                {selectedCompanyData.name}
+                            </span>
+                            <strong className="mt-1 block text-2xl leading-tight font-extrabold">
+                                от {formatRoubles(selectedCompanyPrice[0])} до{' '}
+                                {formatRoubles(selectedCompanyPrice[1])} ₽
+                            </strong>
+                            <p className="mt-2 text-sm leading-6 font-semibold text-[#667085]">
+                                Точная цена после замера. Ближайшая дата:{' '}
+                                {selectedCompanyData.nextDate}.
+                            </p>
+                        </div>
+
+                        <button
+                            className={`mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md px-5 text-base font-extrabold transition ${
+                                requestCreated
+                                    ? 'bg-[#ecfdf8] text-[#0f766e]'
+                                    : 'bg-[#0f766e] text-white hover:bg-[#115e59]'
+                            }`}
+                            onClick={() => setRequestCreated(true)}
+                            type="button"
+                        >
+                            {requestCreated
+                                ? 'Ожидает подтверждения'
+                                : 'Оставить заявку'}
+                        </button>
+
+                        <div className="mt-5 space-y-3 border-t border-[#e4e9f2] pt-5">
+                            {[
+                                'создана',
+                                'ожидает подтверждения компании',
+                                'подтверждена',
+                                'гарантия активна после выполнения',
+                            ].map((status, index) => (
+                                <div
+                                    className="flex items-center gap-3 text-sm font-bold text-[#475467]"
+                                    key={status}
+                                >
+                                    <span
+                                        className={`flex size-6 items-center justify-center rounded-full text-xs ${
+                                            requestCreated || index === 0
+                                                ? 'bg-[#0f766e] text-white'
+                                                : 'bg-[#e4e9f2] text-[#667085]'
+                                        }`}
+                                    >
+                                        {index + 1}
+                                    </span>
+                                    {status}
                                 </div>
                             ))}
                         </div>
-                        
-                    </section>
+                    </aside>
+                </section>
 
-                    {showCatalog ? (
-                        <>
-                            <section
-                                className="mt-8 grid min-w-0 items-start gap-8 lg:grid-cols-[320px_minmax(0,1fr)]"
-                                id="companies"
-                            >
-                                <aside className="rounded-[28px] border border-[#eaecf0] bg-white p-7 shadow-[0_12px_30px_rgba(16,24,40,0.05)]">
-                                    <h2 className="text-2xl font-bold">
-                                        Фильтры
-                                    </h2>
-                                    <div className="mt-7">
-                                        <h3 className="font-bold">Цена</h3>
-                                        <div className="mt-3 rounded-2xl border border-[#eaecf0] bg-[#f4f7fb] px-4 py-4 text-base font-semibold text-[#344054]">
-                                            {formatRoubles(estimatedRange[0])}-
-                                            {formatRoubles(estimatedRange[1])} ₽
-                                        </div>
-                                    </div>
-                                    <div className="mt-8">
-                                        <h3 className="font-bold">
-                                            Рейтинг компании
-                                        </h3>
-                                        <div className="mt-4 space-y-4">
-                                            {filters.rating.map((item) => (
-                                                <FilterCheck
-                                                    checked={Boolean(
-                                                        ratingFilters[
-                                                            item.label
-                                                        ],
-                                                    )}
-                                                    key={item.label}
-                                                    label={item.label}
-                                                    onClick={() =>
-                                                        setRatingFilters(
-                                                            (current) => ({
-                                                                ...current,
-                                                                [item.label]:
-                                                                    !current[
-                                                                        item
-                                                                            .label
-                                                                    ],
-                                                            }),
-                                                        )
-                                                    }
-                                                />
-                                            ))}
-                                        </div>
-                                    </div>
-                                    <div className="mt-8">
-                                        <h3 className="font-bold">Сроки</h3>
-                                        <div className="mt-4 space-y-4">
-                                            {filters.timing.map((item) => (
-                                                <FilterCheck
-                                                    checked={Boolean(
-                                                        timingFilters[
-                                                            item.label
-                                                        ],
-                                                    )}
-                                                    key={item.label}
-                                                    label={item.label}
-                                                    onClick={() =>
-                                                        setTimingFilters(
-                                                            (current) => ({
-                                                                ...current,
-                                                                [item.label]:
-                                                                    !current[
-                                                                        item
-                                                                            .label
-                                                                    ],
-                                                            }),
-                                                        )
-                                                    }
-                                                />
-                                            ))}
-                                        </div>
-                                    </div>
-                                    <button
-                                        className="mt-8 h-12 w-full rounded-2xl bg-[#247cff] text-base font-semibold text-white shadow-[0_10px_24px_rgba(36,124,255,0.28)] transition hover:bg-[#1768e6]"
-                                        onClick={scrollToCompanies}
-                                        type="button"
-                                    >
-                                        Применить
-                                    </button>
-                                </aside>
-
-                                <div className="min-w-0 space-y-6">
-                                    <div className="flex flex-wrap items-center gap-3 rounded-[22px] border border-[#eaecf0] bg-white p-5">
-                                        <span className="mr-1 text-base font-medium text-[#667085]">
-                                            Сортировать:
-                                        </span>
-                                        {sortOptions.map((option) => (
-                                            <Chip
-                                                active={option === sortMode}
-                                                key={option}
-                                                onClick={() =>
-                                                    setSortMode(option)
-                                                }
+                <section className="bg-white py-14">
+                    <div className="mx-auto w-full max-w-[1280px] px-5 sm:px-8">
+                        <SectionHeader
+                            eyebrow="Почему не искать самому"
+                            title="Одна заявка вместо ручного обзвона"
+                            text="Главная прямо показывает разницу между обычным путём и сценарием сервиса."
+                        />
+                        <div className="mt-8 grid gap-4 lg:grid-cols-2">
+                            {comparisonItems.map((column) => (
+                                <article
+                                    className="rounded-[24px] border border-[#e4e9f2] bg-white p-6 shadow-[0_10px_24px_rgba(16,24,40,0.05)]"
+                                    key={column.title}
+                                >
+                                    <h3 className="text-2xl font-extrabold">
+                                        {column.title}
+                                    </h3>
+                                    <ul className="mt-5 space-y-3">
+                                        {column.items.map((item) => (
+                                            <li
+                                                className="flex items-start gap-3 text-base font-bold text-[#475467]"
+                                                key={item}
                                             >
-                                                {option}
-                                            </Chip>
+                                                <Check
+                                                    className="mt-0.5 shrink-0 text-[#0f766e]"
+                                                    size={18}
+                                                />
+                                                {item}
+                                            </li>
                                         ))}
-                                    </div>
-                                    {visibleCompanies.map((company) => (
-                                        <CompanyCard
-                                            company={company}
-                                            detailsOpen={
-                                                openCompanyDetails ===
-                                                company.name
-                                            }
-                                            key={company.name}
-                                            onChoose={() => {
-                                                setSelectedCompany(
-                                                    company.name,
-                                                );
-                                                setRequestCreated(false);
-                                            }}
-                                            onToggleDetails={() =>
-                                                setOpenCompanyDetails(
-                                                    (currentName) =>
-                                                        currentName ===
-                                                        company.name
-                                                            ? null
-                                                            : company.name,
-                                                )
-                                            }
-                                            priceRange={[
-                                                estimatedRange[0],
-                                                estimatedRange[1],
-                                            ]}
-                                            selected={
-                                                selectedCompany === company.name
-                                            }
-                                        />
-                                    ))}
-                                </div>
-                            </section>
+                                    </ul>
+                                </article>
+                            ))}
+                        </div>
+                    </div>
+                </section>
 
-                            {selectedCompanyData && (
-                                <section className="mx-auto mt-10 max-w-[1060px] rounded-[24px] border border-[#eaecf0] bg-white p-6 shadow-[0_14px_34px_rgba(16,24,40,0.06)]">
-                                    <div className="grid gap-5 md:grid-cols-[1fr_auto] md:items-center">
-                                        <div>
-                                            <span className="rounded-full bg-[#eaf2ff] px-4 py-2 text-sm font-semibold text-[#175cd3]">
-                                                {requestCreated
-                                                    ? 'Заявка создана'
-                                                    : 'Компания выбрана'}
-                                            </span>
-                                            <h2 className="mt-4 text-2xl font-extrabold">
-                                                {selectedCompanyData.name}{' '}
-                                                получит заявку на{' '}
-                                                {activeService.label.toLowerCase()}
-                                            </h2>
-                                            <p className="mt-2 text-base font-medium text-[#667085]">
-                                                {leadValues['Тип работ']},
-                                                город: {leadValues.Город}, срок:{' '}
-                                                {leadValues.Срок}.
-                                                Предварительно от{' '}
-                                                {formatRoubles(
-                                                    estimatedRange[0],
-                                                )}{' '}
-                                                до{' '}
-                                                {formatRoubles(
-                                                    estimatedRange[1],
-                                                )}{' '}
-                                                ₽.
-                                            </p>
-                                        </div>
-                                        <button
-                                            className={`min-h-12 rounded-2xl px-6 text-base font-semibold transition ${
-                                                requestCreated
-                                                    ? 'bg-[#eafbf2] text-[#027a48]'
-                                                    : 'bg-[#247cff] text-white shadow-[0_10px_24px_rgba(36,124,255,0.28)] hover:bg-[#1768e6]'
-                                            }`}
-                                            onClick={() =>
-                                                setRequestCreated(true)
-                                            }
-                                            type="button"
-                                        >
-                                            {requestCreated
-                                                ? 'Ожидает подтверждения'
-                                                : 'Оставить заявку'}
-                                        </button>
+                <section className="mx-auto w-full max-w-[1280px] px-5 py-14 sm:px-8">
+                    <div className="grid gap-8 rounded-[28px] border border-[#dbe3ee] bg-[#152033] p-6 text-white md:grid-cols-[1fr_420px] md:p-8">
+                        <div>
+                            <p className="text-sm font-bold text-[#5eead4] uppercase">
+                                Надёжность
+                            </p>
+                            <h2 className="mt-3 text-3xl leading-tight font-extrabold md:text-4xl">
+                                Мы помогаем выбрать исполнителя понятнее и
+                                безопаснее
+                            </h2>
+                            <p className="mt-4 max-w-2xl text-base leading-7 font-medium text-white/75">
+                                Компании проходят проверку перед публикацией.
+                                Пользователь видит условия, цену и гарантию до
+                                подтверждения заявки.
+                            </p>
+                            <div className="mt-8 grid gap-3 md:grid-cols-3">
+                                {trustItems.map((item) => (
+                                    <div
+                                        className="rounded-[18px] bg-white/8 p-4 text-sm leading-6 font-bold text-white/78"
+                                        key={item}
+                                    >
+                                        {item}
                                     </div>
-                                </section>
-                            )}
-                        </>
-                    ) : (
-                        <>
-                            <section
-                                className="mt-8 rounded-[28px] border border-[#eaecf0] bg-white p-6 shadow-[0_14px_34px_rgba(16,24,40,0.05)] sm:p-9"
-                                id="contractors"
-                            >
-                                <h2 className="text-[30px] leading-tight font-extrabold sm:text-[34px]">
-                                    Для компаний
-                                </h2>
-                                <p className="mt-4 max-w-[760px] text-lg leading-[1.45] font-medium text-[#667085]">
-                                    Принимайте входящие заявки, подтверждайте
-                                    желаемую дату, предлагайте другое время и
-                                    меняйте статус заказа без сложной CRM.
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="rounded-[24px] bg-white p-5 text-[#152033]">
+                            <div className="flex items-start justify-between gap-4">
+                                <div>
+                                    <p className="text-sm font-bold text-[#0f766e]">
+                                        Гарантия
+                                    </p>
+                                    <h3 className="mt-2 text-2xl font-extrabold">
+                                        появится после выполнения
+                                    </h3>
+                                </div>
+                                <ShieldCheck className="text-[#0f766e]" />
+                            </div>
+                            <div className="mt-5 space-y-3 text-sm font-bold text-[#475467]">
+                                <p className="flex justify-between gap-3">
+                                    <span>Заявка</span>
+                                    <span className="text-[#152033]">
+                                        № 2481
+                                    </span>
                                 </p>
-                                <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-                                    {workers.map((worker) => (
-                                        <article
-                                            className="rounded-3xl border border-[#eaecf0] bg-white p-5 shadow-[0_10px_24px_rgba(16,24,40,0.05)]"
-                                            key={worker.name}
-                                        >
-                                            <div className="flex items-center gap-4">
-                                                <div
-                                                    className={`flex size-14 items-center justify-center rounded-[18px] text-lg font-extrabold text-white ${worker.color}`}
-                                                >
-                                                    {worker.initials}
-                                                </div>
-                                                <div>
-                                                    <h3 className="text-[17px] leading-tight font-bold">
-                                                        {worker.name}
-                                                    </h3>
-                                                    <p className="mt-1 text-sm font-medium text-[#667085]">
-                                                        {worker.role}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <p className="mt-5 text-[15px] font-semibold text-[#344054]">
-                                                ★ {worker.rating} ·{' '}
-                                                {worker.price}
-                                            </p>
-                                            <button
-                                                className={`mt-4 h-9 w-full rounded-2xl text-base font-semibold ${
-                                                    activeWorker === worker.name
-                                                        ? 'bg-[#247cff] text-white'
-                                                        : 'bg-[#eaf2ff] text-[#175cd3]'
-                                                }`}
-                                                onClick={() =>
-                                                    setActiveWorker(worker.name)
-                                                }
-                                                type="button"
-                                            >
-                                                {activeWorker === worker.name
-                                                    ? 'Выбрано'
-                                                    : 'Показать роль'}
-                                            </button>
-                                        </article>
-                                    ))}
-                                </div>
-                            </section>
+                                <p className="flex justify-between gap-3">
+                                    <span>Компания</span>
+                                    <span className="text-[#152033]">
+                                        {selectedCompanyData.name}
+                                    </span>
+                                </p>
+                                <p className="flex justify-between gap-3">
+                                    <span>Срок</span>
+                                    <span className="text-[#152033]">
+                                        {selectedCompanyData.guarantee}
+                                    </span>
+                                </p>
+                            </div>
+                            <p className="mt-5 rounded-lg bg-[#ecfdf8] p-4 text-sm leading-6 font-semibold text-[#0f766e]">
+                                Условия гарантии фиксируются после завершения
+                                заказа: дата начала, дата окончания и описание
+                                работ.
+                            </p>
+                        </div>
+                    </div>
+                </section>
 
-                            <section className="mt-8 pb-14" id="how">
-                                <h2 className="text-[30px] leading-tight font-extrabold sm:text-[34px]">
-                                    Как работает
-                                </h2>
-                                <div className="mt-8 grid gap-6 lg:grid-cols-3">
-                                    {steps.map((step, index) => (
-                                        <article
-                                            className="flex min-h-[170px] gap-5 rounded-[28px] border border-[#eaecf0] bg-white p-7 shadow-[0_10px_24px_rgba(16,24,40,0.05)]"
-                                            key={step.title}
-                                        >
-                                            <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-[#eaf2ff] text-xl font-extrabold text-[#175cd3]">
-                                                {index + 1}
-                                            </div>
-                                            <div>
-                                                <h3 className="text-2xl leading-tight font-bold">
-                                                    {step.title}
-                                                </h3>
-                                                <p className="mt-3 text-base leading-6 font-medium text-[#667085]">
-                                                    {step.text}
-                                                </p>
-                                            </div>
-                                        </article>
-                                    ))}
-                                </div>
-                            </section>
-                        </>
-                    )}
-                </div>
+                <section className="bg-white py-14" id="faq">
+                    <div className="mx-auto grid w-full max-w-[1280px] gap-8 px-5 sm:px-8 lg:grid-cols-[380px_minmax(0,1fr)]">
+                        <SectionHeader
+                            eyebrow="Мини-FAQ"
+                            title="Коротко о цене, размерах, дате и гарантии"
+                        />
+                        <div className="space-y-3">
+                            {faqItems.map((item) => (
+                                <details
+                                    className="group rounded-[24px] border border-[#e4e9f2] bg-white p-5 shadow-[0_10px_24px_rgba(16,24,40,0.04)]"
+                                    key={item.question}
+                                >
+                                    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-lg font-extrabold">
+                                        {item.question}
+                                        <ChevronDown
+                                            className="shrink-0 transition group-open:rotate-180"
+                                            size={20}
+                                        />
+                                    </summary>
+                                    <p className="mt-4 text-base leading-7 font-medium text-[#667085]">
+                                        {item.answer}
+                                    </p>
+                                </details>
+                            ))}
+                            <button
+                                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#d0d5dd] bg-white px-5 text-sm font-extrabold text-[#152033] transition hover:border-[#0f766e] hover:text-[#0f766e]"
+                                onClick={() => scrollTo('faq')}
+                                type="button"
+                            >
+                                Смотреть все вопросы
+                                <ArrowRight size={17} />
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <section className="mx-auto w-full max-w-[1280px] px-5 py-14 sm:px-8">
+                    <div className="grid gap-6 rounded-[28px] border border-[#b7e4dd] bg-[#ecfdf8] p-6 md:grid-cols-[1fr_auto] md:items-center md:p-8">
+                        <div>
+                            <p className="text-sm font-bold text-[#0f766e] uppercase">
+                                Начните подбор
+                            </p>
+                            <h2 className="mt-3 text-3xl leading-tight font-extrabold">
+                                Готовы узнать примерную стоимость?
+                            </h2>
+                            <p className="mt-3 text-base leading-7 font-medium text-[#475467]">
+                                Укажите параметры окна и получите предложения от
+                                компаний.
+                            </p>
+                        </div>
+                        <button
+                            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-[#0f766e] px-6 text-base font-extrabold text-white transition hover:bg-[#115e59]"
+                            onClick={() => scrollTo('lead-form')}
+                            type="button"
+                        >
+                            Подобрать компании
+                            <ArrowRight size={18} />
+                        </button>
+                    </div>
+                </section>
+
+                <footer className="mx-auto flex w-full max-w-[1280px] flex-col gap-4 border-t border-[#dbe3ee] px-5 py-8 text-sm font-bold text-[#667085] sm:flex-row sm:items-center sm:justify-between sm:px-8">
+                    <span>ОкнаМаркет, 2026</span>
+                    <div className="flex flex-wrap gap-4">
+                        <Link
+                            className="transition hover:text-[#0f766e]"
+                            href={privacy()}
+                            prefetch
+                        >
+                            Политика конфиденциальности
+                        </Link>
+                        <Link
+                            className="transition hover:text-[#0f766e]"
+                            href={agreement()}
+                            prefetch
+                        >
+                            Пользовательское соглашение
+                        </Link>
+                    </div>
+                </footer>
             </main>
         </>
     );
