@@ -1180,6 +1180,122 @@
     padding-bottom: 80px;
 }
 
+.okna-market-page .faq-page-section,
+.okna-market-page .contacts-section {
+    padding: 18px 0 72px;
+}
+
+.okna-market-page .faq-page-grid {
+    display: grid;
+    gap: 22px;
+}
+
+.okna-market-page .faq-group-card,
+.okna-market-page .contacts-card {
+    padding: 28px;
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+}
+
+.okna-market-page .faq-group-card h2,
+.okna-market-page .contacts-card h2 {
+    margin: 0 0 18px;
+    font-size: 24px;
+    line-height: 1.2;
+    font-weight: 800;
+}
+
+.okna-market-page .contacts-layout {
+    display: grid;
+    grid-template-columns: 0.92fr 1.08fr;
+    gap: 24px;
+}
+
+.okna-market-page .contacts-list {
+    display: grid;
+    gap: 14px;
+}
+
+.okna-market-page .contacts-item {
+    min-height: 84px;
+    padding: 18px;
+    border-radius: 18px;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.okna-market-page .contacts-item span {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.okna-market-page .contacts-item strong {
+    font-size: 18px;
+    line-height: 1.45;
+}
+
+.okna-market-page .map-placeholder {
+    min-height: 240px;
+    margin-top: 18px;
+    padding: 22px;
+    border: 1px dashed #c7d1df;
+    border-radius: 22px;
+    background:
+        linear-gradient(135deg, rgba(36, 124, 255, 0.08), rgba(18, 183, 106, 0.08)),
+        var(--surface);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+}
+
+.okna-market-page .map-placeholder span,
+.okna-market-page .contacts-note {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.okna-market-page .map-placeholder strong {
+    font-size: 22px;
+    line-height: 1.2;
+}
+
+.okna-market-page .map-placeholder p {
+    max-width: 360px;
+    margin: 0;
+    color: var(--muted-strong);
+    line-height: 1.6;
+    font-weight: 600;
+}
+
+.okna-market-page .contacts-form {
+    display: grid;
+    gap: 16px;
+}
+
+.okna-market-page .field-textarea {
+    min-height: 146px;
+    padding-top: 16px;
+    padding-bottom: 16px;
+}
+
+.okna-market-page .field-textarea textarea {
+    min-height: 82px;
+}
+
+.okna-market-page .contacts-note {
+    margin: 18px 0 0;
+    line-height: 1.7;
+}
+
 .okna-market-page .faq-kicker {
     display: block;
     margin-bottom: 8px;
@@ -1278,7 +1394,8 @@
     .okna-market-page .hero-split,
     .okna-market-page .vendor-cta,
     .okna-market-page .benefit-grid-wide,
-    .okna-market-page .summary-grid {
+    .okna-market-page .summary-grid,
+    .okna-market-page .contacts-layout {
         grid-template-columns: 1fr 1fr;
     }
 
@@ -1368,7 +1485,8 @@
     .okna-market-page .guarantee-box,
     .okna-market-page .summary-grid,
     .okna-market-page .hero-split,
-    .okna-market-page .vendor-cta {
+    .okna-market-page .vendor-cta,
+    .okna-market-page .contacts-layout {
         grid-template-columns: 1fr;
     }
 
@@ -1401,7 +1519,9 @@
 
     .okna-market-page .summary-card,
     .okna-market-page .vendor-cta,
-    .okna-market-page .hero-side-card {
+    .okna-market-page .hero-side-card,
+    .okna-market-page .faq-group-card,
+    .okna-market-page .contacts-card {
         padding: 22px;
         border-radius: 24px;
     }

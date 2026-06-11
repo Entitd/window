@@ -16,6 +16,8 @@ createInertiaApp({
             case name === 'okna-market':
             case name === 'search-results':
             case name === 'vendors':
+            case name === 'faq':
+            case name === 'contacts':
             case name === 'privacy-policy':
             case name === 'user-agreement':
                 return null;

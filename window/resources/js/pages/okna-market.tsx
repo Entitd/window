@@ -1,5 +1,9 @@
 import { Head, Link } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
+import {
+    FaqAccordion,
+    homepageFaqItems,
+} from '@/components/okna-market/faq-accordion';
 import { agreement, privacy } from '@/routes';
 import '../../css/okna-market.css';
 
@@ -253,33 +257,6 @@ const orderStatuses = [
     'выполнена',
     'гарантия активна',
     'отменена',
-];
-
-const faqItems = [
-    {
-        question: 'Это бесплатно для клиента?',
-        answer: 'Да, сервис бесплатный для клиента. Вы сравниваете предложения и выбираете компанию без комиссий.',
-    },
-    {
-        question: 'Цена на сайте окончательная?',
-        answer: 'Нет. До замера можно показать только предварительный диапазон. Точная цена фиксируется после замера.',
-    },
-    {
-        question: 'Можно оставить заявку без точных размеров?',
-        answer: 'Да. Достаточно примерной ширины, высоты, типа окна и фотографии, если она есть.',
-    },
-    {
-        question: 'Что происходит после выбора компании?',
-        answer: 'Компания подтверждает желаемую дату, отклоняет заявку или предлагает другое время.',
-    },
-    {
-        question: 'Когда появляется гарантия?',
-        answer: 'После выполнения заказа появляется гарантия со связанной заявкой, компанией, сроками и условиями.',
-    },
-    {
-        question: 'Можно заказать только ремонт или регулировку?',
-        answer: 'Да, ремонт или регулировка входят в услуги MVP.',
-    },
 ];
 
 const sortOptions: { key: SortKey; label: string }[] = [
@@ -1084,28 +1061,7 @@ export default function OknaMarket() {
                         <div className="narrow container">
                             <span className="faq-kicker">FAQ</span>
                             <h2>Часто задаваемые вопросы</h2>
-
-                            <div className="faq-list">
-                                {faqItems.map((item, index) => (
-                                    <details
-                                        key={item.question}
-                                        open={index === 0}
-                                    >
-                                        <summary>{item.question}</summary>
-                                        <p>{item.answer}</p>
-                                    </details>
-                                ))}
-                                <details id="partners">
-                                    <summary>
-                                        Как компаниям подключиться к сервису?
-                                    </summary>
-                                    <p>
-                                        Компания может оставить заявку на
-                                        подключение, пройти проверку и получать
-                                        релевантные обращения клиентов.
-                                    </p>
-                                </details>
-                            </div>
+                            <FaqAccordion items={homepageFaqItems} />
                         </div>
                     </section>
                 </main>

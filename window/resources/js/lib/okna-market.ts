@@ -2,6 +2,8 @@ export const MARKETPLACE_PATHS = {
     home: '/',
     searchResults: '/search-results',
     vendors: '/vendors',
+    faq: '/faq',
+    contacts: '/contacts',
 } as const;
 
 export type ServiceKey =
