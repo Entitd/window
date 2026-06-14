@@ -1,10 +1,10 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
 import {
     FaqAccordion,
     homepageFaqItems,
 } from '@/components/okna-market/faq-accordion';
-import { agreement, privacy } from '@/routes';
+import { agreement, privacy, searchResults } from '@/routes';
 import '../../css/okna-market.css';
 
 type ServiceKey =
@@ -310,6 +310,8 @@ export default function OknaMarket() {
     const [desiredDate, setDesiredDate] = useState('');
     const [comment, setComment] = useState('');
     const [photoName, setPhotoName] = useState('');
+    const [clientName, setClientName] = useState('');
+    const [clientPhone, setClientPhone] = useState('');
     const [sortKey, setSortKey] = useState<SortKey>('price');
     const [selectedCompany, setSelectedCompany] = useState(companies[0].name);
     const [requestCreated, setRequestCreated] = useState(false);
@@ -399,6 +401,30 @@ export default function OknaMarket() {
         }));
     };
 
+    const buildExtraWorksQuery = () => {
+        const extraWorks = ['dismantling'];
+
+        if (urgencyKey === 'urgent') {
+            extraWorks.push('urgent');
+        }
+
+        return extraWorks.join(',');
+    };
+
+    const submitSearchRequest = () => {
+        router.get(searchResults.url(), {
+            city: 'Волгоград',
+            installationDate: desiredDate,
+            width: String(width),
+            height: String(height),
+            serviceKey,
+            extraWorks: buildExtraWorksQuery(),
+            name: clientName,
+            phone: clientPhone,
+            comment,
+        });
+    };
+
     return (
         <>
             <Head>
@@ -477,7 +503,7 @@ export default function OknaMarket() {
                                 method="get"
                                 onSubmit={(event) => {
                                     event.preventDefault();
-                                    scrollTo('companies');
+                                    submitSearchRequest();
                                 }}
                             >
                                 <div className="request-heading">
@@ -680,6 +706,40 @@ export default function OknaMarket() {
                                         <strong>
                                             {photoName || 'загрузить фото'}
                                         </strong>
+                                    </label>
+
+                                    <label className="field-card">
+                                        <span className="field-icon">☺</span>
+                                        <span className="field-label">Имя</span>
+                                        <input
+                                            name="name"
+                                            onChange={(event) => {
+                                                setClientName(
+                                                    event.target.value,
+                                                );
+                                                resetRequest();
+                                            }}
+                                            placeholder="Как к вам обращаться"
+                                            value={clientName}
+                                        />
+                                    </label>
+
+                                    <label className="field-card">
+                                        <span className="field-icon">☎</span>
+                                        <span className="field-label">
+                                            Телефон
+                                        </span>
+                                        <input
+                                            name="phone"
+                                            onChange={(event) => {
+                                                setClientPhone(
+                                                    event.target.value,
+                                                );
+                                                resetRequest();
+                                            }}
+                                            placeholder="+7 (___) ___-__-__"
+                                            value={clientPhone}
+                                        />
                                     </label>
 
                                     <button

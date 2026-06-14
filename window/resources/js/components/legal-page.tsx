@@ -1,4 +1,6 @@
 import { Link } from '@inertiajs/react';
+import { MarketShell } from '@/components/okna-market/market-shell';
+import { MARKETPLACE_PATHS } from '@/lib/okna-market';
 import { agreement, home, privacy } from '@/routes';
 
 export type LegalSection = {
@@ -27,83 +29,79 @@ export function LegalPage({
     sections,
 }: Props) {
     return (
-        <main className="min-h-screen bg-[#f6f8fb] font-sans text-[#152033]">
-            <div className="mx-auto flex w-full max-w-[1040px] flex-col gap-10 px-5 py-6 sm:px-8 lg:px-0">
-                <header className="flex flex-col gap-5 border-b border-[#dbe3ee] pb-6 sm:flex-row sm:items-center sm:justify-between">
-                    <Link
-                        className="inline-flex items-center gap-3 font-extrabold"
-                        href={home()}
-                    >
-                        <span className="flex size-10 items-center justify-center rounded-lg bg-[#0f766e] text-lg text-white">
-                            О
-                        </span>
-                        <span>
-                            <span className="block text-lg leading-none">
-                                ОкнаМаркет
-                            </span>
-                            <span className="mt-1 block text-xs font-bold text-[#667085]">
-                                заявка, цена, компания, гарантия
-                            </span>
-                        </span>
-                    </Link>
+        <MarketShell
+            activePage="home"
+            ctaHref={MARKETPLACE_PATHS.home}
+            ctaLabel="К заявке"
+        >
+            <section className="page-hero">
+                <div className="container">
+                    <span className="eyebrow">{eyebrow}</span>
+                    <h1 className="page-title">{title}</h1>
+                    <p className="page-intro">{intro}</p>
+                </div>
+            </section>
 
-                    <nav className="flex flex-wrap gap-4 text-sm font-bold text-[#475467]">
-                        {legalLinks.map((link) => (
-                            <Link
-                                className="transition hover:text-[#0f766e]"
-                                href={link.href}
-                                key={link.label}
-                                prefetch
-                            >
-                                {link.label}
-                            </Link>
-                        ))}
-                    </nav>
-                </header>
+            <section className="contacts-section">
+                <div className="container flex flex-col gap-6">
+                    <div className="contacts-card">
+                        <div className="flex flex-wrap items-start justify-between gap-4">
+                            <div className="max-w-3xl">
+                                <h2>Документ сервиса</h2>
+                                <p className="page-intro !mt-3">
+                                    Обновлено: {updatedAt}
+                                </p>
+                            </div>
 
-                <section className="max-w-[820px]">
-                    <p className="text-sm font-bold text-[#0f766e] uppercase">
-                        {eyebrow}
-                    </p>
-                    <h1 className="mt-4 text-[34px] leading-tight font-extrabold sm:text-[44px]">
-                        {title}
-                    </h1>
-                    <p className="mt-5 text-lg leading-8 font-medium text-[#5d6b82]">
-                        {intro}
-                    </p>
-                    <p className="mt-4 text-sm font-bold text-[#667085]">
-                        Обновлено: {updatedAt}
-                    </p>
-                </section>
+                            <nav className="flex flex-wrap gap-3 text-sm font-semibold text-[var(--muted-strong)]">
+                                <Link
+                                    className="rounded-full border border-[var(--line)] px-4 py-2 transition hover:border-[var(--primary)] hover:text-[var(--primary-dark)]"
+                                    href={home()}
+                                    prefetch
+                                >
+                                    Главная
+                                </Link>
+                                {legalLinks.map((link) => (
+                                    <Link
+                                        className="rounded-full border border-[var(--line)] px-4 py-2 transition hover:border-[var(--primary)] hover:text-[var(--primary-dark)]"
+                                        href={link.href}
+                                        key={link.label}
+                                        prefetch
+                                    >
+                                        {link.label}
+                                    </Link>
+                                ))}
+                            </nav>
+                        </div>
+                    </div>
 
-                <div className="grid gap-7 pb-14">
                     {sections.map((section, index) => (
-                        <section
-                            className="border-t border-[#dbe3ee] pt-7"
-                            key={section.title}
-                        >
-                            <div className="grid gap-5 md:grid-cols-[180px_minmax(0,1fr)]">
-                                <h2 className="text-xl leading-tight font-extrabold">
-                                    <span className="mr-3 text-[#0f766e]">
-                                        {index + 1}.
+                        <section className="contacts-card" key={section.title}>
+                            <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
+                                <div className="md:w-[260px] md:flex-none">
+                                    <span className="eyebrow">
+                                        Раздел {index + 1}
                                     </span>
-                                    {section.title}
-                                </h2>
-                                <div className="grid gap-3">
+                                    <h2 className="mt-4 !mb-0">
+                                        {section.title}
+                                    </h2>
+                                </div>
+
+                                <div className="grid flex-1 gap-4">
                                     {section.items.map((item) => (
-                                        <p
-                                            className="text-base leading-7 font-medium text-[#344054]"
+                                        <div
+                                            className="rounded-[20px] bg-[var(--bg)] px-5 py-4 text-[15px] leading-7 font-medium text-[var(--muted-strong)]"
                                             key={item}
                                         >
                                             {item}
-                                        </p>
+                                        </div>
                                     ))}
                                 </div>
                             </div>
                         </section>
                     ))}
                 </div>
-            </div>
-        </main>
+            </section>
+        </MarketShell>
     );
 }

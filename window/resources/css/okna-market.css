@@ -848,6 +848,70 @@
     justify-content: flex-end;
 }
 
+.okna-market-page .request-created-card {
+    padding: 30px;
+    border: 1px solid var(--line);
+    border-radius: 30px;
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+}
+
+.okna-market-page .request-created-card h2 {
+    max-width: 780px;
+    margin: 0;
+    font-size: clamp(24px, 3vw, 34px);
+    line-height: 1.2;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+}
+
+.okna-market-page .request-created-card p {
+    max-width: 760px;
+    margin: 12px 0 0;
+    color: var(--muted);
+    line-height: 1.65;
+    font-weight: 500;
+}
+
+.okna-market-page .request-created-grid {
+    margin-top: 24px;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.okna-market-page .request-created-item {
+    min-height: 112px;
+    padding: 18px;
+    border-radius: 20px;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.okna-market-page .request-created-item span {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.okna-market-page .request-created-item strong {
+    color: var(--text);
+    font-size: 16px;
+    line-height: 1.45;
+}
+
+.okna-market-page .request-created-actions {
+    margin-top: 22px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
 .okna-market-page .results-count {
     margin-bottom: 14px;
     color: var(--muted);
@@ -1248,7 +1312,11 @@
     border: 1px dashed #c7d1df;
     border-radius: 22px;
     background:
-        linear-gradient(135deg, rgba(36, 124, 255, 0.08), rgba(18, 183, 106, 0.08)),
+        linear-gradient(
+            135deg,
+            rgba(36, 124, 255, 0.08),
+            rgba(18, 183, 106, 0.08)
+        ),
         var(--surface);
     display: flex;
     flex-direction: column;
@@ -1395,6 +1463,7 @@
     .okna-market-page .vendor-cta,
     .okna-market-page .benefit-grid-wide,
     .okna-market-page .summary-grid,
+    .okna-market-page .request-created-grid,
     .okna-market-page .contacts-layout {
         grid-template-columns: 1fr 1fr;
     }
@@ -1484,6 +1553,7 @@
     .okna-market-page .price-grid,
     .okna-market-page .guarantee-box,
     .okna-market-page .summary-grid,
+    .okna-market-page .request-created-grid,
     .okna-market-page .hero-split,
     .okna-market-page .vendor-cta,
     .okna-market-page .contacts-layout {
@@ -1518,6 +1588,7 @@
     }
 
     .okna-market-page .summary-card,
+    .okna-market-page .request-created-card,
     .okna-market-page .vendor-cta,
     .okna-market-page .hero-side-card,
     .okna-market-page .faq-group-card,
@@ -1531,6 +1602,7 @@
     }
 
     .okna-market-page .summary-actions .btn,
+    .okna-market-page .request-created-actions .btn,
     .okna-market-page .vendor-cta-actions .btn,
     .okna-market-page .hero-actions .btn {
         width: 100%;

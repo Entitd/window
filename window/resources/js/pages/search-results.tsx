@@ -1,7 +1,11 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
 import { MarketShell } from '@/components/okna-market/market-shell';
-import type { PriceFilterKey, SortKey } from '@/lib/okna-market';
+import type {
+    MarketplaceCompany,
+    PriceFilterKey,
+    SortKey,
+} from '@/lib/okna-market';
 import {
     buildEstimate,
     formatCurrency,
@@ -14,6 +18,13 @@ import {
     sortOptions,
 } from '@/lib/okna-market';
 
+type CreatedRequest = {
+    id: string;
+    companyName: string;
+    priceRange: string;
+    createdAt: string;
+};
+
 export default function SearchResults() {
     const { url } = usePage();
     const request = useMemo(() => parseSearchState(url), [url]);
@@ -23,6 +34,9 @@ export default function SearchResults() {
     const [districtFilter, setDistrictFilter] = useState('all');
     const [ratingFilter, setRatingFilter] = useState('all');
     const [dateFilter, setDateFilter] = useState('all');
+    const [createdRequest, setCreatedRequest] = useState<CreatedRequest | null>(
+        null,
+    );
 
     const districtOptions = useMemo(() => {
         return Array.from(
@@ -34,14 +48,13 @@ export default function SearchResults() {
 
     const visibleCompanies = useMemo(() => {
         return marketplaceCompanies
-            .filter((company) => company.serviceKeys.includes(request.serviceKey))
+            .filter((company) =>
+                company.serviceKeys.includes(request.serviceKey),
+            )
             .filter((company) => {
                 const maxPrice = estimate[1] * company.priceMultiplier;
 
-                if (
-                    priceFilter !== 'all' &&
-                    maxPrice > Number(priceFilter)
-                ) {
+                if (priceFilter !== 'all' && maxPrice > Number(priceFilter)) {
                     return false;
                 }
 
@@ -82,7 +95,9 @@ export default function SearchResults() {
                     );
                 }
 
-                return firstCompany.priceMultiplier - secondCompany.priceMultiplier;
+                return (
+                    firstCompany.priceMultiplier - secondCompany.priceMultiplier
+                );
             });
     }, [
         dateFilter,
@@ -95,6 +110,34 @@ export default function SearchResults() {
     ]);
 
     const selectedExtras = getExtraWorkLabels(request.extraWorks);
+
+    const createMockRequest = (
+        company: MarketplaceCompany,
+        companyMin: number,
+        companyMax: number,
+    ) => {
+        // Mock request creation until backend order endpoints are ready.
+        setCreatedRequest({
+            id: `REQ-${String(Date.now()).slice(-6)}`,
+            companyName: company.name,
+            priceRange: `${formatCurrency(companyMin)} - ${formatCurrency(
+                companyMax,
+            )}`,
+            createdAt: new Intl.DateTimeFormat('ru-RU', {
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                month: 'long',
+            }).format(new Date()),
+        });
+
+        window.setTimeout(() => {
+            document.getElementById('request-confirmation')?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start',
+            });
+        }, 0);
+    };
 
     return (
         <>
@@ -109,8 +152,8 @@ export default function SearchResults() {
                     <div className="container">
                         <span className="eyebrow">Результаты подбора</span>
                         <h1 className="page-title">
-                            Компании по вашей заявке уже отсортированы по срокам,
-                            цене и рейтингу
+                            Компании по вашей заявке уже отсортированы по
+                            срокам, цене и рейтингу
                         </h1>
                         <p className="page-intro">
                             Пока это mock-данные фронтенда. Логика поиска и
@@ -140,7 +183,9 @@ export default function SearchResults() {
                             </div>
                             <div className="summary-item">
                                 <span>Услуга</span>
-                                <strong>{getServiceLabel(request.serviceKey)}</strong>
+                                <strong>
+                                    {getServiceLabel(request.serviceKey)}
+                                </strong>
                             </div>
                             <div className="summary-item summary-item-wide">
                                 <span>Дополнительные работы</span>
@@ -157,6 +202,22 @@ export default function SearchResults() {
                                     {formatCurrency(estimate[1])}
                                 </strong>
                             </div>
+                            {(request.name || request.phone) && (
+                                <div className="summary-item">
+                                    <span>Контакт</span>
+                                    <strong>
+                                        {[request.name, request.phone]
+                                            .filter(Boolean)
+                                            .join(', ')}
+                                    </strong>
+                                </div>
+                            )}
+                            {request.comment && (
+                                <div className="summary-item summary-item-wide">
+                                    <span>Комментарий</span>
+                                    <strong>{request.comment}</strong>
+                                </div>
+                            )}
                         </div>
 
                         <div className="summary-actions">
@@ -170,8 +231,80 @@ export default function SearchResults() {
                     </div>
                 </section>
 
+                {createdRequest && (
+                    <section
+                        className="summary-section"
+                        id="request-confirmation"
+                    >
+                        <div className="request-created-card container">
+                            <div>
+                                <span className="faq-kicker">
+                                    Заявка создана
+                                </span>
+                                <h2>
+                                    {createdRequest.id} передана компании{' '}
+                                    {createdRequest.companyName}
+                                </h2>
+                                <p>
+                                    Сейчас это frontend-mock: заявка собрана из
+                                    параметров формы и выбора компании. На
+                                    backend-этапе здесь появится реальная запись
+                                    в базе, уведомление вендору и история
+                                    статусов.
+                                </p>
+                            </div>
+
+                            <div className="request-created-grid">
+                                <div className="request-created-item">
+                                    <span>Статус</span>
+                                    <strong>Ожидает подтверждения</strong>
+                                </div>
+                                <div className="request-created-item">
+                                    <span>Создана</span>
+                                    <strong>{createdRequest.createdAt}</strong>
+                                </div>
+                                <div className="request-created-item">
+                                    <span>Цена</span>
+                                    <strong>{createdRequest.priceRange}</strong>
+                                </div>
+                                <div className="request-created-item">
+                                    <span>Следующий шаг</span>
+                                    <strong>
+                                        Компания принимает заявку или предлагает
+                                        другое время.
+                                    </strong>
+                                </div>
+                            </div>
+
+                            <div className="request-created-actions">
+                                <Link
+                                    className="btn btn-secondary"
+                                    href={MARKETPLACE_PATHS.home}
+                                >
+                                    Изменить заявку
+                                </Link>
+                                <button
+                                    className="btn btn-primary"
+                                    onClick={() => {
+                                        setCreatedRequest(null);
+                                        document
+                                            .getElementById('companies')
+                                            ?.scrollIntoView({
+                                                behavior: 'smooth',
+                                                block: 'start',
+                                            });
+                                    }}
+                                    type="button"
+                                >
+                                    Выбрать другую компанию
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+                )}
+
                 <section className="catalog-section">
-                    <div className="container catalog-layout">
+                    <div className="catalog-layout container" id="companies">
                         <aside className="filters-card">
                             <h3>Фильтры</h3>
 
@@ -286,7 +419,9 @@ export default function SearchResults() {
                                 {sortOptions.map((option) => (
                                     <button
                                         className={`sort-chip ${
-                                            sortKey === option.key ? 'active' : ''
+                                            sortKey === option.key
+                                                ? 'active'
+                                                : ''
                                         }`}
                                         key={option.key}
                                         onClick={() => setSortKey(option.key)}
@@ -309,7 +444,12 @@ export default function SearchResults() {
 
                                 return (
                                     <article
-                                        className="company-card"
+                                        className={`company-card ${
+                                            createdRequest?.companyName ===
+                                            company.name
+                                                ? 'selected'
+                                                : ''
+                                        }`}
                                         key={company.name}
                                     >
                                         <div
@@ -322,7 +462,8 @@ export default function SearchResults() {
                                             <p>{company.description}</p>
                                             <div className="company-tags">
                                                 <span className="rating-tag">
-                                                    ★ {company.rating.toFixed(1)}{' '}
+                                                    ★{' '}
+                                                    {company.rating.toFixed(1)}{' '}
                                                     / {company.reviews} отзывов
                                                 </span>
                                                 <span className="green-tag">
@@ -336,7 +477,9 @@ export default function SearchResults() {
                                                 </li>
                                                 <li>
                                                     Районы:{' '}
-                                                    {company.districts.join(', ')}
+                                                    {company.districts.join(
+                                                        ', ',
+                                                    )}
                                                 </li>
                                                 <li>
                                                     Услуги:{' '}
@@ -353,9 +496,19 @@ export default function SearchResults() {
                                             </strong>
                                             <button
                                                 className="btn btn-primary"
+                                                onClick={() =>
+                                                    createMockRequest(
+                                                        company,
+                                                        companyMin,
+                                                        companyMax,
+                                                    )
+                                                }
                                                 type="button"
                                             >
-                                                Выбрать компанию
+                                                {createdRequest?.companyName ===
+                                                company.name
+                                                    ? 'Заявка создана'
+                                                    : 'Выбрать компанию'}
                                             </button>
                                         </div>
                                     </article>

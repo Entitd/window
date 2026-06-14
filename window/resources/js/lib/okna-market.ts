@@ -32,6 +32,7 @@ export type RequestFormState = {
     extraWorks: ExtraWorkKey[];
     name: string;
     phone: string;
+    comment: string;
 };
 
 export type ServiceOption = {
@@ -120,6 +121,7 @@ export const defaultRequestForm: RequestFormState = {
     extraWorks: ['dismantling'],
     name: '',
     phone: '',
+    comment: '',
 };
 
 // Mock data until backend search and catalog APIs are ready.
@@ -128,7 +130,8 @@ export const marketplaceCompanies: MarketplaceCompany[] = [
         initials: 'ОП',
         tone: 'blue',
         name: 'ОкнаПрофи',
-        description: 'Замена стеклопакетов, окна под ключ и замер в тот же день.',
+        description:
+            'Замена стеклопакетов, окна под ключ и замер в тот же день.',
         rating: 4.9,
         reviews: 231,
         priceMultiplier: 1,
@@ -144,7 +147,8 @@ export const marketplaceCompanies: MarketplaceCompany[] = [
         initials: 'ТД',
         tone: 'green',
         name: 'ТеплоДом',
-        description: 'Установка окон, балконных блоков и сервисное обслуживание.',
+        description:
+            'Установка окон, балконных блоков и сервисное обслуживание.',
         rating: 4.8,
         reviews: 184,
         priceMultiplier: 1.08,
@@ -165,7 +169,8 @@ export const marketplaceCompanies: MarketplaceCompany[] = [
         initials: 'GC',
         tone: 'violet',
         name: 'GlassCity',
-        description: 'Премиальные стеклопакеты и аккуратный монтаж для квартир и домов.',
+        description:
+            'Премиальные стеклопакеты и аккуратный монтаж для квартир и домов.',
         rating: 4.7,
         reviews: 96,
         priceMultiplier: 1.16,
@@ -175,13 +180,18 @@ export const marketplaceCompanies: MarketplaceCompany[] = [
         guarantee: '10 лет',
         badge: 'премиальный профиль',
         feature: 'Подбор шумоизоляции и расширенная гарантия',
-        serviceKeys: ['glass_replacement', 'window_installation', 'balcony_block'],
+        serviceKeys: [
+            'glass_replacement',
+            'window_installation',
+            'balcony_block',
+        ],
     },
     {
         initials: 'МС',
         tone: 'blue',
         name: 'МонтажСервис',
-        description: 'Ремонт фурнитуры, регулировка и небольшие монтажные задачи.',
+        description:
+            'Ремонт фурнитуры, регулировка и небольшие монтажные задачи.',
         rating: 4.6,
         reviews: 143,
         priceMultiplier: 0.94,
@@ -278,7 +288,8 @@ export function buildEstimate(form: RequestFormState): [number, number] {
     const extraCost = form.extraWorks.reduce((total, extraKey) => {
         return (
             total +
-            (extraWorkOptions.find((extra) => extra.key === extraKey)?.price ?? 0)
+            (extraWorkOptions.find((extra) => extra.key === extraKey)?.price ??
+                0)
         );
     }, 0);
 
@@ -298,7 +309,9 @@ export function getExtraWorkLabels(extraWorks: ExtraWorkKey[]): string[] {
         .map((option) => option.label);
 }
 
-export function buildSearchParams(form: RequestFormState): Record<string, string> {
+export function buildSearchParams(
+    form: RequestFormState,
+): Record<string, string> {
     return {
         city: form.city,
         installationDate: form.installationDate,
@@ -308,6 +321,7 @@ export function buildSearchParams(form: RequestFormState): Record<string, string
         extraWorks: form.extraWorks.join(','),
         name: form.name,
         phone: form.phone,
+        comment: form.comment,
     };
 }
 
@@ -318,7 +332,8 @@ export function parseSearchState(url: string): RequestFormState {
     return {
         city: search.get('city') || defaultRequestForm.city,
         installationDate:
-            search.get('installationDate') || defaultRequestForm.installationDate,
+            search.get('installationDate') ||
+            defaultRequestForm.installationDate,
         width: search.get('width') || defaultRequestForm.width,
         height: search.get('height') || defaultRequestForm.height,
         serviceKey: isServiceKey(serviceKey)
@@ -327,6 +342,7 @@ export function parseSearchState(url: string): RequestFormState {
         extraWorks: parseExtraWorks(search.get('extraWorks')),
         name: search.get('name') || defaultRequestForm.name,
         phone: search.get('phone') || defaultRequestForm.phone,
+        comment: search.get('comment') || defaultRequestForm.comment,
     };
 }
 
