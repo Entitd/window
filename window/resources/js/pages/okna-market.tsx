@@ -203,6 +203,30 @@ const problems = [
     },
 ];
 
+// Static trust copy until backend moderation, request privacy, and warranty data are connected.
+const trustItems = [
+    {
+        number: '01',
+        title: 'Профиль компании проходит проверку',
+        text: 'В выдаче можно показывать компании с заполненными услугами, районами работы и контактами. После подключения backend здесь появится статус модерации.',
+    },
+    {
+        number: '02',
+        title: 'Цена остается предварительной',
+        text: 'Сервис показывает понятный диапазон, а не обещает финальную смету. Точная стоимость фиксируется после замера и согласования работ.',
+    },
+    {
+        number: '03',
+        title: 'Телефон не уходит всем подряд',
+        text: 'Контакт получает только выбранная компания после заявки. Остальные предложения можно спокойно сравнить без массовых звонков.',
+    },
+    {
+        number: '04',
+        title: 'Гарантия привязана к заявке',
+        text: 'После выполнения работ в кабинете можно показать компанию, срок гарантии и условия обращения по гарантийному случаю.',
+    },
+];
+
 const steps = [
     {
         title: 'Укажите задачу',
@@ -872,6 +896,33 @@ export default function OknaMarket() {
                         </div>
                     </section>
 
+                    <section className="trust-section">
+                        <div className="container">
+                            <div className="problems-header">
+                                <h2>Почему сервису можно доверять</h2>
+                                <p>
+                                    Важные условия показываются до заявки:
+                                    пользователь понимает, что цена
+                                    предварительная, контакт защищен, а гарантия
+                                    будет связана с выполненными работами.
+                                </p>
+                            </div>
+
+                            <div className="trust-grid">
+                                {trustItems.map((item) => (
+                                    <article
+                                        className="trust-card"
+                                        key={item.title}
+                                    >
+                                        <span>{item.number}</span>
+                                        <h3>{item.title}</h3>
+                                        <p>{item.text}</p>
+                                    </article>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+
                     <section className="catalog-section" id="companies">
                         <div className="container">
                             <div className="problems-header">
@@ -1223,7 +1274,6 @@ export default function OknaMarket() {
                         </div>
                     </section>
 
-
                     <section className="price-section">
                         <div className="container">
                             <h2>Почему цена на окна может отличаться</h2>
@@ -1261,15 +1311,11 @@ export default function OknaMarket() {
                                     дату окончания и условия гарантийных работ.
                                 </p>
                             </div>
-                            <div 
-                            // className="guarantee-card">
-                            className={`catalog-demo-layout guarantee-card`}
+                            <div
+                                // className="guarantee-card">
+                                className={`catalog-demo-layout guarantee-card`}
                             >
-                            <span
-                                    className="demo-watermark"
-                                >
-                                    пример
-                                </span> 
+                                <span className="demo-watermark">пример</span>
                                 <strong>Гарантийный талон</strong>
                                 <span>
                                     Компания: {selectedCompanyData.name}

@@ -587,6 +587,56 @@
     font-weight: 500;
 }
 
+.okna-market-page .trust-section {
+    padding: 56px 0 48px;
+    background: var(--surface);
+}
+
+.okna-market-page .trust-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.okna-market-page .trust-card {
+    min-height: 246px;
+    padding: 22px;
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+    box-shadow: var(--shadow-sm);
+}
+
+.okna-market-page .trust-card span {
+    width: 40px;
+    height: 40px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    background: var(--surface-soft);
+    color: var(--primary-dark);
+    font-family: Inter, sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.okna-market-page .trust-card h3 {
+    margin: 22px 0 12px;
+    color: var(--text);
+    font-size: 17px;
+    line-height: 1.35;
+}
+
+.okna-market-page .trust-card p {
+    margin: 0;
+    color: var(--muted-strong);
+    font-size: 14px;
+    line-height: 1.6;
+    font-weight: 500;
+}
+
 @media (prefers-reduced-motion: reduce) {
     .okna-market-page .problem-card {
         transition: none;
@@ -1883,6 +1933,7 @@
     }
 
     .okna-market-page .problem-grid,
+    .okna-market-page .trust-grid,
     .okna-market-page .status-grid {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -1948,6 +1999,7 @@
     .okna-market-page .form-grid,
     .okna-market-page .metrics,
     .okna-market-page .problem-grid,
+    .okna-market-page .trust-grid,
     .okna-market-page .catalog-layout,
     .okna-market-page .company-card,
     .okna-market-page .benefit-grid,
