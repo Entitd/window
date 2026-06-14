@@ -284,6 +284,7 @@
 
 .okna-market-page .request-card h2,
 .okna-market-page .section-copy h2,
+.okna-market-page .problems-header h2,
 .okna-market-page .catalog-section h2,
 .okna-market-page .status-section h2,
 .okna-market-page .guarantee-box h2,
@@ -451,16 +452,38 @@
 }
 
 .okna-market-page .problems-section {
-    padding: 64px 0 86px;
+    padding: 74px 0 92px;
+    border-top: 1px solid rgba(36, 124, 255, 0.1);
+    border-bottom: 1px solid rgba(36, 124, 255, 0.1);
+    background: #eef4ff;
+}
+
+.okna-market-page .problems-header {
+    max-width: 820px;
+    margin-bottom: 30px;
+    display: grid;
+    gap: 14px;
+}
+
+.okna-market-page .problems-header h2,
+.okna-market-page .problems-header p {
+    margin: 0;
+}
+
+.okna-market-page .problems-header p {
+    max-width: 760px;
+    color: var(--muted);
+    font-size: 16px;
+    line-height: 1.65;
+    font-weight: 500;
 }
 
 .okna-market-page .problem-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 18px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
 }
 
-.okna-market-page .problem-card,
 .okna-market-page .filters-card,
 .okna-market-page .company-card,
 .okna-market-page .step-card,
@@ -471,60 +494,117 @@
 }
 
 .okna-market-page .problem-card {
-    min-height: 310px;
-    padding: 24px;
-    border-radius: 18px;
+    min-height: 244px;
+    padding: 22px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
     display: flex;
     flex-direction: column;
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.okna-market-page .problem-card::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 4px;
+}
+
+.okna-market-page .problem-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(36, 124, 255, 0.24);
+    box-shadow: var(--shadow-md);
+}
+
+.okna-market-page .problem-card-top {
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
 }
 
 .okna-market-page .problem-icon {
     width: 48px;
     height: 48px;
-    margin-bottom: 18px;
     border-radius: 17px;
     display: grid;
     place-items: center;
-    background: #f5f6f8;
+    background: var(--surface-soft);
     color: var(--primary);
     font-family: Inter, sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.okna-market-page .problem-number {
+    color: #98a2b3;
+    font-size: 14px;
     font-weight: 800;
 }
 
 .okna-market-page .card-label {
-    display: block;
-    color: #96a0b6;
+    display: inline-flex;
+    width: max-content;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: var(--warning-bg);
+    color: var(--warning-text);
     font-size: 12px;
     font-weight: 700;
 }
 
 .okna-market-page .problem-card h3 {
-    min-height: 54px;
-    margin: 12px 0 18px;
-    color: var(--muted-strong);
-    font-size: 15px;
-    line-height: 1.45;
+    margin: 12px 0 0;
+    color: var(--text);
+    font-size: 16px;
+    line-height: 1.4;
 }
 
-.okna-market-page .flow-arrow {
-    align-self: center;
-    width: 28px;
-    height: 28px;
-    margin: 4px 0 18px;
-    border-radius: 50%;
-    display: grid;
-    place-items: center;
-    background: var(--surface-soft);
-    color: var(--primary-dark);
-    font-weight: 800;
+.okna-market-page .solution-copy {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+}
+
+.okna-market-page .solution-copy .card-label {
+    background: var(--success-bg);
+    color: var(--success-text);
 }
 
 .okna-market-page .problem-card p {
     margin: 12px 0 0;
     color: var(--muted-strong);
     font-size: 14px;
-    line-height: 1.55;
-    font-weight: 600;
+    line-height: 1.6;
+    font-weight: 500;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .okna-market-page .problem-card {
+        transition: none;
+    }
+
+    .okna-market-page .problem-card:hover {
+        transform: none;
+    }
+
+    .okna-market-page .demo-click-cursor,
+    .okna-market-page .demo-click-cursor span,
+    .okna-market-page .filter-group.demo-focus,
+    .okna-market-page .sort-panel.demo-focus,
+    .okna-market-page .company-card.demo-focus-card,
+    .okna-market-page .price-range-line i {
+        animation: none;
+        transition: none;
+    }
 }
 
 .okna-market-page .catalog-section {
@@ -542,11 +622,220 @@
     gap: 12px;
 }
 
+.okna-market-page .catalog-heading {
+    max-width: 840px;
+    margin-bottom: 22px;
+    display: grid;
+    gap: 12px;
+}
+
+.okna-market-page .catalog-heading h2,
+.okna-market-page .catalog-heading p {
+    margin: 0;
+}
+
+.okna-market-page .catalog-heading p {
+    max-width: 780px;
+    color: var(--muted);
+    font-size: 16px;
+    line-height: 1.65;
+    font-weight: 500;
+}
+
+.okna-market-page .catalog-demo-strip {
+    margin: 28px 0 14px;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.okna-market-page .catalog-demo-step {
+    min-height: 148px;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    overflow: hidden;
+    background: var(--surface);
+    color: var(--muted-strong);
+    text-align: left;
+    box-shadow: var(--shadow-sm);
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+.okna-market-page .catalog-demo-step.active {
+    border-color: rgba(36, 124, 255, 0.42);
+    box-shadow: 0 14px 34px rgba(36, 124, 255, 0.12);
+    transform: translateY(-2px);
+}
+
+.okna-market-page .catalog-demo-step-number {
+    color: var(--primary);
+    font-family: Inter, sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.okna-market-page .catalog-demo-step strong {
+    color: var(--text);
+    font-size: 15px;
+}
+
+.okna-market-page .catalog-demo-step small {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.45;
+    font-weight: 600;
+}
+
+.okna-market-page .catalog-demo-progress {
+    width: 100%;
+    height: 4px;
+    margin-top: auto;
+    border-radius: 999px;
+    overflow: hidden;
+    background: #e3eaf7;
+}
+
+.okna-market-page .catalog-demo-progress span {
+    display: block;
+    width: 100%;
+    height: 100%;
+    transform: scaleX(0);
+    transform-origin: left;
+    background: var(--primary);
+}
+
+.okna-market-page .catalog-demo-step.active .catalog-demo-progress span {
+    animation: catalogDemoProgress 3s linear infinite;
+}
+
+.okna-market-page .catalog-demo-note {
+    margin: 0 0 22px;
+    padding: 14px 18px;
+    border: 1px solid rgba(36, 124, 255, 0.18);
+    border-radius: 18px;
+    background: var(--surface-soft);
+    color: var(--primary-dark);
+    font-size: 14px;
+    line-height: 1.55;
+    font-weight: 700;
+}
+
 .okna-market-page .catalog-layout {
     display: grid;
     grid-template-columns: 260px minmax(0, 1fr);
     gap: 24px;
     align-items: start;
+}
+
+.okna-market-page .catalog-demo-layout {
+    position: relative;
+}
+
+.okna-market-page .demo-click-cursor {
+    position: absolute;
+    top: 160px;
+    left: 132px;
+    z-index: 8;
+    width: 38px;
+    height: 38px;
+    pointer-events: none;
+    transition:
+        top 0.55s ease,
+        left 0.55s ease;
+}
+
+.okna-market-page .demo-click-cursor::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 3px;
+    width: 16px;
+    height: 22px;
+    clip-path: polygon(
+        0 0,
+        0 100%,
+        34% 72%,
+        55% 100%,
+        73% 90%,
+        53% 63%,
+        92% 63%
+    );
+    background: #fff;
+    filter: drop-shadow(0 8px 14px rgba(16, 24, 40, 0.24));
+    transform: rotate(-12deg);
+}
+
+.okna-market-page .demo-click-cursor span {
+    position: absolute;
+    top: 14px;
+    left: 16px;
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--primary);
+    border-radius: 50%;
+    animation: catalogCursorClick 2.2s ease-in-out infinite;
+}
+
+.okna-market-page .demo-step-price-range .demo-click-cursor {
+    top: 158px;
+    left: 134px;
+}
+
+.okna-market-page .demo-step-deadline-urgent .demo-click-cursor {
+    top: 390px;
+    left: 58px;
+}
+
+.okna-market-page .demo-step-deadline-week .demo-click-cursor {
+    top: 476px;
+    left: 58px;
+}
+
+.okna-market-page .demo-step-rating-filter .demo-click-cursor {
+    top: 292px;
+    left: 58px;
+}
+
+.okna-market-page .demo-step-sort-rating .demo-click-cursor {
+    top: 34px;
+    left: 572px;
+}
+
+.okna-market-page .demo-step-sort-date .demo-click-cursor {
+    top: 34px;
+    left: 724px;
+}
+
+.okna-market-page .demo-step-company-choice .demo-click-cursor {
+    top: 190px;
+    left: calc(100% - 90px);
+}
+
+.okna-market-page .demo-watermark {
+    position: absolute;
+    top: -14px;
+    right: 18px;
+    z-index: 2;
+    padding: 8px 14px;
+    border: 1px solid rgba(23, 92, 211, 0.16);
+    border-radius: 999px;
+    pointer-events: none;
+    transform: rotate(-2deg);
+    background: rgba(255, 255, 255, 0.9);
+    color: rgba(23, 92, 211, 0.62);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    box-shadow: var(--shadow-sm);
 }
 
 .okna-market-page .filters-card {
@@ -561,6 +850,14 @@
 
 .okna-market-page .filters-card h3 {
     font-size: 18px;
+}
+
+.okna-market-page .filters-caption {
+    margin: 8px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+    font-weight: 600;
 }
 
 .okna-market-page .filter-group {
@@ -587,10 +884,54 @@
     font-weight: 700;
 }
 
-.okna-market-page .price-range span {
+.okna-market-page .demo-price-range {
+    min-height: 70px;
+    display: grid;
+    grid-template-columns: auto minmax(90px, 1fr) auto;
+    align-items: center;
+}
+
+.okna-market-page .price-range.demo-touched {
+    border-color: rgba(36, 124, 255, 0.34);
+    background: #fff;
+}
+
+.okna-market-page .price-range-value {
+    display: grid;
+    gap: 3px;
+}
+
+.okna-market-page .price-range-value small {
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.okna-market-page .price-range-value strong {
+    color: var(--text);
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.okna-market-page .price-range-line {
     flex: 1;
-    height: 1px;
+    height: 5px;
+    position: relative;
+    min-width: 86px;
+    border-radius: 999px;
+    overflow: hidden;
     background: #cfd7e6;
+}
+
+.okna-market-page .price-range-line i {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    border-radius: inherit;
+    background: var(--primary);
+    transition:
+        left 0.55s ease,
+        width 0.55s ease;
 }
 
 .okna-market-page .checkbox-row {
@@ -602,10 +943,19 @@
     font-family: Inter, sans-serif;
     font-size: 14px;
     font-weight: 500;
+    transition:
+        color 0.2s ease,
+        transform 0.2s ease;
 }
 
 .okna-market-page .checkbox-row + .checkbox-row {
     margin-top: 10px;
+}
+
+.okna-market-page .checkbox-row.demo-touched {
+    color: var(--primary-dark);
+    font-weight: 800;
+    transform: translateX(3px);
 }
 
 .okna-market-page .checkbox-row input {
@@ -659,6 +1009,21 @@
     color: var(--primary-dark);
 }
 
+.okna-market-page .sort-chip.demo-touched {
+    border-color: rgba(36, 124, 255, 0.34);
+    background: var(--primary);
+    color: #fff;
+    box-shadow: 0 8px 18px rgba(36, 124, 255, 0.18);
+}
+
+.okna-market-page .filter-group.demo-focus,
+.okna-market-page .sort-panel.demo-focus,
+.okna-market-page .company-card.demo-focus-card {
+    outline: 2px solid rgba(36, 124, 255, 0.34);
+    outline-offset: 6px;
+    animation: catalogDemoPulse 3s ease-in-out infinite;
+}
+
 .okna-market-page .stack-chips {
     display: flex;
     flex-wrap: wrap;
@@ -667,10 +1032,10 @@
 
 .okna-market-page .company-card {
     display: grid;
-    grid-template-columns: 86px minmax(0, 1fr) 174px;
-    gap: 22px;
-    padding: 22px;
-    border-radius: 18px;
+    grid-template-columns: 70px minmax(0, 1fr) 152px;
+    gap: 16px;
+    padding: 16px;
+    border-radius: 16px;
 }
 
 .okna-market-page .company-card.selected {
@@ -679,18 +1044,18 @@
 }
 
 .okna-market-page .company-card + .company-card {
-    margin-top: 12px;
+    margin-top: 10px;
 }
 
 .okna-market-page .company-logo {
-    width: 72px;
-    height: 72px;
-    border-radius: var(--radius-md);
+    width: 58px;
+    height: 58px;
+    border-radius: 16px;
     display: grid;
     place-items: center;
     color: var(--primary-dark);
     font-family: Inter, sans-serif;
-    font-size: 26px;
+    font-size: 21px;
     font-weight: 800;
 }
 
@@ -707,26 +1072,28 @@
 }
 
 .okna-market-page .company-info h3 {
-    margin: 0 0 8px;
-    font-size: 20px;
+    margin: 0 0 6px;
+    font-size: 18px;
 }
 
 .okna-market-page .company-info > p {
-    margin: 0 0 16px;
+    margin: 0 0 12px;
     color: var(--muted);
+    font-size: 14px;
+    line-height: 1.45;
     font-weight: 500;
 }
 
 .okna-market-page .company-tags {
-    gap: 10px;
-    margin-bottom: 16px;
+    gap: 8px;
+    margin-bottom: 12px;
 }
 
 .okna-market-page .rating-tag,
 .okna-market-page .green-tag {
-    padding: 10px 14px;
+    padding: 7px 10px;
     border-radius: 999px;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
 }
 
@@ -741,20 +1108,20 @@
 }
 
 .okna-market-page .company-features {
-    gap: 18px;
-    padding: 16px 0 0;
+    gap: 12px;
+    padding: 12px 0 0;
     margin: 0;
     border-top: 1px solid var(--line);
     color: var(--muted-strong);
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     list-style: none;
 }
 
 .okna-market-page .details-line {
-    margin-top: 20px;
+    margin-top: 14px;
     color: var(--primary-dark);
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 700;
 }
 
@@ -766,14 +1133,50 @@
 
 .okna-market-page .company-action span {
     color: var(--muted);
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 500;
 }
 
 .okna-market-page .company-action strong {
-    margin: 8px 0 24px;
-    font-size: 23px;
+    margin: 6px 0 16px;
+    font-size: 20px;
     white-space: nowrap;
+}
+
+.okna-market-page .company-action .btn {
+    min-height: 40px;
+    padding: 0 18px;
+    font-size: 14px;
+}
+
+@keyframes catalogCursorClick {
+    0%,
+    28%,
+    100% {
+        opacity: 0;
+        transform: scale(0.45);
+    }
+
+    42% {
+        opacity: 0.9;
+        transform: scale(0.9);
+    }
+
+    68% {
+        opacity: 0;
+        transform: scale(1.55);
+    }
+}
+
+@keyframes catalogDemoPulse {
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(36, 124, 255, 0);
+    }
+
+    50% {
+        box-shadow: 0 0 0 7px rgba(36, 124, 255, 0.08);
+    }
 }
 
 .okna-market-page .steps-section,

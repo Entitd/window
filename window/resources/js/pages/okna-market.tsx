@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
     FaqAccordion,
     homepageFaqItems,
@@ -18,6 +18,7 @@ type WindowTypeKey = 'single' | 'double' | 'triple' | 'balcony';
 type UrgencyKey = 'flexible' | 'week' | 'urgent';
 type SortKey = 'price' | 'rating' | 'date';
 type FilterKey = 'highRating' | 'manyReviews' | 'hasPhotos' | 'fastDate';
+type CatalogDemoFocus = 'price' | 'rating' | 'deadline' | 'sort' | 'company';
 
 type Service = {
     key: ServiceKey;
@@ -55,6 +56,19 @@ type Company = {
     badge: string;
     feature: string;
     hasPhotos: boolean;
+};
+
+type CatalogDemoStep = {
+    key: string;
+    text: string;
+    focus: CatalogDemoFocus;
+    filters: Record<FilterKey, boolean>;
+    priceFill: [number, number];
+    priceScale: number;
+    selectedCompany: string;
+    sortKey: SortKey;
+    touchedFilter?: FilterKey | 'urgent' | 'week';
+    urgencyKey: UrgencyKey;
 };
 
 const services: Service[] = [
@@ -192,7 +206,7 @@ const problems = [
 const steps = [
     {
         title: 'Укажите задачу',
-        text: 'Выберите услугу, примерные размеры, желаемую дату и добавьте фото.',
+        text: 'Выберите услугу, примерные размеры и оставьте телефон для связи.',
     },
     {
         title: 'Сравните варианты',
@@ -236,11 +250,6 @@ const priceFactors = [
         text: 'Удаленность и подъем без лифта могут повлиять на цену.',
     },
     {
-        icon: '◷',
-        title: 'Срочность',
-        text: 'Выезд сегодня или завтра обычно дороже гибкой даты.',
-    },
-    {
         icon: '⌖',
         title: 'Район и удаленность',
         text: 'Компания учитывает логистику и ближайшее свободное время.',
@@ -270,6 +279,124 @@ const filterOptions: { key: FilterKey; label: string }[] = [
     { key: 'manyReviews', label: 'много отзывов' },
     { key: 'hasPhotos', label: 'есть фото работ' },
     { key: 'fastDate', label: 'до 3 дней' },
+];
+
+const catalogDemoSteps: CatalogDemoStep[] = [
+    {
+        key: 'price-range',
+        text: 'клиент сужает диапазон цены и видит более компактную выдачу.',
+        focus: 'price',
+        filters: {
+            highRating: true,
+            manyReviews: false,
+            hasPhotos: true,
+            fastDate: true,
+        },
+        priceFill: [12, 58],
+        priceScale: 0.92,
+        selectedCompany: 'ОкнаПрофи',
+        sortKey: 'price',
+        urgencyKey: 'week',
+    },
+    {
+        key: 'deadline-urgent',
+        text: 'затем включает срочный выезд сегодня или завтра.',
+        focus: 'deadline',
+        filters: {
+            highRating: true,
+            manyReviews: false,
+            hasPhotos: true,
+            fastDate: true,
+        },
+        priceFill: [28, 82],
+        priceScale: 1.12,
+        selectedCompany: 'ТеплоДом',
+        sortKey: 'date',
+        touchedFilter: 'urgent',
+        urgencyKey: 'urgent',
+    },
+    {
+        key: 'deadline-week',
+        text: 'после этого меняет сроки на монтаж в течение недели.',
+        focus: 'deadline',
+        filters: {
+            highRating: true,
+            manyReviews: false,
+            hasPhotos: true,
+            fastDate: false,
+        },
+        priceFill: [18, 72],
+        priceScale: 1,
+        selectedCompany: 'ОкнаПрофи',
+        sortKey: 'price',
+        touchedFilter: 'week',
+        urgencyKey: 'week',
+    },
+    {
+        key: 'rating-filter',
+        text: 'дальше оставляет только компании с высоким рейтингом и отзывами.',
+        focus: 'rating',
+        filters: {
+            highRating: true,
+            manyReviews: true,
+            hasPhotos: true,
+            fastDate: false,
+        },
+        priceFill: [20, 76],
+        priceScale: 1.04,
+        selectedCompany: 'ТеплоДом',
+        sortKey: 'rating',
+        touchedFilter: 'manyReviews',
+        urgencyKey: 'week',
+    },
+    {
+        key: 'sort-rating',
+        text: 'потом сортирует предложения по рейтингу.',
+        focus: 'sort',
+        filters: {
+            highRating: true,
+            manyReviews: false,
+            hasPhotos: true,
+            fastDate: false,
+        },
+        priceFill: [20, 76],
+        priceScale: 1.04,
+        selectedCompany: 'ОкнаПрофи',
+        sortKey: 'rating',
+        urgencyKey: 'week',
+    },
+    {
+        key: 'sort-date',
+        text: 'и сравнивает, кто сможет приехать быстрее.',
+        focus: 'sort',
+        filters: {
+            highRating: true,
+            manyReviews: false,
+            hasPhotos: true,
+            fastDate: true,
+        },
+        priceFill: [24, 80],
+        priceScale: 1.08,
+        selectedCompany: 'ОкнаПрофи',
+        sortKey: 'date',
+        urgencyKey: 'urgent',
+    },
+    {
+        key: 'company-choice',
+        text: 'в финале подсвечивается выбранная карточка компании.',
+        focus: 'company',
+        filters: {
+            highRating: true,
+            manyReviews: false,
+            hasPhotos: true,
+            fastDate: true,
+        },
+        priceFill: [16, 66],
+        priceScale: 1,
+        selectedCompany: 'ОкнаПрофи',
+        sortKey: 'price',
+        urgencyKey: 'week',
+    },
 ];
 
 function formatRoubles(value: number): string {
@@ -307,14 +434,11 @@ export default function OknaMarket() {
     const [urgencyKey, setUrgencyKey] = useState<UrgencyKey>('week');
     const [width, setWidth] = useState(130);
     const [height, setHeight] = useState(140);
-    const [desiredDate, setDesiredDate] = useState('');
-    const [comment, setComment] = useState('');
-    const [photoName, setPhotoName] = useState('');
-    const [clientName, setClientName] = useState('');
     const [clientPhone, setClientPhone] = useState('');
     const [sortKey, setSortKey] = useState<SortKey>('price');
     const [selectedCompany, setSelectedCompany] = useState(companies[0].name);
     const [requestCreated, setRequestCreated] = useState(false);
+    const [demoStepIndex, setDemoStepIndex] = useState(0);
     const [filters, setFilters] = useState<Record<FilterKey, boolean>>({
         highRating: true,
         manyReviews: false,
@@ -325,6 +449,41 @@ export default function OknaMarket() {
     const activeService = getServiceByKey(serviceKey);
     const activeWindowType = getWindowTypeByKey(windowTypeKey);
     const activeUrgency = getUrgencyByKey(urgencyKey);
+    const activeDemoStep =
+        catalogDemoSteps[demoStepIndex] ?? catalogDemoSteps[0];
+
+    const applyCatalogDemoStep = (step: CatalogDemoStep) => {
+        setFilters(step.filters);
+        setUrgencyKey(step.urgencyKey);
+        setSortKey(step.sortKey);
+        setSelectedCompany(step.selectedCompany);
+        setRequestCreated(false);
+    };
+
+    useEffect(() => {
+        const prefersReducedMotion = window.matchMedia(
+            '(prefers-reduced-motion: reduce)',
+        ).matches;
+
+        applyCatalogDemoStep(catalogDemoSteps[0]);
+
+        if (prefersReducedMotion) {
+            return;
+        }
+
+        const intervalId = window.setInterval(() => {
+            setDemoStepIndex((currentStep) => {
+                const nextStepIndex =
+                    (currentStep + 1) % catalogDemoSteps.length;
+
+                applyCatalogDemoStep(catalogDemoSteps[nextStepIndex]);
+
+                return nextStepIndex;
+            });
+        }, 2200);
+
+        return () => window.clearInterval(intervalId);
+    }, []);
 
     const estimatedRange = useMemo<[number, number]>(() => {
         const area = clamp(width, 40, 320) * clamp(height, 40, 260);
@@ -383,6 +542,14 @@ export default function OknaMarket() {
         [estimatedRange, selectedCompanyData],
     );
 
+    const catalogEstimatedRange = useMemo<[number, number]>(
+        () => [
+            estimatedRange[0] * activeDemoStep.priceScale,
+            estimatedRange[1] * activeDemoStep.priceScale,
+        ],
+        [activeDemoStep.priceScale, estimatedRange],
+    );
+
     const scrollTo = (sectionId: string) => {
         document.getElementById(sectionId)?.scrollIntoView({
             behavior: 'smooth',
@@ -414,14 +581,11 @@ export default function OknaMarket() {
     const submitSearchRequest = () => {
         router.get(searchResults.url(), {
             city: 'Волгоград',
-            installationDate: desiredDate,
             width: String(width),
             height: String(height),
             serviceKey,
             extraWorks: buildExtraWorksQuery(),
-            name: clientName,
             phone: clientPhone,
-            comment,
         });
     };
 
@@ -625,123 +789,6 @@ export default function OknaMarket() {
                                         />
                                     </label>
 
-                                    <label className="field-card">
-                                        <span className="field-icon">◷</span>
-                                        <span className="field-label">
-                                            Желаемая дата
-                                        </span>
-                                        <input
-                                            name="desired_date"
-                                            onChange={(event) => {
-                                                setDesiredDate(
-                                                    event.target.value,
-                                                );
-                                                resetRequest();
-                                            }}
-                                            type="date"
-                                            value={desiredDate}
-                                        />
-                                    </label>
-
-                                    <label className="field-card">
-                                        <span className="field-icon">⚡</span>
-                                        <span className="field-label">
-                                            Срочность
-                                        </span>
-                                        <select
-                                            name="urgency"
-                                            onChange={(event) => {
-                                                setUrgencyKey(
-                                                    event.target
-                                                        .value as UrgencyKey,
-                                                );
-                                                resetRequest();
-                                            }}
-                                            value={urgencyKey}
-                                        >
-                                            {urgencyOptions.map((urgency) => (
-                                                <option
-                                                    key={urgency.key}
-                                                    value={urgency.key}
-                                                >
-                                                    {urgency.title}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </label>
-
-                                    <label className="field-card field-card-wide">
-                                        <span className="field-icon">✎</span>
-                                        <span className="field-label">
-                                            Комментарий
-                                        </span>
-                                        <textarea
-                                            name="comment"
-                                            onChange={(event) => {
-                                                setComment(event.target.value);
-                                                resetRequest();
-                                            }}
-                                            placeholder="Например: стеклопакет запотевает, нужен замер после 18:00"
-                                            value={comment}
-                                        />
-                                    </label>
-
-                                    <label className="field-card file-field">
-                                        <span className="field-icon">▧</span>
-                                        <span className="field-label">
-                                            Фото окна
-                                        </span>
-                                        <input
-                                            accept="image/*"
-                                            name="window_photo"
-                                            onChange={(event) => {
-                                                setPhotoName(
-                                                    event.currentTarget
-                                                        .files?.[0]?.name ?? '',
-                                                );
-                                                resetRequest();
-                                            }}
-                                            type="file"
-                                        />
-                                        <strong>
-                                            {photoName || 'загрузить фото'}
-                                        </strong>
-                                    </label>
-
-                                    <label className="field-card">
-                                        <span className="field-icon">☺</span>
-                                        <span className="field-label">Имя</span>
-                                        <input
-                                            name="name"
-                                            onChange={(event) => {
-                                                setClientName(
-                                                    event.target.value,
-                                                );
-                                                resetRequest();
-                                            }}
-                                            placeholder="Как к вам обращаться"
-                                            value={clientName}
-                                        />
-                                    </label>
-
-                                    <label className="field-card">
-                                        <span className="field-icon">☎</span>
-                                        <span className="field-label">
-                                            Телефон
-                                        </span>
-                                        <input
-                                            name="phone"
-                                            onChange={(event) => {
-                                                setClientPhone(
-                                                    event.target.value,
-                                                );
-                                                resetRequest();
-                                            }}
-                                            placeholder="+7 (___) ___-__-__"
-                                            value={clientPhone}
-                                        />
-                                    </label>
-
                                     <button
                                         className="btn btn-accent"
                                         type="submit"
@@ -773,24 +820,52 @@ export default function OknaMarket() {
 
                     <section className="problems-section">
                         <div className="container">
+                            <div className="problems-header">
+                                <h2>
+                                    Типичные сложности с окнами - и как сервис
+                                    их убирает
+                                </h2>
+                                <p>
+                                    Вместо хаотичных звонков и разных условий вы
+                                    сразу видите понятные предложения, цену,
+                                    рейтинг и следующую доступную дату.
+                                </p>
+                            </div>
+
                             <div className="problem-grid">
-                                {problems.map((item) => (
+                                {problems.map((item, index) => (
                                     <article
                                         className="problem-card"
                                         key={item.problem}
                                     >
-                                        <div className="problem-icon">
-                                            {item.icon}
+                                        <div className="problem-card-top">
+                                            <div
+                                                aria-hidden="true"
+                                                className="problem-icon"
+                                            >
+                                                {item.icon}
+                                            </div>
+                                            <span className="problem-number">
+                                                {String(index + 1).padStart(
+                                                    2,
+                                                    '0',
+                                                )}
+                                            </span>
                                         </div>
-                                        <span className="card-label">
-                                            Проблема
-                                        </span>
-                                        <h3>{item.problem}</h3>
-                                        <div className="flow-arrow">↓</div>
-                                        <span className="card-label">
-                                            Решение
-                                        </span>
-                                        <p>{item.solution}</p>
+
+                                        <div className="problem-copy">
+                                            <span className="card-label">
+                                                Проблема
+                                            </span>
+                                            <h3>{item.problem}</h3>
+                                        </div>
+
+                                        <div className="solution-copy">
+                                            <span className="card-label">
+                                                Решение
+                                            </span>
+                                            <p>{item.solution}</p>
+                                        </div>
                                     </article>
                                 ))}
                             </div>
@@ -799,36 +874,109 @@ export default function OknaMarket() {
 
                     <section className="catalog-section" id="companies">
                         <div className="container">
-                            <h2>
-                                Сравнивайте не рекламные обещания, а реальные
-                                условия
-                            </h2>
+                            <div className="problems-header">
+                                <h2>
+                                    Гибкий фильтр для подбора надежной компании
+                                </h2>
+                                <p>
+                                    Ниже показан пример выдачи: анимация
+                                    имитирует, как клиент меняет цену, сроки,
+                                    чекбоксы и сортировку.
+                                </p>
+                            </div>
 
-                            <div className="catalog-layout">
+                            <div
+                                className={`catalog-layout catalog-demo-layout demo-step-${activeDemoStep.key}`}
+                            >
+                                <span
+                                    aria-hidden="true"
+                                    className="demo-watermark"
+                                >
+                                    пример
+                                </span>
+                                <span
+                                    aria-hidden="true"
+                                    className="demo-click-cursor"
+                                >
+                                    <span />
+                                </span>
                                 <aside
                                     aria-label="Фильтры компаний"
                                     className="filters-card"
                                 >
-                                    <h3>Фильтры</h3>
+                                    <h3>Фильтры примера</h3>
+                                    <p className="filters-caption">
+                                        Данные не отправляются. Блок показывает
+                                        будущую механику выдачи.
+                                    </p>
 
-                                    <div className="filter-group">
+                                    <div
+                                        className={`filter-group ${
+                                            activeDemoStep.focus === 'price'
+                                                ? 'demo-focus'
+                                                : ''
+                                        }`}
+                                    >
                                         <h4>Цена</h4>
-                                        <div className="price-range">
-                                            от{' '}
-                                            {formatRoubles(estimatedRange[0])} ₽
-                                            <span />
-                                            до{' '}
-                                            {formatRoubles(estimatedRange[1])} ₽
+                                        <div
+                                            className={`price-range demo-price-range ${
+                                                activeDemoStep.focus === 'price'
+                                                    ? 'demo-touched'
+                                                    : ''
+                                            }`}
+                                        >
+                                            <span className="price-range-value">
+                                                <small>от</small>
+                                                <strong>
+                                                    {formatRoubles(
+                                                        catalogEstimatedRange[0],
+                                                    )}{' '}
+                                                    ₽
+                                                </strong>
+                                            </span>
+                                            <span className="price-range-line">
+                                                <i
+                                                    style={{
+                                                        left: `${activeDemoStep.priceFill[0]}%`,
+                                                        width: `${
+                                                            activeDemoStep
+                                                                .priceFill[1] -
+                                                            activeDemoStep
+                                                                .priceFill[0]
+                                                        }%`,
+                                                    }}
+                                                />
+                                            </span>
+                                            <span className="price-range-value">
+                                                <small>до</small>
+                                                <strong>
+                                                    {formatRoubles(
+                                                        catalogEstimatedRange[1],
+                                                    )}{' '}
+                                                    ₽
+                                                </strong>
+                                            </span>
                                         </div>
                                     </div>
 
-                                    <div className="filter-group">
+                                    <div
+                                        className={`filter-group ${
+                                            activeDemoStep.focus === 'rating'
+                                                ? 'demo-focus'
+                                                : ''
+                                        }`}
+                                    >
                                         <h4>Рейтинг компании</h4>
                                         {filterOptions
                                             .slice(0, 3)
                                             .map((filter) => (
                                                 <label
-                                                    className="checkbox-row"
+                                                    className={`checkbox-row ${
+                                                        activeDemoStep.touchedFilter ===
+                                                        filter.key
+                                                            ? 'demo-touched'
+                                                            : ''
+                                                    }`}
                                                     key={filter.key}
                                                 >
                                                     <input
@@ -847,9 +995,22 @@ export default function OknaMarket() {
                                             ))}
                                     </div>
 
-                                    <div className="filter-group">
+                                    <div
+                                        className={`filter-group ${
+                                            activeDemoStep.focus === 'deadline'
+                                                ? 'demo-focus'
+                                                : ''
+                                        }`}
+                                    >
                                         <h4>Сроки</h4>
-                                        <label className="checkbox-row">
+                                        <label
+                                            className={`checkbox-row ${
+                                                activeDemoStep.touchedFilter ===
+                                                'urgent'
+                                                    ? 'demo-touched'
+                                                    : ''
+                                            }`}
+                                        >
                                             <input
                                                 checked={
                                                     urgencyKey === 'urgent'
@@ -862,7 +1023,14 @@ export default function OknaMarket() {
                                             />
                                             сегодня/завтра
                                         </label>
-                                        <label className="checkbox-row">
+                                        <label
+                                            className={`checkbox-row ${
+                                                activeDemoStep.touchedFilter ===
+                                                'fastDate'
+                                                    ? 'demo-touched'
+                                                    : ''
+                                            }`}
+                                        >
                                             <input
                                                 checked={filters.fastDate}
                                                 onChange={() =>
@@ -872,7 +1040,14 @@ export default function OknaMarket() {
                                             />
                                             до 3 дней
                                         </label>
-                                        <label className="checkbox-row">
+                                        <label
+                                            className={`checkbox-row ${
+                                                activeDemoStep.touchedFilter ===
+                                                'week'
+                                                    ? 'demo-touched'
+                                                    : ''
+                                            }`}
+                                        >
                                             <input
                                                 checked={urgencyKey === 'week'}
                                                 onChange={() => {
@@ -887,15 +1062,21 @@ export default function OknaMarket() {
 
                                     <button
                                         className="btn btn-primary full-width"
-                                        onClick={() => scrollTo('companies')}
+                                        onClick={() => setDemoStepIndex(2)}
                                         type="button"
                                     >
-                                        Применить
+                                        Показать сортировку
                                     </button>
                                 </aside>
 
                                 <div className="catalog-content">
-                                    <div className="sort-panel">
+                                    <div
+                                        className={`sort-panel ${
+                                            activeDemoStep.focus === 'sort'
+                                                ? 'demo-focus'
+                                                : ''
+                                        }`}
+                                    >
                                         <span>Сортировать:</span>
                                         {sortOptions.map((option) => (
                                             <button
@@ -903,11 +1084,18 @@ export default function OknaMarket() {
                                                     sortKey === option.key
                                                         ? 'active'
                                                         : ''
+                                                } ${
+                                                    activeDemoStep.focus ===
+                                                        'sort' &&
+                                                    sortKey === option.key
+                                                        ? 'demo-touched'
+                                                        : ''
                                                 }`}
                                                 key={option.key}
-                                                onClick={() =>
-                                                    setSortKey(option.key)
-                                                }
+                                                onClick={() => {
+                                                    setSortKey(option.key);
+                                                    setDemoStepIndex(2);
+                                                }}
                                                 type="button"
                                             >
                                                 {option.label}
@@ -917,19 +1105,27 @@ export default function OknaMarket() {
 
                                     {visibleCompanies.map((company) => {
                                         const priceMin =
-                                            estimatedRange[0] *
+                                            catalogEstimatedRange[0] *
                                             company.multiplier;
                                         const priceMax =
-                                            estimatedRange[1] *
+                                            catalogEstimatedRange[1] *
                                             company.multiplier;
                                         const isSelected =
                                             selectedCompany === company.name;
+                                        const companyCardClass = [
+                                            'company-card',
+                                            isSelected ? 'selected' : '',
+                                            activeDemoStep.focus ===
+                                                'company' && isSelected
+                                                ? 'demo-focus-card'
+                                                : '',
+                                        ]
+                                            .filter(Boolean)
+                                            .join(' ');
 
                                         return (
                                             <article
-                                                className={`company-card ${
-                                                    isSelected ? 'selected' : ''
-                                                }`}
+                                                className={companyCardClass}
                                                 key={company.name}
                                             >
                                                 <div
@@ -975,7 +1171,7 @@ export default function OknaMarket() {
                                                     </p>
                                                 </div>
                                                 <div className="company-action">
-                                                    <span>Предварительно</span>
+                                                    <span>Цена в примере</span>
                                                     <strong>
                                                         {formatRoubles(
                                                             priceMin,
@@ -995,12 +1191,13 @@ export default function OknaMarket() {
                                                             setRequestCreated(
                                                                 false,
                                                             );
+                                                            setDemoStepIndex(3);
                                                         }}
                                                         type="button"
                                                     >
                                                         {isSelected
-                                                            ? 'Выбрана'
-                                                            : 'Выбрать'}
+                                                            ? 'В примере выбрана'
+                                                            : 'Показать выбор'}
                                                     </button>
                                                 </div>
                                             </article>
@@ -1014,7 +1211,10 @@ export default function OknaMarket() {
                     <section className="steps-section" id="how-it-works">
                         <div className="steps-grid container">
                             {steps.map((step, index) => (
-                                <article className="step-card" key={step.title}>
+                                <article
+                                    className="step-card problem-card"
+                                    key={step.title}
+                                >
                                     <span>{index + 1}</span>
                                     <h3>{step.title}</h3>
                                     <p>{step.text}</p>
@@ -1023,49 +1223,6 @@ export default function OknaMarket() {
                         </div>
                     </section>
 
-                    <section className="status-section">
-                        <div className="container">
-                            <h2>Статус заявки после выбора компании</h2>
-                            <div className="status-grid">
-                                {orderStatuses.map((status, index) => (
-                                    <div
-                                        className={`status-card ${
-                                            requestCreated
-                                                ? index <= 1
-                                                    ? 'active'
-                                                    : ''
-                                                : index === 0
-                                                  ? 'active'
-                                                  : ''
-                                        }`}
-                                        key={status}
-                                    >
-                                        <span>{index + 1}</span>
-                                        {status}
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="request-summary">
-                                <div>
-                                    <strong>{activeService.title}</strong>
-                                    <p>
-                                        {activeWindowType.title}, {width} x{' '}
-                                        {height} см,{' '}
-                                        {desiredDate || 'дата не выбрана'}
-                                    </p>
-                                </div>
-                                <button
-                                    className="btn btn-accent"
-                                    onClick={() => setRequestCreated(true)}
-                                    type="button"
-                                >
-                                    {requestCreated
-                                        ? 'Ожидает подтверждения'
-                                        : 'Оставить заявку'}
-                                </button>
-                            </div>
-                        </div>
-                    </section>
 
                     <section className="price-section">
                         <div className="container">
@@ -1104,7 +1261,15 @@ export default function OknaMarket() {
                                     дату окончания и условия гарантийных работ.
                                 </p>
                             </div>
-                            <div className="guarantee-card">
+                            <div 
+                            // className="guarantee-card">
+                            className={`catalog-demo-layout guarantee-card`}
+                            >
+                            <span
+                                    className="demo-watermark"
+                                >
+                                    пример
+                                </span> 
                                 <strong>Гарантийный талон</strong>
                                 <span>
                                     Компания: {selectedCompanyData.name}
