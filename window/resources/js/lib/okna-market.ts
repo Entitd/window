@@ -20,7 +20,7 @@ export type ExtraWorkKey =
     | 'mosquito'
     | 'urgent';
 
-export type SortKey = 'price' | 'rating' | 'date';
+export type SortKey = 'price' | 'company';
 export type PriceFilterKey = 'all' | '20000' | '35000' | '50000';
 
 export type RequestFormState = {
@@ -50,19 +50,20 @@ export type ExtraWorkOption = {
 };
 
 export type MarketplaceCompany = {
+    id?: number;
     initials: string;
     tone: 'blue' | 'green' | 'violet';
     name: string;
     description: string;
-    rating: number;
-    reviews: number;
-    priceMultiplier: number;
-    nextAvailableDate: string;
-    nextAvailableRank: number;
+    matchedServiceName: string | null;
+    priceLabel: string;
+    sortPrice: number | null;
+    availabilityLabel: string;
+    reviewsLabel: string;
     districts: string[];
-    guarantee: string;
     badge: string;
     feature: string;
+    servicesCount: number;
     serviceKeys: ServiceKey[];
 };
 
@@ -124,87 +125,6 @@ export const defaultRequestForm: RequestFormState = {
     comment: '',
 };
 
-// Mock data until backend search and catalog APIs are ready.
-export const marketplaceCompanies: MarketplaceCompany[] = [
-    {
-        initials: 'ОП',
-        tone: 'blue',
-        name: 'ОкнаПрофи',
-        description:
-            'Замена стеклопакетов, окна под ключ и замер в тот же день.',
-        rating: 4.9,
-        reviews: 231,
-        priceMultiplier: 1,
-        nextAvailableDate: 'сегодня после 18:00',
-        nextAvailableRank: 1,
-        districts: ['Центральный', 'Дзержинский', 'Ворошиловский'],
-        guarantee: '5 лет',
-        badge: 'дешевле рынка',
-        feature: 'Бесплатный замер и фотоотчет после монтажа',
-        serviceKeys: ['glass_replacement', 'window_installation', 'repair'],
-    },
-    {
-        initials: 'ТД',
-        tone: 'green',
-        name: 'ТеплоДом',
-        description:
-            'Установка окон, балконных блоков и сервисное обслуживание.',
-        rating: 4.8,
-        reviews: 184,
-        priceMultiplier: 1.08,
-        nextAvailableDate: '13 июня',
-        nextAvailableRank: 2,
-        districts: ['Краснооктябрьский', 'Тракторозаводский', 'Центральный'],
-        guarantee: '7 лет',
-        badge: 'быстрый замер',
-        feature: 'Подтверждение времени в течение 2 часов',
-        serviceKeys: [
-            'glass_replacement',
-            'window_installation',
-            'balcony_block',
-            'measurement',
-        ],
-    },
-    {
-        initials: 'GC',
-        tone: 'violet',
-        name: 'GlassCity',
-        description:
-            'Премиальные стеклопакеты и аккуратный монтаж для квартир и домов.',
-        rating: 4.7,
-        reviews: 96,
-        priceMultiplier: 1.16,
-        nextAvailableDate: '15 июня',
-        nextAvailableRank: 4,
-        districts: ['Советский', 'Кировский', 'Волжский'],
-        guarantee: '10 лет',
-        badge: 'премиальный профиль',
-        feature: 'Подбор шумоизоляции и расширенная гарантия',
-        serviceKeys: [
-            'glass_replacement',
-            'window_installation',
-            'balcony_block',
-        ],
-    },
-    {
-        initials: 'МС',
-        tone: 'blue',
-        name: 'МонтажСервис',
-        description:
-            'Ремонт фурнитуры, регулировка и небольшие монтажные задачи.',
-        rating: 4.6,
-        reviews: 143,
-        priceMultiplier: 0.94,
-        nextAvailableDate: 'завтра',
-        nextAvailableRank: 1,
-        districts: ['Центральный', 'Советский', 'Красноармейский'],
-        guarantee: '1 год',
-        badge: 'лучше для ремонта',
-        feature: 'Умеют работать без полной замены рамы',
-        serviceKeys: ['repair', 'measurement', 'glass_replacement'],
-    },
-];
-
 export const homepageSteps = [
     {
         title: 'Заполните параметры',
@@ -212,7 +132,7 @@ export const homepageSteps = [
     },
     {
         title: 'Сравните предложения',
-        text: 'Сервис показывает компании, сроки, рейтинг, диапазон цен и удобные районы работы.',
+        text: 'Сервис показывает подтвержденные компании, активные услуги, цену компании и удобные районы работы.',
     },
     {
         title: 'Выберите исполнителя',
@@ -224,16 +144,16 @@ export const homepageBenefits = [
     'Не нужно обзванивать компании и объяснять одно и то же.',
     'Можно заранее увидеть примерный диапазон цены.',
     'Удобно выбрать желаемую дату монтажа или замера.',
-    'Компании видно по рейтингу, районам и услугам.',
+    'Компании видно по модерации, районам и активным услугам.',
     'Заявки и статусы сохраняются в личном кабинете.',
 ];
 
 export const vendorBenefits = [
     'Новые заявки без хаотичного лидогенератора и мусорных обращений.',
-    'Управление районами работы, услугами, ценами и доступными датами.',
+    'Управление районами работы, услугами, ценами и статусами заявок.',
     'Личный кабинет для обработки заявок и контроля статусов.',
     'Прозрачная модерация компаний и понятный профиль для клиента.',
-    'Возможность показать гарантию, фото работ и специализацию команды.',
+    'Публичная карточка показывается только после подтверждения администратором.',
     'Сценарий подходит и для установки, и для ремонта стеклопакетов.',
 ];
 
@@ -244,7 +164,7 @@ export const vendorSteps = [
     },
     {
         title: 'Заполнение услуг',
-        text: 'Добавляете районы работы, базовые цены, описание и фото выполненных заказов.',
+        text: 'Добавляете районы работы, активные услуги, базовые цены и описание компании.',
     },
     {
         title: 'Модерация',
@@ -257,9 +177,8 @@ export const vendorSteps = [
 ];
 
 export const sortOptions: { key: SortKey; label: string }[] = [
-    { key: 'price', label: 'Дешевле' },
-    { key: 'date', label: 'Быстрее' },
-    { key: 'rating', label: 'Выше рейтинг' },
+    { key: 'price', label: 'Сначала дешевле' },
+    { key: 'company', label: 'По компании' },
 ];
 
 export const priceFilterOptions: { key: PriceFilterKey; label: string }[] = [

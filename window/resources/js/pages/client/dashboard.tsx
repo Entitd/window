@@ -1,4 +1,4 @@
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     CalendarDays,
     CheckCircle2,
@@ -20,17 +20,17 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import {
-    clientRequests,
     getStatusLabel,
     getStatusVariant,
     type ClientRequest,
-} from '@/lib/dashboard-mock';
+} from '@/lib/dashboard-format';
 import { dashboard as appDashboard, home } from '@/routes';
 import { dashboard as clientDashboard } from '@/routes/client';
 import type { Auth } from '@/types';
 
 type PageProps = {
     auth: Auth;
+    requests: ClientRequest[];
 };
 
 const activeStatuses = [
@@ -44,6 +44,32 @@ function isActiveRequest(request: ClientRequest) {
     return activeStatuses.includes(request.status);
 }
 
+function canCancelClientRequest(request: ClientRequest) {
+    return ['new', 'awaiting_confirmation', 'confirmed'].includes(
+        request.status,
+    );
+}
+
+function cancelClientRequest(requestId: string) {
+    router.patch(
+        `/client/requests/${requestId}/cancel`,
+        {},
+        {
+            preserveScroll: true,
+        },
+    );
+}
+
+function repeatClientRequest(requestId: string) {
+    router.post(
+        `/client/requests/${requestId}/repeat`,
+        {},
+        {
+            preserveScroll: true,
+        },
+    );
+}
+
 function formatWindowSize(request: ClientRequest) {
     return `${request.width} x ${request.height} см`;
 }
@@ -51,9 +77,13 @@ function formatWindowSize(request: ClientRequest) {
 function RequestSummaryCard({
     request,
     isFeatured = false,
+    canCancel = false,
+    canRepeat = false,
 }: {
     request: ClientRequest;
     isFeatured?: boolean;
+    canCancel?: boolean;
+    canRepeat?: boolean;
 }) {
     return (
         <article className="rounded-xl border border-sidebar-border/70 bg-background p-4 dark:border-sidebar-border">
@@ -118,20 +148,29 @@ function RequestSummaryCard({
             )}
 
             <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                <Button variant="outline" size="sm" type="button" disabled>
-                    Посмотреть заявку
+                <Button variant="outline" size="sm" asChild>
+                    <Link href={`/client/requests/${request.id}`}>
+                        Посмотреть заявку
+                    </Link>
                 </Button>
-                <Button variant="secondary" size="sm" asChild>
-                    <Link href={home()} prefetch>
+                <Button
+                    variant="secondary"
+                    size="sm"
+                    type="button"
+                    disabled={!canRepeat}
+                    onClick={() => repeatClientRequest(request.id)}
+                >
+                    <>
                         <RefreshCw className="size-4" aria-hidden="true" />
                         Повторить заявку
-                    </Link>
+                    </>
                 </Button>
                 <Button
                     variant="ghost"
                     size="sm"
                     type="button"
-                    disabled={!isActiveRequest(request)}
+                    disabled={!canCancel || !canCancelClientRequest(request)}
+                    onClick={() => cancelClientRequest(request.id)}
                 >
                     <XCircle className="size-4" aria-hidden="true" />
                     Отменить заявку
@@ -165,10 +204,8 @@ function EmptyRequestsState() {
 }
 
 export default function ClientDashboard() {
-    const { auth } = usePage<PageProps>().props;
+    const { auth, requests = [] } = usePage<PageProps>().props;
 
-    // Mock data: frontend-only until client requests are connected to backend.
-    const requests = clientRequests;
     const activeRequests = requests.filter(isActiveRequest);
     const completedRequests = requests.filter(
         (request) => request.status === 'completed',
@@ -291,6 +328,8 @@ export default function ClientDashboard() {
                                     <RequestSummaryCard
                                         request={selectedRequest}
                                         isFeatured
+                                        canCancel
+                                        canRepeat
                                     />
                                 ) : (
                                     <EmptyRequestsState />
@@ -313,6 +352,8 @@ export default function ClientDashboard() {
                                             <RequestSummaryCard
                                                 key={request.id}
                                                 request={request}
+                                                canCancel
+                                                canRepeat
                                             />
                                         ))}
                                     </div>
@@ -463,8 +504,8 @@ export default function ClientDashboard() {
                                     </div>
                                     <p className="text-sm text-muted-foreground">
                                         {lastCompletedRequest.id} завершена.
-                                        После подключения backend здесь можно
-                                        будет оставить оценку компании{' '}
+                                        Оценка компании станет доступна после
+                                        запуска отзывов по выполненным заявкам{' '}
                                         {lastCompletedRequest.company}.
                                     </p>
                                     <Button

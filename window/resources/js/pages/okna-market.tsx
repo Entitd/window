@@ -4,7 +4,8 @@ import {
     FaqAccordion,
     homepageFaqItems,
 } from '@/components/okna-market/faq-accordion';
-import { agreement, privacy, searchResults } from '@/routes';
+import { agreement, login, privacy, register, searchResults } from '@/routes';
+import { MARKETPLACE_PATHS } from '@/lib/okna-market';
 import '../../css/okna-market.css';
 
 type ServiceKey =
@@ -652,7 +653,7 @@ export default function OknaMarket() {
                                 Как работает
                             </button>
                             <button
-                                onClick={() => scrollTo('partners')}
+                                onClick={() => router.visit(MARKETPLACE_PATHS.vendors)}
                                 type="button"
                             >
                                 Для компаний
@@ -661,13 +662,12 @@ export default function OknaMarket() {
 
                         <div className="header-actions">
                             <span className="city-pill">Волгоград</span>
-                            <button
-                                className="btn btn-primary"
-                                onClick={() => scrollTo('request')}
-                                type="button"
-                            >
-                                Оставить заявку
-                            </button>
+                            <Link className="btn btn-secondary" href={login()}>
+                                Войти
+                            </Link>
+                            <Link className="btn btn-primary" href={register()}>
+                                Зарегистрироваться
+                            </Link>
                         </div>
                     </div>
                 </header>

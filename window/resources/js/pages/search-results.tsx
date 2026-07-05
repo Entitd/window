@@ -1,4 +1,4 @@
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
 import { MarketShell } from '@/components/okna-market/market-shell';
 import type {
@@ -12,7 +12,6 @@ import {
     getExtraWorkLabels,
     getServiceLabel,
     MARKETPLACE_PATHS,
-    marketplaceCompanies,
     parseSearchState,
     priceFilterOptions,
     sortOptions,
@@ -25,118 +24,106 @@ type CreatedRequest = {
     createdAt: string;
 };
 
+type PageProps = {
+    companies: MarketplaceCompany[];
+};
+
 export default function SearchResults() {
-    const { url } = usePage();
+    const { url, props } = usePage<PageProps>();
+    const companies = props.companies;
     const request = useMemo(() => parseSearchState(url), [url]);
     const estimate = useMemo(() => buildEstimate(request), [request]);
     const [sortKey, setSortKey] = useState<SortKey>('price');
     const [priceFilter, setPriceFilter] = useState<PriceFilterKey>('all');
     const [districtFilter, setDistrictFilter] = useState('all');
-    const [ratingFilter, setRatingFilter] = useState('all');
-    const [dateFilter, setDateFilter] = useState('all');
+    const [submittingCompanyName, setSubmittingCompanyName] = useState<
+        string | null
+    >(null);
+    const [submitError, setSubmitError] = useState<string | null>(null);
     const [createdRequest, setCreatedRequest] = useState<CreatedRequest | null>(
         null,
     );
 
     const districtOptions = useMemo(() => {
         return Array.from(
-            new Set(
-                marketplaceCompanies.flatMap((company) => company.districts),
-            ),
+            new Set(companies.flatMap((company) => company.districts)),
         );
-    }, []);
+    }, [companies]);
 
     const visibleCompanies = useMemo(() => {
-        return marketplaceCompanies
-            .filter((company) =>
-                company.serviceKeys.includes(request.serviceKey),
-            )
+        return companies
             .filter((company) => {
-                const maxPrice = estimate[1] * company.priceMultiplier;
-
-                if (priceFilter !== 'all' && maxPrice > Number(priceFilter)) {
-                    return false;
-                }
-
                 if (
-                    districtFilter !== 'all' &&
-                    !company.districts.includes(districtFilter)
+                    priceFilter !== 'all' &&
+                    (!company.sortPrice || company.sortPrice > Number(priceFilter))
                 ) {
                     return false;
                 }
 
-                if (ratingFilter === '47' && company.rating < 4.7) {
-                    return false;
-                }
-
-                if (ratingFilter === '48' && company.rating < 4.8) {
-                    return false;
-                }
-
-                if (dateFilter === 'fast' && company.nextAvailableRank > 2) {
-                    return false;
-                }
-
-                if (dateFilter === 'week' && company.nextAvailableRank > 4) {
-                    return false;
-                }
-
-                return true;
+                return (
+                    districtFilter === 'all' ||
+                    company.districts.includes(districtFilter)
+                );
             })
             .sort((firstCompany, secondCompany) => {
-                if (sortKey === 'rating') {
-                    return secondCompany.rating - firstCompany.rating;
-                }
-
-                if (sortKey === 'date') {
-                    return (
-                        firstCompany.nextAvailableRank -
-                        secondCompany.nextAvailableRank
+                if (sortKey === 'company') {
+                    return firstCompany.name.localeCompare(
+                        secondCompany.name,
+                        'ru',
                     );
                 }
 
                 return (
-                    firstCompany.priceMultiplier - secondCompany.priceMultiplier
+                    (firstCompany.sortPrice ?? Number.MAX_SAFE_INTEGER) -
+                    (secondCompany.sortPrice ?? Number.MAX_SAFE_INTEGER)
                 );
             });
-    }, [
-        dateFilter,
-        districtFilter,
-        estimate,
-        priceFilter,
-        ratingFilter,
-        request.serviceKey,
-        sortKey,
-    ]);
+    }, [companies, districtFilter, priceFilter, sortKey]);
 
     const selectedExtras = getExtraWorkLabels(request.extraWorks);
+    const requestDistrict = useMemo(
+        () => extractDistrictFromLocation(request.city),
+        [request.city],
+    );
 
-    const createMockRequest = (
-        company: MarketplaceCompany,
-        companyMin: number,
-        companyMax: number,
-    ) => {
-        // Mock request creation until backend order endpoints are ready.
-        setCreatedRequest({
-            id: `REQ-${String(Date.now()).slice(-6)}`,
-            companyName: company.name,
-            priceRange: `${formatCurrency(companyMin)} - ${formatCurrency(
-                companyMax,
-            )}`,
-            createdAt: new Intl.DateTimeFormat('ru-RU', {
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                month: 'long',
-            }).format(new Date()),
-        });
+    const createRequest = (company: MarketplaceCompany) => {
+        if (!company.id) {
+            setSubmitError('Не удалось определить компанию для заявки.');
+            return;
+        }
 
-        window.setTimeout(() => {
-            document.getElementById('request-confirmation')?.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start',
-            });
-        }, 0);
+        setSubmitError(null);
+        setSubmittingCompanyName(company.name);
+
+        router.post(
+            '/client/requests',
+            {
+                service_key: request.serviceKey,
+                vendor_id: company.id,
+                city: request.city,
+                district:
+                    districtFilter === 'all' ? requestDistrict : districtFilter,
+                installation_date: request.installationDate || null,
+                window_width: Number(request.width),
+                window_height: Number(request.height),
+                additional_services: request.extraWorks,
+                comment: request.comment || null,
+            },
+            {
+                preserveScroll: true,
+                onError: (errors) => {
+                    const message = Object.values(errors).join(' ');
+
+                    setSubmitError(
+                        message ||
+                            'Не удалось создать заявку. Проверьте поля и попробуйте еще раз.',
+                    );
+                },
+                onFinish: () => {
+                    setSubmittingCompanyName(null);
+                },
+            },
+        );
     };
 
     return (
@@ -152,12 +139,13 @@ export default function SearchResults() {
                     <div className="container">
                         <span className="eyebrow">Результаты подбора</span>
                         <h1 className="page-title">
-                            Компании по вашей заявке уже отсортированы по
-                            срокам, цене и рейтингу
+                            Проверенные компании, которые подходят по услуге и
+                            району
                         </h1>
                         <p className="page-intro">
-                            Пока это mock-данные фронтенда. Логика поиска и
-                            подтверждения компаний подключится на backend-этапе.
+                            В выдаче только подтвержденные компании с активной
+                            услугой. Цена берется из профиля компании, а сроки
+                            и детали подтверждаются после заявки.
                         </p>
                     </div>
                 </section>
@@ -178,7 +166,7 @@ export default function SearchResults() {
                             <div className="summary-item">
                                 <span>Размеры окна</span>
                                 <strong>
-                                    {request.width} × {request.height} см
+                                    {request.width} x {request.height} см
                                 </strong>
                             </div>
                             <div className="summary-item">
@@ -196,7 +184,7 @@ export default function SearchResults() {
                                 </strong>
                             </div>
                             <div className="summary-item">
-                                <span>Диапазон цены</span>
+                                <span>Ориентир по форме</span>
                                 <strong>
                                     {formatCurrency(estimate[0])} -{' '}
                                     {formatCurrency(estimate[1])}
@@ -246,11 +234,9 @@ export default function SearchResults() {
                                     {createdRequest.companyName}
                                 </h2>
                                 <p>
-                                    Сейчас это frontend-mock: заявка собрана из
-                                    параметров формы и выбора компании. На
-                                    backend-этапе здесь появится реальная запись
-                                    в базе, уведомление вендору и история
-                                    статусов.
+                                    Заявка создана в базе и доступна в личном
+                                    кабинете клиента. Компания сможет обработать
+                                    ее после подключения очереди заявок.
                                 </p>
                             </div>
 
@@ -277,6 +263,12 @@ export default function SearchResults() {
                             </div>
 
                             <div className="request-created-actions">
+                                <Link
+                                    className="btn btn-primary"
+                                    href="/client/dashboard"
+                                >
+                                    Открыть кабинет клиента
+                                </Link>
                                 <Link
                                     className="btn btn-secondary"
                                     href={MARKETPLACE_PATHS.home}
@@ -309,7 +301,7 @@ export default function SearchResults() {
                             <h3>Фильтры</h3>
 
                             <div className="filter-group">
-                                <h4>Цена</h4>
+                                <h4>Цена компании</h4>
                                 <div className="stack-chips">
                                     {priceFilterOptions.map((option) => (
                                         <button
@@ -328,70 +320,6 @@ export default function SearchResults() {
                                         </button>
                                     ))}
                                 </div>
-                            </div>
-
-                            <div className="filter-group">
-                                <h4>Рейтинг</h4>
-                                <label className="checkbox-row">
-                                    <input
-                                        checked={ratingFilter === '47'}
-                                        onChange={() =>
-                                            setRatingFilter(
-                                                ratingFilter === '47'
-                                                    ? 'all'
-                                                    : '47',
-                                            )
-                                        }
-                                        type="checkbox"
-                                    />
-                                    от 4.7 и выше
-                                </label>
-                                <label className="checkbox-row">
-                                    <input
-                                        checked={ratingFilter === '48'}
-                                        onChange={() =>
-                                            setRatingFilter(
-                                                ratingFilter === '48'
-                                                    ? 'all'
-                                                    : '48',
-                                            )
-                                        }
-                                        type="checkbox"
-                                    />
-                                    от 4.8 и выше
-                                </label>
-                            </div>
-
-                            <div className="filter-group">
-                                <h4>Дата</h4>
-                                <label className="checkbox-row">
-                                    <input
-                                        checked={dateFilter === 'fast'}
-                                        onChange={() =>
-                                            setDateFilter(
-                                                dateFilter === 'fast'
-                                                    ? 'all'
-                                                    : 'fast',
-                                            )
-                                        }
-                                        type="checkbox"
-                                    />
-                                    сегодня или завтра
-                                </label>
-                                <label className="checkbox-row">
-                                    <input
-                                        checked={dateFilter === 'week'}
-                                        onChange={() =>
-                                            setDateFilter(
-                                                dateFilter === 'week'
-                                                    ? 'all'
-                                                    : 'week',
-                                            )
-                                        }
-                                        type="checkbox"
-                                    />
-                                    на этой неделе
-                                </label>
                             </div>
 
                             <div className="filter-group">
@@ -436,88 +364,115 @@ export default function SearchResults() {
                                 Найдено компаний: {visibleCompanies.length}
                             </div>
 
-                            {visibleCompanies.map((company) => {
-                                const companyMin =
-                                    estimate[0] * company.priceMultiplier;
-                                const companyMax =
-                                    estimate[1] * company.priceMultiplier;
+                            {submitError && (
+                                <div className="request-created-card">
+                                    <strong>Не удалось создать заявку</strong>
+                                    <p>{submitError}</p>
+                                </div>
+                            )}
 
-                                return (
-                                    <article
-                                        className={`company-card ${
-                                            createdRequest?.companyName ===
-                                            company.name
-                                                ? 'selected'
-                                                : ''
-                                        }`}
-                                        key={company.name}
+                            {visibleCompanies.map((company) => (
+                                <article
+                                    className={`company-card ${
+                                        createdRequest?.companyName ===
+                                        company.name
+                                            ? 'selected'
+                                            : ''
+                                    }`}
+                                    key={company.id ?? company.name}
+                                >
+                                    <div
+                                        className={`company-logo ${company.tone}`}
                                     >
-                                        <div
-                                            className={`company-logo ${company.tone}`}
-                                        >
-                                            {company.initials}
+                                        {company.initials}
+                                    </div>
+                                    <div className="company-info">
+                                        <h3>{company.name}</h3>
+                                        <p>{company.description}</p>
+                                        <div className="company-tags">
+                                            <span className="rating-tag">
+                                                {company.reviewsLabel}
+                                            </span>
+                                            <span className="green-tag">
+                                                {company.badge}
+                                            </span>
                                         </div>
-                                        <div className="company-info">
-                                            <h3>{company.name}</h3>
-                                            <p>{company.description}</p>
-                                            <div className="company-tags">
-                                                <span className="rating-tag">
-                                                    ★{' '}
-                                                    {company.rating.toFixed(1)}{' '}
-                                                    / {company.reviews} отзывов
-                                                </span>
-                                                <span className="green-tag">
-                                                    {company.badge}
-                                                </span>
-                                            </div>
-                                            <ul className="company-features">
-                                                <li>
-                                                    Ближайшая дата:{' '}
-                                                    {company.nextAvailableDate}
-                                                </li>
-                                                <li>
-                                                    Районы:{' '}
-                                                    {company.districts.join(
-                                                        ', ',
+                                        <ul className="company-features">
+                                            <li>
+                                                Услуга:{' '}
+                                                {company.matchedServiceName ||
+                                                    getServiceLabel(
+                                                        request.serviceKey,
                                                     )}
-                                                </li>
-                                                <li>
-                                                    Услуги:{' '}
-                                                    {company.serviceKeys.length}
-                                                </li>
-                                                <li>{company.feature}</li>
-                                            </ul>
-                                        </div>
-                                        <div className="company-action">
-                                            <span>Предварительно</span>
-                                            <strong>
-                                                {formatCurrency(companyMin)} -{' '}
-                                                {formatCurrency(companyMax)}
-                                            </strong>
-                                            <button
-                                                className="btn btn-primary"
-                                                onClick={() =>
-                                                    createMockRequest(
-                                                        company,
-                                                        companyMin,
-                                                        companyMax,
-                                                    )
-                                                }
-                                                type="button"
-                                            >
-                                                {createdRequest?.companyName ===
-                                                company.name
-                                                    ? 'Заявка создана'
-                                                    : 'Выбрать компанию'}
-                                            </button>
-                                        </div>
-                                    </article>
-                                );
-                            })}
+                                            </li>
+                                            <li>
+                                                Срок:{' '}
+                                                {company.availabilityLabel}
+                                            </li>
+                                            <li>
+                                                Районы:{' '}
+                                                {company.districts.length > 0
+                                                    ? company.districts.join(
+                                                          ', ',
+                                                      )
+                                                    : 'уточняются'}
+                                            </li>
+                                            <li>
+                                                Активных услуг:{' '}
+                                                {company.servicesCount}
+                                            </li>
+                                            <li>{company.feature}</li>
+                                        </ul>
+                                    </div>
+                                    <div className="company-action">
+                                        <span>Цена компании</span>
+                                        <strong>{company.priceLabel}</strong>
+                                        <button
+                                            className="btn btn-primary"
+                                            disabled={
+                                                submittingCompanyName !== null
+                                            }
+                                            onClick={() =>
+                                                createRequest(company)
+                                            }
+                                            type="button"
+                                        >
+                                            {createdRequest?.companyName ===
+                                            company.name
+                                                ? 'Открыть подтверждение'
+                                                : 'Выбрать компанию'}
+                                        </button>
+                                    </div>
+                                </article>
+                            ))}
+
+                            {visibleCompanies.length === 0 && (
+                                <div className="request-created-card">
+                                    <strong>
+                                        Подходящих подтвержденных компаний пока
+                                        нет
+                                    </strong>
+                                    <p>
+                                        В выдачу попадают только компании,
+                                        которые прошли модерацию, работают в
+                                        выбранном районе и добавили активную
+                                        услугу в личном кабинете.
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </section>
             </MarketShell>
         </>
     );
+}
+
+function extractDistrictFromLocation(location: string): string | null {
+    const district = location
+        .split(',')
+        .map((part) => part.trim())
+        .find((part) => part.toLowerCase().includes('район'));
+
+    return district ? district.replace(/район/i, '').trim() : null;
 }

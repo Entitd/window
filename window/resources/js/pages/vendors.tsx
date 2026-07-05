@@ -31,12 +31,12 @@ export default function Vendors() {
                                 чтобы клиент видел понятный и аккуратный каталог.
                             </p>
                             <div className="hero-actions">
-                                <button className="btn btn-primary" type="button">
+                                <Link className="btn btn-primary" href="/register/vendor">
                                     Зарегистрировать компанию
-                                </button>
+                                </Link>
                                 <span className="hero-note">
-                                    Форма регистрации вендора будет следующим
-                                    этапом, пока страница готовит под нее интерфейс.
+                                    Регистрация уже доступна, дальше компанию можно
+                                    вести в кабинет, профиль и услуги.
                                 </span>
                             </div>
                         </div>
@@ -90,18 +90,19 @@ export default function Vendors() {
                 <section className="vendor-cta-section">
                     <div className="vendor-cta container">
                         <div>
-                            <span className="faq-kicker">CTA</span>
-                            <h2>Стать партнером можно без полной переделки текущего layout</h2>
+                            <span className="faq-kicker">Подключение</span>
+                            <h2>Зарегистрируйте компанию и пройдите модерацию</h2>
                             <p>
-                                Эта страница уже готова как входная точка для
-                                будущей регистрации компании, кабинета и управления
-                                услугами.
+                                После регистрации компания получает кабинет,
+                                заполняет профиль, добавляет услуги и районы
+                                работы. В публичный поиск карточка попадает
+                                после подтверждения администратором.
                             </p>
                         </div>
                         <div className="vendor-cta-actions">
-                            <button className="btn btn-primary" type="button">
+                            <Link className="btn btn-primary" href="/register/vendor">
                                 Стать партнером
-                            </button>
+                            </Link>
                             <Link
                                 className="btn btn-secondary"
                                 href={MARKETPLACE_PATHS.searchResults}

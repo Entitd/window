@@ -1,5 +1,14 @@
-import { Link } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid } from 'lucide-react';
+import { Link, usePage } from '@inertiajs/react';
+import {
+    BookOpen,
+    Building2,
+    ClipboardList,
+    FolderGit2,
+    LayoutGrid,
+    ShieldCheck,
+    UserRound,
+    Wrench,
+} from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -14,13 +23,52 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
-import type { NavItem } from '@/types';
+import type { Auth, NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Панель',
         href: dashboard(),
         icon: LayoutGrid,
+    },
+];
+
+const adminNavItems: NavItem[] = [
+    {
+        title: 'Модерация компаний',
+        href: '/admin/vendors/moderation',
+        icon: ShieldCheck,
+    },
+];
+
+const clientNavItems: NavItem[] = [
+    {
+        title: 'Мои заявки',
+        href: '/client/dashboard',
+        icon: ClipboardList,
+    },
+];
+
+const vendorNavItems: NavItem[] = [
+    {
+        title: 'Кабинет компании',
+        href: '/vendor/dashboard',
+        icon: Building2,
+    },
+    {
+        title: 'Заявки',
+        href: '/vendor/requests',
+        icon: ClipboardList,
+    },
+    {
+        title: 'Услуги',
+        href: '/vendor/services',
+        icon: Wrench,
+    },
+    {
+        title: 'Профиль',
+        href: '/vendor/profile',
+        icon: UserRound,
     },
 ];
 
@@ -38,6 +86,17 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
+    const { auth } = usePage<{ auth: Auth }>().props;
+    const userRole = String(auth.user.role ?? '');
+    const roleItems =
+        userRole === 'admin'
+            ? adminNavItems
+            : userRole === 'vendor'
+              ? vendorNavItems
+              : userRole === 'client'
+                ? clientNavItems
+                : [];
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -54,6 +113,7 @@ export function AppSidebar() {
 
             <SidebarContent>
                 <NavMain items={mainNavItems} />
+                {roleItems.length > 0 && <NavMain items={roleItems} />}
             </SidebarContent>
 
             <SidebarFooter>
