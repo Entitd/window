@@ -49,10 +49,11 @@ export default function ContactsPage() {
 
                             <div className="map-placeholder">
                                 <span>Карта офиса</span>
-                                <strong>Заглушка до подключения реальной карты</strong>
+                                <strong>Офис в Волгограде</strong>
                                 <p>
-                                    Здесь будет блок с адресом, схемой проезда и
-                                    интерактивной картой.
+                                    Адрес и схема проезда появятся перед публичным
+                                    запуском. Сейчас быстрее связаться по телефону
+                                    или email.
                                 </p>
                             </div>
                         </article>
@@ -83,15 +84,21 @@ export default function ContactsPage() {
                                     <textarea placeholder="Коротко опишите вопрос или проблему" />
                                 </label>
 
-                                <button className="btn btn-primary" type="submit">
-                                    Отправить сообщение
+                                <button
+                                    className="btn btn-primary"
+                                    onClick={() => {
+                                        window.location.href =
+                                            'mailto:hello@oknamarket.ru?subject=Вопрос%20по%20ОкнаМаркет';
+                                    }}
+                                    type="button"
+                                >
+                                    Написать на email
                                 </button>
                             </form>
 
                             <p className="contacts-note">
-                                Форма пока работает как фронтенд-заготовка.
-                                Подключение отправки и хранения обращений
-                                понадобится на backend-этапе.
+                                Онлайн-отправку подключим на следующем этапе.
+                                Сейчас надежнее написать на email или позвонить.
                             </p>
                         </article>
                     </div>
