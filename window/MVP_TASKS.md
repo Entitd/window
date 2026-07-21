@@ -693,6 +693,8 @@ Verification:
 
 ## Task 14: End-to-end manual MVP test
 
+Status: automated MVP flow covered on 2026-07-10. Browser visual QA remains in Task 15.
+
 Priority: high before handoff.
 
 Test flow:
@@ -722,6 +724,24 @@ Verification commands:
 - `php artisan route:list`
 - `npm run build`
 - `npm run types:check`
+
+Result:
+
+- Added `tests/Feature/MvpFlowTest.php` for the core MVP flow on a clean in-memory test database.
+- The test registers a new vendor, approves the vendor as admin, adds an active vendor service, registers a client, creates a request with the approved vendor, confirms the request appears in the client dashboard and vendor request list, then transitions the request through `new -> confirmed -> in_progress -> completed`.
+- The test verifies the completed client request detail includes the expected status history.
+- Fixed the test harness so feature tests run migrations against SQLite `:memory:`.
+- Updated the default `UserFactory` and the standard registration feature test to include the required `phone` field.
+- Did not run destructive local `php artisan migrate:fresh --seed` against `database/database.sqlite`; use it only with explicit approval because it resets the local database.
+- OpenClaw browser navigation to `127.0.0.1` was blocked by runtime policy, so visual browser QA is still tracked separately in Task 15.
+
+Verification:
+
+- Passed: `php artisan db:seed --force`
+- Passed: `php artisan test tests/Feature/MvpFlowTest.php`
+- Passed: `php artisan test`
+- Passed: `npm run types:check`
+- Passed: `npm run build`
 
 ## Task 15: Final frontend QA
 
