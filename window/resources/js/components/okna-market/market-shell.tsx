@@ -1,7 +1,7 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import { MARKETPLACE_PATHS } from '@/lib/okna-market';
-import { agreement, privacy } from '@/routes';
+import { agreement, dashboard, privacy } from '@/routes';
 import '../../../css/okna-market.css';
 
 type ActivePage = 'home' | 'search-results' | 'vendors';
@@ -29,6 +29,9 @@ export function MarketShell({
     ctaHref,
     ctaLabel,
 }: Props) {
+    const { auth } = usePage<{ auth: { user: unknown | null } }>().props;
+    const isAuthenticated = Boolean(auth.user);
+
     return (
         <div className="okna-market-page">
             <header className="site-header">
@@ -55,8 +58,11 @@ export function MarketShell({
 
                     <div className="header-actions">
                         <span className="city-pill">Волгоград</span>
-                        <Link className="btn btn-primary" href={ctaHref}>
-                            {ctaLabel}
+                        <Link
+                            className="btn btn-primary"
+                            href={isAuthenticated ? dashboard() : ctaHref}
+                        >
+                            {isAuthenticated ? 'Личный кабинет' : ctaLabel}
                         </Link>
                     </div>
                 </div>

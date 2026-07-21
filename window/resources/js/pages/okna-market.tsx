@@ -1,10 +1,17 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useEffect, useMemo, useState } from 'react';
 import {
     FaqAccordion,
     homepageFaqItems,
 } from '@/components/okna-market/faq-accordion';
-import { agreement, login, privacy, register, searchResults } from '@/routes';
+import {
+    agreement,
+    dashboard,
+    login,
+    privacy,
+    register,
+    searchResults,
+} from '@/routes';
 import { MARKETPLACE_PATHS } from '@/lib/okna-market';
 import '../../css/okna-market.css';
 
@@ -453,6 +460,8 @@ function getUrgencyByKey(urgencyKey: UrgencyKey): Urgency {
 }
 
 export default function OknaMarket() {
+    const { auth } = usePage<{ auth: { user: unknown | null } }>().props;
+    const isAuthenticated = Boolean(auth.user);
     const [serviceKey, setServiceKey] =
         useState<ServiceKey>('glass_replacement');
     const [windowTypeKey, setWindowTypeKey] = useState<WindowTypeKey>('double');
@@ -662,12 +671,29 @@ export default function OknaMarket() {
 
                         <div className="header-actions">
                             <span className="city-pill">Волгоград</span>
-                            <Link className="btn btn-secondary" href={login()}>
-                                Войти
-                            </Link>
-                            <Link className="btn btn-primary" href={register()}>
-                                Зарегистрироваться
-                            </Link>
+                            {isAuthenticated ? (
+                                <Link
+                                    className="btn btn-primary"
+                                    href={dashboard()}
+                                >
+                                    Личный кабинет
+                                </Link>
+                            ) : (
+                                <>
+                                    <Link
+                                        className="btn btn-secondary"
+                                        href={login()}
+                                    >
+                                        Войти
+                                    </Link>
+                                    <Link
+                                        className="btn btn-primary"
+                                        href={register()}
+                                    >
+                                        Зарегистрироваться
+                                    </Link>
+                                </>
+                            )}
                         </div>
                     </div>
                 </header>
