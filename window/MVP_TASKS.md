@@ -745,6 +745,8 @@ Verification:
 
 ## Task 15: Final frontend QA
 
+Status: done on 2026-07-21.
+
 Priority: high before handoff.
 
 Work:
@@ -775,7 +777,23 @@ Verification:
 - `npm run build`
 - `npm run types:check`
 
+Result:
+
+- Ran local visual QA through headless Chrome/CDP against the Laravel app on `127.0.0.1:8015`.
+- Checked public pages on mobile/desktop: home, search results, vendors, FAQ, contacts, privacy policy, user agreement, login, client registration, and vendor registration.
+- Logged in with seeded users and checked mobile dashboards for client, approved vendor, and admin moderation.
+- Fixed mobile horizontal overflow in the marketplace shell/header and tightened mobile heading wrapping.
+- Kept the existing visual language and did not redesign the global layout.
+- OpenClaw browser control still blocks direct navigation to `127.0.0.1`, so screenshots were captured with local Chrome/CDP instead.
+
+Verification:
+
+- Passed: mobile CDP checks report `scrollWidth` equal to viewport width for home, search results, vendors, contacts, register vendor, client dashboard, vendor dashboard, and admin moderation.
+- Passed: `php artisan db:seed --force`
+
 ## Task 16: Pre-launch cleanup
+
+Status: done on 2026-07-21, except production secrets/domain decisions remain user-owned.
 
 Priority: final.
 
@@ -799,6 +817,18 @@ Verification:
 - `npm run build`
 - `npm run types:check`
 - key Laravel commands from the main brief
+
+Result:
+
+- Updated `.env.example` away from Laravel defaults: app name, local URL, Russian locale/faker locale, and local no-reply mail sender.
+- Restricted the developer `/pages` route so it only renders in `local` and `testing` environments.
+- Checked committed-source secret patterns; no private credentials were found in app/source files.
+- Ran migrations and seeders from zero on a temporary SQLite database under `storage/app`, without resetting the user's local database.
+- Confirmed there are no uploads in the MVP flow, so `storage:link` is not currently required for this scope.
+
+Verification:
+
+- Passed: temporary `DB_DATABASE=storage/app/qa-fresh.sqlite php artisan migrate:fresh --seed --force`
 
 ## Suggested working rule
 

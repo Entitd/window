@@ -15,6 +15,8 @@ use Illuminate\Support\Str;
 
 Route::inertia('/', 'okna-market')->name('home');
 Route::get('pages', function () {
+    abort_unless(app()->environment(['local', 'testing']), 404);
+
     $pages = collect(Route::getRoutes())
         ->filter(function ($route) {
             $methods = $route->methods();
