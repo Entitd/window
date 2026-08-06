@@ -14,7 +14,7 @@ export default function Vendors() {
             <MarketShell
                 activePage="vendors"
                 ctaHref={MARKETPLACE_PATHS.home}
-                ctaLabel="К заявке клиента"
+                ctaLabel="Перейти на главную"
             >
                 <section className="hero">
                     <div className="hero-inner container hero-split">

@@ -1,5 +1,4 @@
 import { Head, router } from '@inertiajs/react';
-import { useEffect, useMemo, useState } from 'react';
 import {
     BadgeDollarSign,
     CalendarDays,
@@ -9,6 +8,7 @@ import {
     Ruler,
     ShieldCheck,
 } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,28 +18,14 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import {
-    getStatusLabel,
-    getStatusVariant,
-    type RequestStatus,
-} from '@/lib/dashboard-format';
+import { RequestClientChatDialog } from '@/components/vendor/request-client-chat-dialog';
+import type { RequestClientChatLead } from '@/components/vendor/request-client-chat-dialog';
+import { getStatusLabel, getStatusVariant } from '@/lib/dashboard-format';
+import type { RequestStatus } from '@/lib/dashboard-format';
 
-type VendorLead = {
-    id: string;
+type VendorLead = RequestClientChatLead & {
     createdAt: string;
-    district: string;
-    city: string;
-    installationDate: string;
-    width: number;
-    height: number;
-    service: string;
     extras: string[];
-    comment: string;
-    estimatedPrice: string;
-    status: RequestStatus;
-    clientName?: string;
-    clientPhone?: string | null;
-    clientEmail?: string | null;
 };
 
 type VendorRequestsPageProps = {
@@ -158,15 +144,15 @@ export default function VendorRequestsPage({
     const [selectedLeadId, setSelectedLeadId] = useState<string>(
         sortedLeads[0]?.id ?? requests[0]?.id ?? '',
     );
-
-    useEffect(() => {
-        if (!sortedLeads.find((lead) => lead.id === selectedLeadId)) {
-            setSelectedLeadId(sortedLeads[0]?.id ?? '');
-        }
-    }, [selectedLeadId, sortedLeads]);
+    const [chatLeadId, setChatLeadId] = useState<string | null>(null);
 
     const selectedLead =
-        sortedLeads.find((lead) => lead.id === selectedLeadId) ?? null;
+        sortedLeads.find((lead) => lead.id === selectedLeadId) ??
+        sortedLeads[0] ??
+        null;
+    const chatLead = chatLeadId
+        ? (requests.find((lead) => lead.id === chatLeadId) ?? null)
+        : null;
 
     const leadStats = [
         {
@@ -187,6 +173,11 @@ export default function VendorRequestsPage({
             icon: CalendarDays,
         },
     ];
+
+    const openChatForLead = (leadId: string) => {
+        setSelectedLeadId(leadId);
+        setChatLeadId(leadId);
+    };
 
     return (
         <>
@@ -280,59 +271,69 @@ export default function VendorRequestsPage({
                                             lead.id === selectedLeadId;
 
                                         return (
-                                            <button
+                                            <div
                                                 className={`rounded-xl border p-4 text-left transition ${
                                                     isSelected
                                                         ? 'border-primary bg-primary/5'
                                                         : 'border-sidebar-border/70 hover:border-primary/40 dark:border-sidebar-border'
                                                 }`}
                                                 key={lead.id}
-                                                type="button"
-                                                onClick={() =>
-                                                    setSelectedLeadId(lead.id)
-                                                }
                                             >
-                                                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                                                    <div className="space-y-3">
-                                                        <div className="flex flex-wrap items-center gap-2">
-                                                            <span className="text-sm font-semibold">
-                                                                {lead.id}
-                                                            </span>
-                                                            <Badge
-                                                                variant={getStatusVariant(
-                                                                    lead.status,
-                                                                )}
-                                                            >
-                                                                {getStatusLabel(
-                                                                    lead.status,
-                                                                )}
-                                                            </Badge>
+                                                <button
+                                                    className="w-full text-left transition outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                                    type="button"
+                                                    onClick={() =>
+                                                        setSelectedLeadId(
+                                                            lead.id,
+                                                        )
+                                                    }
+                                                >
+                                                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                                                        <div className="space-y-3">
+                                                            <div className="flex flex-wrap items-center gap-2">
+                                                                <span className="text-sm font-semibold">
+                                                                    {lead.id}
+                                                                </span>
+                                                                <Badge
+                                                                    variant={getStatusVariant(
+                                                                        lead.status,
+                                                                    )}
+                                                                >
+                                                                    {getStatusLabel(
+                                                                        lead.status,
+                                                                    )}
+                                                                </Badge>
+                                                            </div>
+                                                            <div>
+                                                                <h3 className="font-semibold">
+                                                                    {
+                                                                        lead.service
+                                                                    }
+                                                                </h3>
+                                                                <p className="text-sm text-muted-foreground">
+                                                                    {lead.city},{' '}
+                                                                    {
+                                                                        lead.district
+                                                                    }{' '}
+                                                                    район
+                                                                </p>
+                                                            </div>
                                                         </div>
-                                                        <div>
-                                                            <h3 className="font-semibold">
-                                                                {lead.service}
-                                                            </h3>
-                                                            <p className="text-sm text-muted-foreground">
-                                                                {lead.city},{' '}
-                                                                {lead.district}{' '}
-                                                                район
+
+                                                        <div className="text-sm lg:text-right">
+                                                            <p className="font-semibold">
+                                                                {
+                                                                    lead.estimatedPrice
+                                                                }
+                                                            </p>
+                                                            <p className="mt-1 text-muted-foreground">
+                                                                {lead.createdAt}
                                                             </p>
                                                         </div>
                                                     </div>
+                                                </button>
 
-                                                    <div className="text-sm lg:text-right">
-                                                        <p className="font-semibold">
-                                                            {
-                                                                lead.estimatedPrice
-                                                            }
-                                                        </p>
-                                                        <p className="mt-1 text-muted-foreground">
-                                                            {lead.createdAt}
-                                                        </p>
-                                                    </div>
-                                                </div>
-
-                                                <div className="mt-4 grid gap-3 text-sm md:grid-cols-3">
+                                                <div className="mt-4 grid gap-3 text-sm md:grid-cols-4">
                                                     <div className="rounded-lg bg-muted/50 p-3">
                                                         <p className="text-muted-foreground">
                                                             Дата работ
@@ -360,8 +361,33 @@ export default function VendorRequestsPage({
                                                             {lead.extras.length}
                                                         </p>
                                                     </div>
+
+                                                    <Button
+                                                        className="h-full min-h-[4.25rem] rounded-lg bg-muted/40 px-3 text-left whitespace-normal"
+                                                        size="sm"
+                                                        type="button"
+                                                        variant="outline"
+                                                        onClick={() =>
+                                                            openChatForLead(
+                                                                lead.id,
+                                                            )
+                                                        }
+                                                    >
+                                                        <span className="flex min-w-0 flex-col items-start gap-1">
+                                                            <span className="flex items-center gap-2 font-medium">
+                                                                <MessageSquareText
+                                                                    className="size-4"
+                                                                    aria-hidden="true"
+                                                                />
+                                                                Показать чат
+                                                            </span>
+                                                            <span className="text-xs text-muted-foreground">
+                                                                с клиентом
+                                                            </span>
+                                                        </span>
+                                                    </Button>
                                                 </div>
-                                            </button>
+                                            </div>
                                         );
                                     })}
 
@@ -656,6 +682,16 @@ export default function VendorRequestsPage({
                     </div>
                 </div>
             </div>
+
+            <RequestClientChatDialog
+                lead={chatLead}
+                open={chatLead !== null}
+                onOpenChange={(isOpen) => {
+                    if (!isOpen) {
+                        setChatLeadId(null);
+                    }
+                }}
+            />
         </>
     );
 }
