@@ -1,5 +1,6 @@
-import { MessageSquareText, Paperclip, SendHorizontal } from 'lucide-react';
-import { useState } from 'react';
+import { useForm } from '@inertiajs/react';
+import { MessageSquareText, SendHorizontal } from 'lucide-react';
+import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,6 +12,18 @@ import {
 } from '@/components/ui/dialog';
 import { getStatusVariant } from '@/lib/dashboard-format';
 import type { RequestStatus } from '@/lib/dashboard-format';
+import {
+    store as storeMessage,
+    storeForRequest,
+} from '@/actions/App/Http/Controllers/ChatController';
+
+type ChatMessage = {
+    id: string;
+    author: 'client' | 'vendor';
+    text: string;
+    sentAt: string;
+    isRead: boolean;
+};
 
 export type RequestClientChatLead = {
     id: string;
@@ -26,14 +39,10 @@ export type RequestClientChatLead = {
     clientName?: string;
     clientPhone?: string | null;
     clientEmail?: string | null;
-};
-
-type ChatMessage = {
-    id: string;
-    author: 'client' | 'vendor';
-    text: string;
-    sentAt: string;
-    attachment?: string;
+    chat?: {
+        id: string;
+        messages: ChatMessage[];
+    } | null;
 };
 
 type RequestClientChatDialogProps = {
@@ -42,102 +51,31 @@ type RequestClientChatDialogProps = {
     onOpenChange: (open: boolean) => void;
 };
 
-function getMockChatMessages(lead: RequestClientChatLead): ChatMessage[] {
-    const clientName = lead.clientName ?? 'Клиент';
-
-    return [
-        {
-            id: `${lead.id}-client-1`,
-            author: 'client',
-            text: `Здравствуйте! Нужна консультация по заявке "${lead.service}". Удобно обсудить детали сегодня?`,
-            sentAt: 'Сегодня, 09:12',
-        },
-        {
-            id: `${lead.id}-vendor-1`,
-            author: 'vendor',
-            text: `${clientName}, добрый день. Да, подскажите, пожалуйста, есть ли ограничения по времени для замера?`,
-            sentAt: 'Сегодня, 09:18',
-        },
-        {
-            id: `${lead.id}-client-2`,
-            author: 'client',
-            text: `Ориентировочный размер ${lead.width} x ${lead.height} см. Комментарий к заявке: ${lead.comment}`,
-            sentAt: 'Сегодня, 09:24',
-            attachment: 'photo-window.jpg',
-        },
-        {
-            id: `${lead.id}-vendor-2`,
-            author: 'vendor',
-            text: `Предварительно получается ${lead.estimatedPrice}. После замера закрепим финальную смету и дату работ: ${lead.installationDate}.`,
-            sentAt: 'Сегодня, 09:31',
-        },
-    ];
-}
-
 export function RequestClientChatDialog({
     lead,
     open,
     onOpenChange,
 }: RequestClientChatDialogProps) {
-    const [draft, setDraft] = useState('');
-    const [messagesByLeadId, setMessagesByLeadId] = useState<
-        Record<string, ChatMessage[]>
-    >({});
-
-    const messages = lead
-        ? (messagesByLeadId[lead.id] ?? getMockChatMessages(lead))
-        : [];
-
-    const addAttachment = () => {
-        if (!lead) {
-            return;
-        }
-
-        setMessagesByLeadId((currentMessages) => {
-            const leadMessages =
-                currentMessages[lead.id] ?? getMockChatMessages(lead);
-
-            return {
-                ...currentMessages,
-                [lead.id]: [
-                    ...leadMessages,
-                    {
-                        id: `${lead.id}-attachment-${Date.now()}`,
-                        author: 'vendor',
-                        text: 'Добавлено вложение к переписке.',
-                        sentAt: 'Только что',
-                        attachment: `offer-${lead.id}.pdf`,
-                    },
-                ],
-            };
-        });
-    };
+    const form = useForm({
+        content: '',
+        content_type: 'text',
+    });
+    const messages = lead?.chat?.messages ?? [];
 
     const sendText = () => {
-        const messageText = draft.trim();
-
-        if (!lead || messageText.length === 0) {
+        if (!lead || form.data.content.trim().length === 0) {
             return;
         }
 
-        setMessagesByLeadId((currentMessages) => {
-            const leadMessages =
-                currentMessages[lead.id] ?? getMockChatMessages(lead);
+        const action = lead.chat?.id
+            ? storeMessage(Number(lead.chat.id))
+            : storeForRequest(Number(lead.id));
 
-            return {
-                ...currentMessages,
-                [lead.id]: [
-                    ...leadMessages,
-                    {
-                        id: `${lead.id}-vendor-${Date.now()}`,
-                        author: 'vendor',
-                        text: messageText,
-                        sentAt: 'Только что',
-                    },
-                ],
-            };
+        form.submit(action, {
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: () => form.reset('content'),
         });
-        setDraft('');
     };
 
     return (
@@ -145,7 +83,8 @@ export function RequestClientChatDialog({
             open={open}
             onOpenChange={(isOpen) => {
                 if (!isOpen) {
-                    setDraft('');
+                    form.reset('content');
+                    form.clearErrors();
                 }
 
                 onOpenChange(isOpen);
@@ -196,82 +135,63 @@ export function RequestClientChatDialog({
                             </div>
 
                             <div className="min-h-72 space-y-3 overflow-y-auto pr-1">
-                                {messages.map((message) => {
-                                    const isVendor =
-                                        message.author === 'vendor';
+                                {messages.length > 0 ? (
+                                    messages.map((message) => {
+                                        const isVendor =
+                                            message.author === 'vendor';
 
-                                    return (
-                                        <div
-                                            className={`flex ${
-                                                isVendor
-                                                    ? 'justify-end'
-                                                    : 'justify-start'
-                                            }`}
-                                            key={message.id}
-                                        >
+                                        return (
                                             <div
-                                                className={`max-w-[85%] rounded-lg px-3 py-2 text-sm ${
+                                                className={`flex ${
                                                     isVendor
-                                                        ? 'bg-primary text-primary-foreground'
-                                                        : 'bg-muted text-foreground'
+                                                        ? 'justify-end'
+                                                        : 'justify-start'
                                                 }`}
+                                                key={message.id}
                                             >
-                                                <div className="mb-1 flex flex-wrap items-center justify-between gap-2 text-xs opacity-80">
-                                                    <span>
-                                                        {isVendor
-                                                            ? 'Компания'
-                                                            : (lead.clientName ??
-                                                              'Клиент')}
-                                                    </span>
-                                                    <span>
-                                                        {message.sentAt}
-                                                    </span>
-                                                </div>
-                                                <p className="leading-relaxed">
-                                                    {message.text}
-                                                </p>
-                                                {message.attachment && (
-                                                    <div
-                                                        className={`mt-2 flex items-center gap-2 rounded-md px-2 py-1.5 text-xs ${
-                                                            isVendor
-                                                                ? 'bg-primary-foreground/15'
-                                                                : 'bg-background'
-                                                        }`}
-                                                    >
-                                                        <Paperclip
-                                                            className="size-3.5"
-                                                            aria-hidden="true"
-                                                        />
-                                                        <span className="truncate">
-                                                            {message.attachment}
+                                                <div
+                                                    className={`max-w-[85%] rounded-lg px-3 py-2 text-sm ${
+                                                        isVendor
+                                                            ? 'bg-primary text-primary-foreground'
+                                                            : 'bg-muted text-foreground'
+                                                    }`}
+                                                >
+                                                    <div className="mb-1 flex flex-wrap items-center justify-between gap-2 text-xs opacity-80">
+                                                        <span>
+                                                            {isVendor
+                                                                ? 'Компания'
+                                                                : (lead.clientName ??
+                                                                  'Клиент')}
+                                                        </span>
+                                                        <span>
+                                                            {message.sentAt}
                                                         </span>
                                                     </div>
-                                                )}
+                                                    <p className="leading-relaxed break-words whitespace-pre-wrap">
+                                                        {message.text}
+                                                    </p>
+                                                </div>
                                             </div>
-                                        </div>
-                                    );
-                                })}
+                                        );
+                                    })
+                                ) : (
+                                    <div className="flex min-h-72 flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-sidebar-border/70 p-6 text-center text-sm text-muted-foreground dark:border-sidebar-border">
+                                        <MessageSquareText
+                                            className="size-6"
+                                            aria-hidden="true"
+                                        />
+                                        Сообщений пока нет.
+                                    </div>
+                                )}
                             </div>
 
                             <form
-                                className="grid gap-2 border-t pt-4 sm:grid-cols-[auto_minmax(0,1fr)_auto]"
+                                className="grid gap-2 border-t pt-4 sm:grid-cols-[minmax(0,1fr)_auto]"
                                 onSubmit={(event) => {
                                     event.preventDefault();
                                     sendText();
                                 }}
                             >
-                                <Button
-                                    className="justify-start"
-                                    type="button"
-                                    variant="outline"
-                                    onClick={addAttachment}
-                                >
-                                    <Paperclip
-                                        className="size-4"
-                                        aria-hidden="true"
-                                    />
-                                    Вложение
-                                </Button>
                                 <label className="flex min-h-24 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50">
                                     <span className="sr-only">
                                         Текст сообщения
@@ -279,23 +199,33 @@ export function RequestClientChatDialog({
                                     <textarea
                                         className="min-h-20 w-full resize-none bg-transparent text-base outline-none placeholder:text-muted-foreground md:text-sm"
                                         placeholder="Написать клиенту..."
-                                        value={draft}
+                                        value={form.data.content}
                                         onChange={(event) =>
-                                            setDraft(event.target.value)
+                                            form.setData(
+                                                'content',
+                                                event.target.value,
+                                            )
                                         }
                                     />
                                 </label>
                                 <Button
                                     className="justify-start"
                                     type="submit"
-                                    disabled={draft.trim().length === 0}
+                                    disabled={
+                                        form.processing ||
+                                        form.data.content.trim().length === 0
+                                    }
                                 >
                                     <SendHorizontal
                                         className="size-4"
                                         aria-hidden="true"
                                     />
-                                    Добавить текст
+                                    Отправить
                                 </Button>
+                                <InputError
+                                    className="sm:col-span-2"
+                                    message={form.errors.content}
+                                />
                             </form>
                         </div>
                     </>

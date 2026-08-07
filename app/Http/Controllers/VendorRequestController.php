@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ChatMessage;
 use App\Models\ServiceRequest;
 use App\Models\Vendor;
 use Illuminate\Http\RedirectResponse;
@@ -16,7 +17,11 @@ class VendorRequestController extends Controller
         $vendor = $this->vendorFor($request);
 
         $requests = ServiceRequest::query()
-            ->with(['client:id,name,phone,email', 'service:id,name'])
+            ->with([
+                'client:id,name,phone,email',
+                'service:id,name',
+                'chat.messages.sender:id,name,email',
+            ])
             ->where('vendor_id', $vendor->id)
             ->latest()
             ->get()
@@ -154,6 +159,22 @@ class VendorRequestController extends Controller
             'clientName' => $serviceRequest->client?->name ?? 'Клиент',
             'clientPhone' => $serviceRequest->client?->phone,
             'clientEmail' => $serviceRequest->client?->email,
+            'chat' => $serviceRequest->chat
+                ? [
+                    'id' => (string) $serviceRequest->chat->id,
+                    'messages' => $serviceRequest->chat->messages
+                        ->map(fn (ChatMessage $message) => [
+                            'id' => (string) $message->id,
+                            'author' => $message->sender_id === $serviceRequest->client_id
+                                ? 'client'
+                                : 'vendor',
+                            'text' => $message->content ?? '',
+                            'sentAt' => $message->created_at?->format('d.m.Y H:i') ?? '',
+                            'isRead' => $message->is_read,
+                        ])
+                        ->values(),
+                ]
+                : null,
         ];
     }
 }

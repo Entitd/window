@@ -5,6 +5,7 @@ import {
     ClipboardList,
     FolderGit2,
     LayoutGrid,
+    MessageSquareText,
     ShieldCheck,
     UserRound,
     Wrench,
@@ -22,6 +23,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { index as chatsIndex } from '@/actions/App/Http/Controllers/ChatController';
 import { dashboard } from '@/routes';
 import type { Auth, NavItem } from '@/types';
 
@@ -47,6 +49,11 @@ const clientNavItems: NavItem[] = [
         href: '/client/dashboard',
         icon: ClipboardList,
     },
+    {
+        title: 'Чаты',
+        href: chatsIndex(),
+        icon: MessageSquareText,
+    },
 ];
 
 const vendorNavItems: NavItem[] = [
@@ -59,6 +66,11 @@ const vendorNavItems: NavItem[] = [
         title: 'Заявки',
         href: '/vendor/requests',
         icon: ClipboardList,
+    },
+    {
+        title: 'Чаты',
+        href: chatsIndex(),
+        icon: MessageSquareText,
     },
     {
         title: 'Услуги',

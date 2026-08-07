@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\RegisterClientController;
 use App\Http\Controllers\Auth\RegisterVendorController;
 use App\Http\Controllers\AdminVendorModerationController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ClientRequestController;
 use App\Http\Controllers\SearchResultsController;
 use App\Http\Controllers\VendorDashboardController;
@@ -84,6 +85,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
             default => Inertia::render('dashboard'),
         };
     })->name('dashboard');
+
+    Route::middleware('role:client,vendor')->group(function () {
+        Route::get('chats', [ChatController::class, 'index'])->name('chat.index');
+        Route::get('requests/{serviceRequest}/chat', [ChatController::class, 'show'])->name('chat.show');
+        Route::post('requests/{serviceRequest}/chat/messages', [ChatController::class, 'storeForRequest'])->name('chat.request.messages.store');
+        Route::post('chats/{chat}/messages', [ChatController::class, 'store'])->name('chat.messages.store');
+    });
 
     Route::middleware('role:admin')->group(function () {
         Route::get('admin/vendors/moderation', [AdminVendorModerationController::class, 'index'])

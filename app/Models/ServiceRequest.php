@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * Concrete client request for a window service.
@@ -62,6 +63,11 @@ class ServiceRequest extends Model
         return $this->hasMany(ServiceRequestStatusHistory::class)
             ->orderBy('created_at')
             ->orderBy('id');
+    }
+
+    public function chat(): HasOne
+    {
+        return $this->hasOne(Chat::class, 'request_id');
     }
 
     public function cancel(): void
