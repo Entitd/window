@@ -710,7 +710,7 @@ export default function ClientRequestShow() {
                                             className="size-4"
                                             aria-hidden="true"
                                         />
-                                        Повторить расчет
+                                        Дублировать заявку
                                     </>
                                 </Button>
                                 <Button

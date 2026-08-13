@@ -217,12 +217,6 @@ export default function RegisterVendor() {
                     </Button>
                 </div>
 
-                <div className="rounded-lg border border-dashed border-border bg-muted/40 p-4 text-sm leading-6 text-muted-foreground">
-                    Форма уже создаёт аккаунт компании, сохраняет профиль
-                    вендора и связывает районы работы через новые таблицы. Дальше
-                    сюда можно докинуть модерацию и полноценное управление услугами.
-                </div>
-
                 <div className="text-center text-sm text-muted-foreground">
                     Уже есть аккаунт? <TextLink href={login()}>Войти</TextLink>
                 </div>
