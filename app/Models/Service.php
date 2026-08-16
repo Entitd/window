@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * Service catalog item, for example window washing or mosquito net installation.
+ * w
  */
 class Service extends Model
 {

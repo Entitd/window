@@ -14,6 +14,7 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 
+
 Route::inertia('/', 'okna-market')->name('home');
 Route::get('pages', function () {
     abort_unless(app()->environment(['local', 'testing']), 404);

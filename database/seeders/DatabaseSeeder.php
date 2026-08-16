@@ -95,7 +95,7 @@ class DatabaseSeeder extends Seeder
         );
 
         $approvedVendorUser = User::updateOrCreate(
-            ['email' => 'vendor.approved@example.com'],
+                ['email' => 'vendor.approved@example.com'],
             [
                 'name' => 'ОкнаПрофи Волгоград',
                 'phone' => '+79990000003',
