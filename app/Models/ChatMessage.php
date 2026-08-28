@@ -6,9 +6,16 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['chat_id', 'sender_id', 'content', 'content_type', 'is_read'])]
 class ChatMessage extends Model
 {
+    protected $fillable = [
+        'chat_id',
+        'sender_id',
+        'content',
+        'content_type',
+        'is_read'
+    ];
+    
     public const CONTENT_TYPE_TEXT = 'text';
 
     protected $attributes = [

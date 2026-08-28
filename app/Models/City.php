@@ -6,9 +6,13 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['name', 'is_active'])]
 class City extends Model
 {
+    protected $fillable = [
+        'name',
+        'is_active'
+    ];
+    
     public function districts(): HasMany
     {
         return $this->hasMany(District::class);

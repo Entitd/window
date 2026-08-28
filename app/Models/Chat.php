@@ -7,9 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['request_id', 'client_id', 'vendor_id'])]
 class Chat extends Model
 {
+    protected $fillable = [
+        'request_id',
+        'client_id',
+        'vendor_id'
+    ];
+
     public function serviceRequest(): BelongsTo
     {
         return $this->belongsTo(ServiceRequest::class, 'request_id');

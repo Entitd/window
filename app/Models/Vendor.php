@@ -8,21 +8,22 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable([
-    'user_id',
-    'company_name',
-    'description',
-    'city',
-    'phone',
-    'email',
-    'logo',
-    'status',
-    'moderation_note',
-    'moderated_at',
-    'moderated_by',
-])]
 class Vendor extends Model
 {
+    protected $fillable = [
+        'user_id',
+        'company_name',
+        'description',
+        'city',
+        'phone',
+        'email',
+        'logo',
+        'status',
+        'moderation_note',
+        'moderated_at',
+        'moderated_by',
+    ];
+    
     protected function casts(): array
     {
         return [
