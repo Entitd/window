@@ -50,4 +50,9 @@ class User extends Authenticatable implements PasskeyUser
     {
         return $this->hasMany(ServiceRequest::class, 'client_id');
     }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class, 'user_id');
+    }
 }

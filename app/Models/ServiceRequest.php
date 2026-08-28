@@ -84,4 +84,9 @@ class ServiceRequest extends Model
     {
         $this->update(['status' => 'completed']);
     }
+
+    public function review(): HasOne
+    {
+        return $this->hasOne(Review::class, 'request_id');
+    }
 }
