@@ -1,69 +1,89 @@
-// Components
 import { Form, Head } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
-import InputError from '@/components/input-error';
+import { Mail } from 'lucide-react';
+import {
+    AuthField,
+    AuthFooter,
+    AuthNotice,
+    authButtonClassName,
+    authControlClassName,
+} from '@/components/auth/auth-form';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Spinner } from '@/components/ui/spinner';
 import { login } from '@/routes';
 import { email } from '@/routes/password';
 
 export default function ForgotPassword({ status }: { status?: string }) {
     return (
         <>
-            <Head title="Forgot password" />
+            <Head title="Восстановление пароля" />
 
-            {status && (
-                <div className="mb-4 text-center text-sm font-medium text-green-600">
-                    {status}
-                </div>
-            )}
+            <div className="grid gap-6">
+                {status && <AuthNotice tone="success">{status}</AuthNotice>}
 
-            <div className="space-y-6">
-                <Form {...email.form()}>
+                <Form {...email.form()} className="grid gap-6">
                     {({ processing, errors }) => (
                         <>
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
+                            <AuthField
+                                id="email"
+                                label="Email аккаунта"
+                                hint="Пришлём ссылку"
+                                error={errors.email}
+                            >
                                 <Input
                                     id="email"
                                     type="email"
                                     name="email"
-                                    autoComplete="off"
+                                    autoComplete="email"
                                     autoFocus
-                                    placeholder="email@example.com"
+                                    required
+                                    placeholder="name@example.com"
+                                    className={authControlClassName}
+                                    aria-invalid={Boolean(errors.email)}
+                                    aria-describedby={
+                                        errors.email ? 'email-error' : undefined
+                                    }
                                 />
+                            </AuthField>
 
-                                <InputError message={errors.email} />
-                            </div>
-
-                            <div className="my-6 flex items-center justify-start">
-                                <Button
-                                    className="w-full"
-                                    disabled={processing}
-                                    data-test="email-password-reset-link-button"
-                                >
-                                    {processing && (
-                                        <LoaderCircle className="h-4 w-4 animate-spin" />
-                                    )}
-                                    Email password reset link
-                                </Button>
-                            </div>
+                            <Button
+                                className={authButtonClassName}
+                                disabled={processing}
+                                data-test="email-password-reset-link-button"
+                            >
+                                {processing ? (
+                                    <Spinner />
+                                ) : (
+                                    <Mail
+                                        className="size-4"
+                                        aria-hidden="true"
+                                    />
+                                )}
+                                {processing
+                                    ? 'Отправляем...'
+                                    : 'Получить ссылку'}
+                            </Button>
                         </>
                     )}
                 </Form>
 
-                <div className="space-x-1 text-center text-sm text-muted-foreground">
-                    <span>Or, return to</span>
-                    <TextLink href={login()}>log in</TextLink>
-                </div>
+                <AuthFooter>
+                    Вспомнили пароль?{' '}
+                    <TextLink
+                        href={login()}
+                        className="font-semibold text-blue-600 dark:text-blue-400"
+                    >
+                        Вернуться ко входу
+                    </TextLink>
+                </AuthFooter>
             </div>
         </>
     );
 }
 
 ForgotPassword.layout = {
-    title: 'Forgot password',
-    description: 'Enter your email to receive a password reset link',
+    title: 'Восстановите доступ',
+    description:
+        'Укажите email аккаунта — мы отправим письмо со ссылкой для создания нового пароля.',
 };

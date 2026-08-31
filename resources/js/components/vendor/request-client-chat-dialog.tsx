@@ -1,5 +1,9 @@
 import { useForm } from '@inertiajs/react';
 import { MessageSquareText, SendHorizontal } from 'lucide-react';
+import {
+    store as storeMessage,
+    storeForRequest,
+} from '@/actions/App/Http/Controllers/ChatController';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,10 +16,6 @@ import {
 } from '@/components/ui/dialog';
 import { getStatusVariant } from '@/lib/dashboard-format';
 import type { RequestStatus } from '@/lib/dashboard-format';
-import {
-    store as storeMessage,
-    storeForRequest,
-} from '@/actions/App/Http/Controllers/ChatController';
 
 type ChatMessage = {
     id: string;

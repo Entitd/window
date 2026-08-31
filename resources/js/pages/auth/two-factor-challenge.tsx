@@ -1,6 +1,12 @@
 import { Form, Head, setLayoutProps } from '@inertiajs/react';
 import { REGEXP_ONLY_DIGITS } from 'input-otp';
+import { ShieldCheck } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import {
+    AuthField,
+    authButtonClassName,
+    authControlClassName,
+} from '@/components/auth/auth-form';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +15,7 @@ import {
     InputOTPGroup,
     InputOTPSlot,
 } from '@/components/ui/input-otp';
+import { Spinner } from '@/components/ui/spinner';
 import { OTP_MAX_LENGTH } from '@/hooks/use-two-factor-auth';
 import { store } from '@/routes/two-factor/login';
 
@@ -23,18 +30,18 @@ export default function TwoFactorChallenge() {
     }>(() => {
         if (showRecoveryInput) {
             return {
-                title: 'Recovery code',
+                title: 'Введите резервный код',
                 description:
-                    'Please confirm access to your account by entering one of your emergency recovery codes.',
-                toggleText: 'login using an authentication code',
+                    'Используйте один из резервных кодов, сохранённых при настройке двухфакторной защиты.',
+                toggleText: 'Ввести код из приложения',
             };
         }
 
         return {
-            title: 'Authentication code',
+            title: 'Двухфакторная защита',
             description:
-                'Enter the authentication code provided by your authenticator application.',
-            toggleText: 'login using a recovery code',
+                'Введите шестизначный код из приложения-аутентификатора.',
+            toggleText: 'Использовать резервный код',
         };
     }, [showRecoveryInput]);
 
@@ -51,83 +58,103 @@ export default function TwoFactorChallenge() {
 
     return (
         <>
-            <Head title="Two-factor authentication" />
+            <Head title="Двухфакторная аутентификация" />
 
-            <div className="space-y-6">
-                <Form
-                    {...store.form()}
-                    className="space-y-4"
-                    resetOnError
-                    resetOnSuccess={!showRecoveryInput}
-                >
-                    {({ errors, processing, clearErrors }) => (
-                        <>
-                            {showRecoveryInput ? (
-                                <>
-                                    <Input
-                                        name="recovery_code"
-                                        type="text"
-                                        placeholder="Enter recovery code"
-                                        autoFocus={showRecoveryInput}
-                                        required
-                                    />
-                                    <InputError
-                                        message={errors.recovery_code}
-                                    />
-                                </>
-                            ) : (
-                                <div className="flex flex-col items-center justify-center space-y-3 text-center">
-                                    <div className="flex w-full items-center justify-center">
-                                        <InputOTP
-                                            name="code"
-                                            maxLength={OTP_MAX_LENGTH}
-                                            value={code}
-                                            onChange={(value) => setCode(value)}
-                                            disabled={processing}
-                                            pattern={REGEXP_ONLY_DIGITS}
-                                            autoFocus
-                                        >
-                                            <InputOTPGroup>
-                                                {Array.from(
-                                                    { length: OTP_MAX_LENGTH },
-                                                    (_, index) => (
-                                                        <InputOTPSlot
-                                                            key={index}
-                                                            index={index}
-                                                        />
-                                                    ),
-                                                )}
-                                            </InputOTPGroup>
-                                        </InputOTP>
-                                    </div>
-                                    <InputError message={errors.code} />
-                                </div>
-                            )}
-
-                            <Button
-                                type="submit"
-                                className="w-full"
-                                disabled={processing}
+            <Form
+                {...store.form()}
+                className="grid gap-6"
+                resetOnError
+                resetOnSuccess={!showRecoveryInput}
+            >
+                {({ errors, processing, clearErrors }) => (
+                    <>
+                        {showRecoveryInput ? (
+                            <AuthField
+                                id="recovery_code"
+                                label="Резервный код"
+                                error={errors.recovery_code}
                             >
-                                Continue
-                            </Button>
-
-                            <div className="text-center text-sm text-muted-foreground">
-                                <span>or you can </span>
-                                <button
-                                    type="button"
-                                    className="cursor-pointer text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
-                                    onClick={() =>
-                                        toggleRecoveryMode(clearErrors)
+                                <Input
+                                    id="recovery_code"
+                                    name="recovery_code"
+                                    type="text"
+                                    placeholder="Введите резервный код"
+                                    autoComplete="one-time-code"
+                                    autoFocus
+                                    required
+                                    className={authControlClassName}
+                                    aria-invalid={Boolean(errors.recovery_code)}
+                                    aria-describedby={
+                                        errors.recovery_code
+                                            ? 'recovery_code-error'
+                                            : undefined
                                     }
-                                >
-                                    {authConfigContent.toggleText}
-                                </button>
+                                />
+                            </AuthField>
+                        ) : (
+                            <div className="grid gap-4 rounded-2xl border border-slate-200 bg-slate-50/70 p-5 text-center dark:border-slate-800 dark:bg-slate-950/35">
+                                <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                                    Код подтверждения
+                                </p>
+                                <div className="flex w-full items-center justify-center overflow-x-auto py-1">
+                                    <InputOTP
+                                        name="code"
+                                        maxLength={OTP_MAX_LENGTH}
+                                        value={code}
+                                        onChange={(value) => setCode(value)}
+                                        disabled={processing}
+                                        pattern={REGEXP_ONLY_DIGITS}
+                                        autoComplete="one-time-code"
+                                        autoFocus
+                                        aria-label="Шестизначный код подтверждения"
+                                    >
+                                        <InputOTPGroup className="gap-2">
+                                            {Array.from(
+                                                { length: OTP_MAX_LENGTH },
+                                                (_, index) => (
+                                                    <InputOTPSlot
+                                                        key={index}
+                                                        index={index}
+                                                        className="size-11 rounded-xl border border-slate-200 bg-white text-base shadow-none first:rounded-xl last:rounded-xl dark:border-slate-700 dark:bg-slate-900"
+                                                    />
+                                                ),
+                                            )}
+                                        </InputOTPGroup>
+                                    </InputOTP>
+                                </div>
+                                <InputError message={errors.code} />
                             </div>
-                        </>
-                    )}
-                </Form>
-            </div>
+                        )}
+
+                        <Button
+                            type="submit"
+                            className={authButtonClassName}
+                            disabled={processing}
+                        >
+                            {processing ? (
+                                <Spinner />
+                            ) : (
+                                <ShieldCheck
+                                    className="size-4"
+                                    aria-hidden="true"
+                                />
+                            )}
+                            {processing ? 'Проверяем...' : 'Продолжить'}
+                        </Button>
+
+                        <div className="text-center text-sm text-slate-500 dark:text-slate-400">
+                            Не получается войти?{' '}
+                            <button
+                                type="button"
+                                className="cursor-pointer rounded font-semibold text-blue-600 underline decoration-blue-200 underline-offset-4 transition hover:text-blue-700 focus-visible:ring-4 focus-visible:ring-blue-500/20 focus-visible:outline-none dark:text-blue-400 dark:decoration-blue-800 dark:hover:text-blue-300"
+                                onClick={() => toggleRecoveryMode(clearErrors)}
+                            >
+                                {authConfigContent.toggleText}
+                            </button>
+                        </div>
+                    </>
+                )}
+            </Form>
         </>
     );
 }

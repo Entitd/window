@@ -1,17 +1,15 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
-    BookOpen,
     Building2,
     ClipboardList,
-    FolderGit2,
     LayoutGrid,
     MessageSquareText,
     ShieldCheck,
     UserRound,
     Wrench,
 } from 'lucide-react';
+import { index as chatsIndex } from '@/actions/App/Http/Controllers/ChatController';
 import AppLogo from '@/components/app-logo';
-import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import {
@@ -23,7 +21,6 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { index as chatsIndex } from '@/actions/App/Http/Controllers/ChatController';
 import { dashboard } from '@/routes';
 import type { Auth, NavItem } from '@/types';
 
@@ -84,19 +81,6 @@ const vendorNavItems: NavItem[] = [
     },
 ];
 
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: FolderGit2,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
-    },
-];
-
 export function AppSidebar() {
     const { auth } = usePage<{ auth: Auth }>().props;
     const userRole = String(auth.user.role ?? '');
@@ -129,7 +113,6 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
-                {/* <NavFooter items={footerNavItems} className="mt-auto" /> */}
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

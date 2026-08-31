@@ -9,6 +9,12 @@ import {
     ShieldCheck,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import {
+    DashboardEmptyState,
+    DashboardHero,
+    DashboardMetric,
+    DashboardPage,
+} from '@/components/dashboard/dashboard-ui';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,6 +28,16 @@ import { RequestClientChatDialog } from '@/components/vendor/request-client-chat
 import type { RequestClientChatLead } from '@/components/vendor/request-client-chat-dialog';
 import { getStatusLabel, getStatusVariant } from '@/lib/dashboard-format';
 import type { RequestStatus } from '@/lib/dashboard-format';
+import {
+    dashboard as vendorDashboard,
+    requests as vendorRequestsPage,
+} from '@/routes/vendor';
+import {
+    accept as acceptRequest,
+    complete as completeRequest,
+    reject as rejectRequest,
+    start as startRequest,
+} from '@/routes/vendor/requests';
 
 type VendorLead = RequestClientChatLead & {
     createdAt: string;
@@ -107,8 +123,15 @@ function patchRequestStatus(
     requestId: string,
     action: 'accept' | 'reject' | 'start' | 'complete',
 ) {
+    const actionUrl = {
+        accept: acceptRequest.url(Number(requestId)),
+        reject: rejectRequest.url(Number(requestId)),
+        start: startRequest.url(Number(requestId)),
+        complete: completeRequest.url(Number(requestId)),
+    }[action];
+
     router.patch(
-        `/vendor/requests/${requestId}/${action}`,
+        actionUrl,
         {},
         {
             preserveScroll: true,
@@ -183,60 +206,42 @@ export default function VendorRequestsPage({
         <>
             <Head title="Заявки компании" />
 
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <Card className="border-sidebar-border/70 shadow-none dark:border-sidebar-border">
-                    <CardHeader className="gap-4 xl:flex-row xl:items-start xl:justify-between">
-                        <div className="space-y-3">
-                            <div className="flex flex-wrap items-center gap-2">
-                                <Badge variant="outline">
-                                    {sortedLeads.length} заявок в текущем
-                                    фильтре
-                                </Badge>
-                                <Badge variant="outline">
-                                    Приоритет сначала у новых лидов
-                                </Badge>
-                            </div>
-                            <div>
-                                <CardTitle className="text-2xl">
-                                    Очередь заявок компании
-                                </CardTitle>
-                                <CardDescription className="mt-2 max-w-3xl">
-                                    Слева реальные заявки и фильтры, справа
-                                    фокус по выбранной заявке. Действия со
-                                    статусами будут подключены следующим этапом.
-                                </CardDescription>
-                            </div>
-                        </div>
-                    </CardHeader>
-                </Card>
+            <DashboardPage>
+                <DashboardHero
+                    icon={ClipboardList}
+                    badge={
+                        <>
+                            <Badge variant="outline">
+                                {sortedLeads.length} заявок в текущем фильтре
+                            </Badge>
+                            <Badge variant="secondary">
+                                {
+                                    requests.filter(
+                                        (lead) => lead.status === 'new',
+                                    ).length
+                                }{' '}
+                                требуют ответа
+                            </Badge>
+                        </>
+                    }
+                    title="Заявки компании"
+                    description="Фильтруйте очередь, открывайте детали заказа и меняйте статус без перехода на отдельный экран."
+                />
 
                 <div className="grid auto-rows-min gap-4 md:grid-cols-3">
                     {leadStats.map((item) => (
-                        <Card
-                            className="border-sidebar-border/70 py-0 shadow-none dark:border-sidebar-border"
+                        <DashboardMetric
                             key={item.label}
-                        >
-                            <CardContent className="flex min-h-28 items-start justify-between gap-4 p-5">
-                                <div>
-                                    <p className="text-sm text-muted-foreground">
-                                        {item.label}
-                                    </p>
-                                    <p className="mt-2 text-2xl font-semibold">
-                                        {item.value}
-                                    </p>
-                                </div>
-                                <item.icon
-                                    className="size-5 text-muted-foreground"
-                                    aria-hidden="true"
-                                />
-                            </CardContent>
-                        </Card>
+                            icon={item.icon}
+                            label={item.label}
+                            value={item.value}
+                        />
                     ))}
                 </div>
 
                 <div className="grid gap-4 xl:grid-cols-[minmax(0,1.5fr)_minmax(360px,1fr)]">
                     <div className="flex flex-col gap-4">
-                        <Card className="border-sidebar-border/70 shadow-none dark:border-sidebar-border">
+                        <Card className="border-border/70 shadow-sm">
                             <CardHeader>
                                 <CardTitle>Фильтры и очередь</CardTitle>
                                 <CardDescription>
@@ -272,10 +277,10 @@ export default function VendorRequestsPage({
 
                                         return (
                                             <div
-                                                className={`rounded-xl border p-4 text-left transition ${
+                                                className={`rounded-2xl border bg-card p-4 text-left shadow-xs transition-[border-color,box-shadow] sm:p-5 ${
                                                     isSelected
-                                                        ? 'border-primary bg-primary/5'
-                                                        : 'border-sidebar-border/70 hover:border-primary/40 dark:border-sidebar-border'
+                                                        ? 'border-primary/50 ring-2 ring-primary/10'
+                                                        : 'border-border/70 hover:border-primary/30 hover:shadow-sm'
                                                 }`}
                                                 key={lead.id}
                                             >
@@ -392,20 +397,37 @@ export default function VendorRequestsPage({
                                     })}
 
                                     {sortedLeads.length === 0 && (
-                                        <div className="rounded-xl border border-dashed border-sidebar-border/70 p-8 text-center text-sm text-muted-foreground dark:border-sidebar-border">
-                                            В этом фильтре пока пусто.
-                                        </div>
+                                        <DashboardEmptyState
+                                            className="min-h-52"
+                                            icon={ClipboardList}
+                                            title="Заявок с таким статусом нет"
+                                            description="Выберите другой фильтр или вернитесь к общему списку."
+                                            action={
+                                                activeFilter !== 'all' ? (
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        onClick={() =>
+                                                            setActiveFilter(
+                                                                'all',
+                                                            )
+                                                        }
+                                                    >
+                                                        Показать все
+                                                    </Button>
+                                                ) : undefined
+                                            }
+                                        />
                                     )}
                                 </div>
                             </CardContent>
                         </Card>
 
-                        <Card className="border-sidebar-border/70 shadow-none dark:border-sidebar-border">
+                        <Card className="border-border/70 shadow-sm">
                             <CardHeader>
                                 <CardTitle>Сводка по статусам</CardTitle>
                                 <CardDescription>
-                                    Быстрый обзор того, где сейчас узкое место
-                                    по очереди.
+                                    Распределение заказов по этапам работы.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -416,7 +438,7 @@ export default function VendorRequestsPage({
 
                                     return (
                                         <div
-                                            className="rounded-xl border border-sidebar-border/70 p-4 dark:border-sidebar-border"
+                                            className="rounded-xl border border-border/70 bg-muted/15 p-4"
                                             key={item.status}
                                         >
                                             <div className="flex items-center justify-between gap-3">
@@ -447,12 +469,11 @@ export default function VendorRequestsPage({
                     </div>
 
                     <div className="flex flex-col gap-4">
-                        <Card className="border-sidebar-border/70 shadow-none dark:border-sidebar-border">
+                        <Card className="border-border/70 shadow-sm xl:sticky xl:top-5">
                             <CardHeader>
                                 <CardTitle>Фокус по заявке</CardTitle>
                                 <CardDescription>
-                                    Детали выбранной карточки, чтобы менеджер
-                                    работал не вслепую.
+                                    Параметры заказа и доступные действия.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
@@ -594,86 +615,97 @@ export default function VendorRequestsPage({
                                             </div>
                                         </div>
 
-                                        <div className="flex flex-wrap gap-2">
-                                            <Button
-                                                size="sm"
-                                                variant="outline"
-                                                disabled={
-                                                    !canAcceptRequest(
-                                                        selectedLead.status,
-                                                    )
-                                                }
-                                                onClick={() =>
-                                                    patchRequestStatus(
-                                                        selectedLead.id,
-                                                        'accept',
-                                                    )
-                                                }
-                                            >
-                                                Принять
-                                            </Button>
-                                            <Button
-                                                size="sm"
-                                                variant="outline"
-                                                disabled={
-                                                    !canRejectRequest(
-                                                        selectedLead.status,
-                                                    )
-                                                }
-                                                onClick={() =>
-                                                    patchRequestStatus(
-                                                        selectedLead.id,
-                                                        'reject',
-                                                    )
-                                                }
-                                            >
-                                                Отклонить
-                                            </Button>
-                                            {selectedLead.status ===
-                                                'confirmed' && (
-                                                <Button
-                                                    size="sm"
-                                                    variant="secondary"
-                                                    disabled={
-                                                        !canStartRequest(
-                                                            selectedLead.status,
-                                                        )
-                                                    }
-                                                    onClick={() =>
-                                                        patchRequestStatus(
-                                                            selectedLead.id,
-                                                            'start',
-                                                        )
-                                                    }
-                                                >
-                                                    Взять в работу
-                                                </Button>
-                                            )}
-                                            {selectedLead.status ===
-                                                'in_progress' && (
-                                                <Button
-                                                    size="sm"
-                                                    variant="secondary"
-                                                    disabled={
-                                                        !canCompleteRequest(
-                                                            selectedLead.status,
-                                                        )
-                                                    }
-                                                    onClick={() =>
-                                                        patchRequestStatus(
-                                                            selectedLead.id,
-                                                            'complete',
-                                                        )
-                                                    }
-                                                >
-                                                    Завершить
-                                                </Button>
-                                            )}
-                                        </div>
+                                        {(canAcceptRequest(
+                                            selectedLead.status,
+                                        ) ||
+                                            canRejectRequest(
+                                                selectedLead.status,
+                                            ) ||
+                                            canStartRequest(
+                                                selectedLead.status,
+                                            ) ||
+                                            canCompleteRequest(
+                                                selectedLead.status,
+                                            )) && (
+                                            <div className="flex flex-wrap gap-2 border-t border-border/70 pt-4">
+                                                {canAcceptRequest(
+                                                    selectedLead.status,
+                                                ) && (
+                                                    <Button
+                                                        size="sm"
+                                                        variant="default"
+                                                        onClick={() =>
+                                                            patchRequestStatus(
+                                                                selectedLead.id,
+                                                                'accept',
+                                                            )
+                                                        }
+                                                    >
+                                                        Принять
+                                                    </Button>
+                                                )}
+                                                {canRejectRequest(
+                                                    selectedLead.status,
+                                                ) && (
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        onClick={() =>
+                                                            patchRequestStatus(
+                                                                selectedLead.id,
+                                                                'reject',
+                                                            )
+                                                        }
+                                                    >
+                                                        Отклонить
+                                                    </Button>
+                                                )}
+                                                {selectedLead.status ===
+                                                    'confirmed' && (
+                                                    <Button
+                                                        size="sm"
+                                                        variant="secondary"
+                                                        disabled={
+                                                            !canStartRequest(
+                                                                selectedLead.status,
+                                                            )
+                                                        }
+                                                        onClick={() =>
+                                                            patchRequestStatus(
+                                                                selectedLead.id,
+                                                                'start',
+                                                            )
+                                                        }
+                                                    >
+                                                        Взять в работу
+                                                    </Button>
+                                                )}
+                                                {selectedLead.status ===
+                                                    'in_progress' && (
+                                                    <Button
+                                                        size="sm"
+                                                        variant="secondary"
+                                                        disabled={
+                                                            !canCompleteRequest(
+                                                                selectedLead.status,
+                                                            )
+                                                        }
+                                                        onClick={() =>
+                                                            patchRequestStatus(
+                                                                selectedLead.id,
+                                                                'complete',
+                                                            )
+                                                        }
+                                                    >
+                                                        Завершить
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        )}
                                     </>
                                 ) : (
                                     <div className="rounded-xl border border-dashed border-sidebar-border/70 p-6 text-sm text-muted-foreground dark:border-sidebar-border">
-                                        Выбери заявку слева, чтобы увидеть
+                                        Выберите заявку слева, чтобы увидеть
                                         детали.
                                     </div>
                                 )}
@@ -681,7 +713,7 @@ export default function VendorRequestsPage({
                         </Card>
                     </div>
                 </div>
-            </div>
+            </DashboardPage>
 
             <RequestClientChatDialog
                 lead={chatLead}
@@ -700,11 +732,11 @@ VendorRequestsPage.layout = {
     breadcrumbs: [
         {
             title: 'Кабинет компании',
-            href: '/vendor/dashboard',
+            href: vendorDashboard(),
         },
         {
             title: 'Заявки',
-            href: '/vendor/requests',
+            href: vendorRequestsPage(),
         },
     ],
 };

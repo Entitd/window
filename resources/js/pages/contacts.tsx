@@ -14,7 +14,7 @@ export default function ContactsPage() {
             <Head title="Контакты" />
 
             <MarketShell
-                activePage="home"
+                activePage="contacts"
                 ctaHref={MARKETPLACE_PATHS.searchResults}
                 ctaLabel="Смотреть предложения"
             >
@@ -32,7 +32,7 @@ export default function ContactsPage() {
                 </section>
 
                 <section className="contacts-section">
-                    <div className="container contacts-layout">
+                    <div className="contacts-layout container">
                         <article className="contacts-card">
                             <h2>Контактная информация</h2>
                             <div className="contacts-list">
@@ -48,12 +48,11 @@ export default function ContactsPage() {
                             </div>
 
                             <div className="map-placeholder">
-                                <span>Карта офиса</span>
-                                <strong>Офис в Волгограде</strong>
+                                <span>Поддержка сервиса</span>
+                                <strong>Работаем с обращениями онлайн</strong>
                                 <p>
-                                    Адрес и схема проезда появятся перед публичным
-                                    запуском. Сейчас быстрее связаться по телефону
-                                    или email.
+                                    Напишите или позвоните — поможем с заявкой,
+                                    кабинетом или подключением компании.
                                 </p>
                             </div>
                         </article>
@@ -80,7 +79,9 @@ export default function ContactsPage() {
 
                                 <label className="field-card field-card-wide field-textarea">
                                     <span className="field-icon">✎</span>
-                                    <span className="field-label">Сообщение</span>
+                                    <span className="field-label">
+                                        Сообщение
+                                    </span>
                                     <textarea placeholder="Коротко опишите вопрос или проблему" />
                                 </label>
 
@@ -97,8 +98,8 @@ export default function ContactsPage() {
                             </form>
 
                             <p className="contacts-note">
-                                Онлайн-отправку подключим на следующем этапе.
-                                Сейчас надежнее написать на email или позвонить.
+                                Кнопка откроет новое письмо в вашем почтовом
+                                приложении.
                             </p>
                         </article>
                     </div>

@@ -70,6 +70,7 @@
 }
 
 .okna-market-page .header-inner {
+    position: relative;
     min-height: 74px;
     display: flex;
     align-items: center;
@@ -105,6 +106,59 @@
 .okna-market-page .brand-name {
     font-family: Inter, sans-serif;
     font-size: 15px;
+}
+
+.okna-market-page .brand-copy {
+    display: grid;
+    gap: 2px;
+    line-height: 1.1;
+}
+
+.okna-market-page .brand-copy strong {
+    font-family: Inter, sans-serif;
+    font-size: 15px;
+}
+
+.okna-market-page .brand-copy small {
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0;
+}
+
+.okna-market-page .nav-toggle {
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    background: var(--surface);
+}
+
+.okna-market-page .nav-toggle span {
+    width: 18px;
+    height: 2px;
+    border-radius: 999px;
+    background: var(--muted-strong);
+    transition:
+        transform 0.2s ease,
+        opacity 0.2s ease;
+}
+
+.okna-market-page .nav-toggle.is-open span:first-child {
+    transform: translateY(7px) rotate(45deg);
+}
+
+.okna-market-page .nav-toggle.is-open span:nth-child(2) {
+    opacity: 0;
+}
+
+.okna-market-page .nav-toggle.is-open span:last-child {
+    transform: translateY(-7px) rotate(-45deg);
 }
 
 .okna-market-page .main-nav {
@@ -1201,6 +1255,27 @@
     font-size: 14px;
 }
 
+.okna-market-page .selection-label {
+    min-height: 40px;
+    padding: 0 16px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    color: var(--muted-strong);
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.okna-market-page .selection-label.is-selected {
+    border-color: rgba(36, 124, 255, 0.3);
+    background: var(--surface-soft);
+    color: var(--primary-dark);
+}
+
 @keyframes catalogCursorClick {
     0%,
     28%,
@@ -1880,8 +1955,61 @@
 }
 
 .okna-market-page .okna-footer {
+    padding: 52px 0 20px;
     border-top: 1px solid var(--line);
     background: var(--surface);
+}
+
+.okna-market-page .footer-grid {
+    display: grid;
+    grid-template-columns: minmax(240px, 1.5fr) repeat(3, minmax(140px, 1fr));
+    gap: 42px;
+}
+
+.okna-market-page .footer-brand-block {
+    display: grid;
+    align-content: start;
+    gap: 18px;
+}
+
+.okna-market-page .footer-brand-block p {
+    max-width: 340px;
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.65;
+    font-weight: 500;
+}
+
+.okna-market-page .footer-column {
+    display: grid;
+    align-content: start;
+    gap: 12px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.okna-market-page .footer-column strong {
+    margin-bottom: 4px;
+    color: var(--text);
+    font-size: 13px;
+}
+
+.okna-market-page .footer-column a:hover {
+    color: var(--primary-dark);
+}
+
+.okna-market-page .footer-bottom {
+    margin-top: 42px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
 }
 
 .okna-market-page .footer-inner {
@@ -1906,21 +2034,59 @@
 }
 
 @media (max-width: 1060px) {
+    .okna-market-page .nav-toggle {
+        order: 3;
+        display: flex;
+    }
+
     .okna-market-page .main-nav {
         display: none;
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 0;
+        z-index: 60;
+        width: min(360px, calc(100vw - 40px));
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 4px;
+        background: var(--surface);
+        box-shadow: var(--shadow-md);
+    }
+
+    .okna-market-page .main-nav.is-open {
+        display: flex;
+    }
+
+    .okna-market-page .main-nav a {
+        padding: 12px 14px;
+        border-radius: 12px;
+    }
+
+    .okna-market-page .main-nav a:hover,
+    .okna-market-page .main-nav .active-link {
+        background: var(--surface-soft);
     }
 
     .okna-market-page .header-inner {
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
         justify-content: flex-start;
         gap: 12px;
     }
 
     .okna-market-page .header-actions {
-        width: 100%;
-        flex-wrap: wrap;
-        justify-content: flex-start;
+        order: 2;
+        margin-left: auto;
+        width: auto;
+        flex-wrap: nowrap;
+        justify-content: flex-end;
         gap: 8px;
+    }
+
+    .okna-market-page .header-actions .city-pill {
+        display: none;
     }
 
     .okna-market-page .header-actions .btn {
@@ -1967,6 +2133,10 @@
     .okna-market-page .summary-item-wide {
         grid-column: auto;
     }
+
+    .okna-market-page .footer-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 @media (max-width: 760px) {
@@ -1979,22 +2149,46 @@
     .okna-market-page .header-inner {
         min-height: auto;
         padding: 14px 0;
-        align-items: flex-start;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
         gap: 12px;
-        flex-wrap: wrap;
+    }
+
+    .okna-market-page .brand {
+        order: 1;
+    }
+
+    .okna-market-page .nav-toggle {
+        order: 2;
+    }
+
+    .okna-market-page .main-nav {
+        order: 3;
     }
 
     .okna-market-page .header-actions {
+        order: 4;
+        margin-left: 0;
+        display: none;
+        grid-column: 1 / -1;
         width: 100%;
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: flex-start;
-        align-items: center;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 8px;
-        min-width: 0;
+    }
+
+    .okna-market-page .header-actions.is-open {
+        display: grid;
+    }
+
+    .okna-market-page .main-nav {
+        position: static;
+        grid-column: 1 / -1;
+        width: 100%;
     }
 
     .okna-market-page .header-actions .btn {
+        width: 100%;
         min-height: 38px;
         padding: 0 12px;
         font-size: 12px;
@@ -2110,6 +2304,10 @@
         width: 100%;
     }
 
+    .okna-market-page .selection-label {
+        width: 100%;
+    }
+
     .okna-market-page .guarantee-box {
         padding: 26px 20px;
         border-radius: 24px;
@@ -2135,10 +2333,20 @@
     .okna-market-page .hero-actions .btn {
         width: 100%;
     }
+
+    .okna-market-page .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 28px;
+    }
+
+    .okna-market-page .footer-bottom {
+        flex-direction: column;
+        gap: 8px;
+    }
 }
 
 @media (max-width: 460px) {
-    .okna-market-page .brand-name {
+    .okna-market-page .brand-copy small {
         display: none;
     }
 

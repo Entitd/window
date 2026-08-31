@@ -7,10 +7,15 @@ import {
     CircleCheckBig,
     Clock3,
     FileStack,
-    MessageSquareText,
     Settings2,
     ShieldCheck,
 } from 'lucide-react';
+import {
+    DashboardEmptyState,
+    DashboardHero,
+    DashboardMetric,
+    DashboardPage,
+} from '@/components/dashboard/dashboard-ui';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -25,11 +30,20 @@ import {
     getModerationVariant,
     getStatusLabel,
     getStatusVariant,
-    type RequestStatus,
-    type VendorLead,
-    type VendorProfile,
-    type VendorService,
 } from '@/lib/dashboard-format';
+import type {
+    RequestStatus,
+    VendorLead,
+    VendorProfile,
+    VendorService,
+} from '@/lib/dashboard-format';
+import { vendors } from '@/routes';
+import {
+    dashboard as vendorDashboard,
+    profile as vendorProfilePage,
+    requests as vendorRequestsPage,
+    services as vendorServicesPage,
+} from '@/routes/vendor';
 import type { Auth } from '@/types';
 
 type PageProps = {
@@ -97,10 +111,6 @@ export default function VendorDashboard() {
             label: 'Есть активные услуги',
             done: activeServices.length > 0,
         },
-        {
-            label: 'Добавлена галерея работ',
-            done: vendorProfile.gallery.length > 0,
-        },
     ];
 
     const completedChecklist = profileChecklist.filter(
@@ -130,25 +140,25 @@ export default function VendorDashboard() {
         {
             title: 'Новые заявки',
             value: newLeads,
-            description: 'Те, которые стоит разобрать в первую очередь.',
+            description: 'Требуют ответа компании.',
             icon: FileStack,
         },
         {
             title: 'В работе',
             value: activeLeads,
-            description: 'Принятые и уже двигающиеся заявки.',
+            description: 'Принятые заказы на согласовании и исполнении.',
             icon: Clock3,
         },
         {
             title: 'Активные услуги',
             value: activeServices.length,
-            description: 'То, что сейчас реально видно клиенту в каталоге.',
+            description: 'Включены в каталоге компании.',
             icon: Settings2,
         },
         {
             title: 'Завершено',
             value: completedLeads,
-            description: 'Закрытые заявки по реальным данным компании.',
+            description: 'Успешно закрытые заказы.',
             icon: CheckCircle2,
         },
     ];
@@ -157,42 +167,31 @@ export default function VendorDashboard() {
         <>
             <Head title="Кабинет компании" />
 
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <Card className="border-sidebar-border/70 shadow-none dark:border-sidebar-border">
-                    <CardHeader className="gap-4 xl:flex-row xl:items-start xl:justify-between">
-                        <div className="space-y-3">
-                            <div className="flex flex-wrap items-center gap-2">
-                                <Badge
-                                    variant={getModerationVariant(
-                                        vendorProfile.moderationStatus,
-                                    )}
-                                >
-                                    {getModerationLabel(
-                                        vendorProfile.moderationStatus,
-                                    )}
-                                </Badge>
-                                <Badge variant="outline">
-                                    Профиль готов на {profileReadyPercent}%
-                                </Badge>
-                            </div>
-
-                            <div>
-                                <CardTitle className="text-2xl">
-                                    {vendorProfile.companyName}, здесь собраны
-                                    заявки, профиль и статус публикации
-                                </CardTitle>
-                                <CardDescription className="mt-2 max-w-3xl">
-                                    Привет, {auth.user.name}. Экран уже работает
-                                    как центральная точка для компании: видно
-                                    приоритетные заявки, готовность профиля и
-                                    что нужно дожать следующим шагом.
-                                </CardDescription>
-                            </div>
-                        </div>
-
-                        <div className="flex flex-col gap-2 sm:flex-row xl:flex-col">
+            <DashboardPage>
+                <DashboardHero
+                    icon={BriefcaseBusiness}
+                    badge={
+                        <>
+                            <Badge
+                                variant={getModerationVariant(
+                                    vendorProfile.moderationStatus,
+                                )}
+                            >
+                                {getModerationLabel(
+                                    vendorProfile.moderationStatus,
+                                )}
+                            </Badge>
+                            <Badge variant="secondary">
+                                Профиль заполнен на {profileReadyPercent}%
+                            </Badge>
+                        </>
+                    }
+                    title={vendorProfile.companyName}
+                    description={`${auth.user.name}, управляйте заявками, услугами и публикацией компании из одного рабочего пространства.`}
+                    actions={
+                        <>
                             <Button asChild>
-                                <Link href="/vendor/requests">
+                                <Link href={vendorRequestsPage()} prefetch>
                                     Открыть все заявки
                                     <ArrowRight
                                         className="size-4"
@@ -201,7 +200,7 @@ export default function VendorDashboard() {
                                 </Link>
                             </Button>
                             <Button asChild variant="outline">
-                                <Link href="/vendor/profile">
+                                <Link href={vendorProfilePage()} prefetch>
                                     <BriefcaseBusiness
                                         className="size-4"
                                         aria-hidden="true"
@@ -209,55 +208,37 @@ export default function VendorDashboard() {
                                     Профиль компании
                                 </Link>
                             </Button>
-                        </div>
-                    </CardHeader>
-                </Card>
+                        </>
+                    }
+                />
 
                 <div className="grid auto-rows-min gap-4 md:grid-cols-2 xl:grid-cols-4">
                     {stats.map((item) => (
-                        <Card
-                            className="border-sidebar-border/70 py-0 shadow-none dark:border-sidebar-border"
+                        <DashboardMetric
                             key={item.title}
-                        >
-                            <CardContent className="flex min-h-36 flex-col justify-between gap-6 p-5">
-                                <div className="flex items-start justify-between gap-4">
-                                    <div>
-                                        <p className="text-sm text-muted-foreground">
-                                            {item.title}
-                                        </p>
-                                        <p className="mt-2 text-3xl font-semibold">
-                                            {item.value}
-                                        </p>
-                                    </div>
-                                    <item.icon
-                                        className="size-5 text-muted-foreground"
-                                        aria-hidden="true"
-                                    />
-                                </div>
-                                <p className="text-sm text-muted-foreground">
-                                    {item.description}
-                                </p>
-                            </CardContent>
-                        </Card>
+                            icon={item.icon}
+                            label={item.title}
+                            value={item.value}
+                            description={item.description}
+                        />
                     ))}
                 </div>
 
                 <div className="grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(340px,1fr)]">
                     <div className="flex flex-col gap-4">
-                        <Card className="border-sidebar-border/70 shadow-none dark:border-sidebar-border">
+                        <Card className="border-border/70 shadow-sm">
                             <CardHeader className="gap-3 sm:flex-row sm:items-start sm:justify-between">
                                 <div>
                                     <CardTitle className="text-xl">
                                         Приоритетные заявки
                                     </CardTitle>
                                     <CardDescription className="mt-2">
-                                        Верхняя часть очереди: сюда вынесены
-                                        новые и самые горячие лиды, чтобы
-                                        менеджер не рылся по всему списку.
+                                        Новые заявки и заказы, которые требуют
+                                        внимания в первую очередь.
                                     </CardDescription>
                                 </div>
                                 <Button asChild variant="outline" size="sm">
-                                    <Link href="/vendor/requests">
+                                    <Link href={vendorRequestsPage()} prefetch>
                                         Все заявки
                                         <ArrowRight
                                             className="size-4"
@@ -270,7 +251,7 @@ export default function VendorDashboard() {
                                 {priorityLeads.length > 0 ? (
                                     priorityLeads.map((lead) => (
                                         <article
-                                            className="rounded-xl border border-sidebar-border/70 p-4 dark:border-sidebar-border"
+                                            className="rounded-2xl border border-border/70 bg-card p-4 shadow-xs transition-[border-color,box-shadow] hover:border-primary/25 hover:shadow-sm sm:p-5"
                                             key={lead.id}
                                         >
                                             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -353,7 +334,9 @@ export default function VendorDashboard() {
                                                     size="sm"
                                                     variant="outline"
                                                 >
-                                                    <Link href="/vendor/requests">
+                                                    <Link
+                                                        href={vendorRequestsPage()}
+                                                    >
                                                         Открыть очередь
                                                     </Link>
                                                 </Button>
@@ -361,29 +344,38 @@ export default function VendorDashboard() {
                                         </article>
                                     ))
                                 ) : (
-                                    <div className="rounded-xl border border-dashed border-sidebar-border/70 p-8 text-center text-sm text-muted-foreground dark:border-sidebar-border">
-                                        У компании пока нет назначенных заявок.
-                                        Когда клиент выберет компанию, заявка
-                                        появится здесь и в общей очереди.
-                                    </div>
+                                    <DashboardEmptyState
+                                        className="min-h-56"
+                                        icon={FileStack}
+                                        title="Новых заявок нет"
+                                        description="Входящие заказы от клиентов отображаются в этой очереди."
+                                        action={
+                                            <Button asChild variant="outline">
+                                                <Link
+                                                    href={vendorServicesPage()}
+                                                >
+                                                    Проверить услуги
+                                                </Link>
+                                            </Button>
+                                        }
+                                    />
                                 )}
                             </CardContent>
                         </Card>
 
-                        <Card className="border-sidebar-border/70 shadow-none dark:border-sidebar-border">
+                        <Card className="border-border/70 shadow-sm">
                             <CardHeader>
                                 <CardTitle className="text-xl">
                                     Срез по статусам
                                 </CardTitle>
                                 <CardDescription>
-                                    Быстрый борд по заявкам: видно, где очередь
-                                    пухнет, а где всё уже под контролем.
+                                    Количество заказов на каждом этапе работы.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
                                 {statusBoard.map((column) => (
                                     <div
-                                        className="rounded-xl border border-sidebar-border/70 p-4 dark:border-sidebar-border"
+                                        className="rounded-xl border border-border/70 bg-muted/15 p-4"
                                         key={column.status}
                                     >
                                         <div className="flex items-center justify-between gap-3">
@@ -416,7 +408,7 @@ export default function VendorDashboard() {
                                                 ))
                                             ) : (
                                                 <div className="rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground">
-                                                    Пока пусто
+                                                    Нет заявок
                                                 </div>
                                             )}
                                         </div>
@@ -427,13 +419,11 @@ export default function VendorDashboard() {
                     </div>
 
                     <div className="flex flex-col gap-4">
-                        <Card className="border-sidebar-border/70 shadow-none dark:border-sidebar-border">
+                        <Card className="border-border/70 shadow-sm">
                             <CardHeader>
                                 <CardTitle>Готовность профиля</CardTitle>
                                 <CardDescription>
-                                    Блок показывает, насколько карточка компании
-                                    уже собрана под публикацию и работу с
-                                    лидами.
+                                    Проверьте основные данные перед публикацией.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
@@ -474,7 +464,7 @@ export default function VendorDashboard() {
                                             >
                                                 {item.done
                                                     ? 'Готово'
-                                                    : 'Нужно проверить'}
+                                                    : 'Заполнить'}
                                             </Badge>
                                         </div>
                                     ))}
@@ -482,12 +472,11 @@ export default function VendorDashboard() {
                             </CardContent>
                         </Card>
 
-                        <Card className="border-sidebar-border/70 shadow-none dark:border-sidebar-border">
+                        <Card className="border-border/70 shadow-sm">
                             <CardHeader>
                                 <CardTitle>Модерация и публикация</CardTitle>
                                 <CardDescription>
-                                    Статус карточки и то, что сейчас видит
-                                    сервис.
+                                    Статус проверки и доступность услуг.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
@@ -519,34 +508,15 @@ export default function VendorDashboard() {
                                         </p>
                                         <p className="mt-1 text-sm text-muted-foreground">
                                             {activeServices.length} из{' '}
-                                            {vendorServices.length} доступны
-                                            клиенту.
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-start gap-3 rounded-xl bg-muted/50 p-4">
-                                    <MessageSquareText
-                                        className="mt-0.5 size-4 text-muted-foreground"
-                                        aria-hidden="true"
-                                    />
-                                    <div>
-                                        <p className="font-medium">
-                                            Галерея и доверие
-                                        </p>
-                                        <p className="mt-1 text-sm text-muted-foreground">
-                                            В профиле{' '}
-                                            {vendorProfile.gallery.length}{' '}
-                                            позиции в галерее. Это уже неплохо,
-                                            но дальше можно будет привязать
-                                            реальные фото.
+                                            {vendorServices.length} включены в
+                                            каталоге.
                                         </p>
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
 
-                        <Card className="border-sidebar-border/70 shadow-none dark:border-sidebar-border">
+                        <Card className="border-border/70 shadow-sm">
                             <CardHeader>
                                 <CardTitle>Быстрые переходы</CardTitle>
                             </CardHeader>
@@ -556,7 +526,7 @@ export default function VendorDashboard() {
                                     className="w-full justify-start"
                                     variant="outline"
                                 >
-                                    <Link href="/vendor/profile">
+                                    <Link href={vendorProfilePage()} prefetch>
                                         <BriefcaseBusiness
                                             className="size-4"
                                             aria-hidden="true"
@@ -569,7 +539,7 @@ export default function VendorDashboard() {
                                     className="w-full justify-start"
                                     variant="outline"
                                 >
-                                    <Link href="/vendor/services">
+                                    <Link href={vendorServicesPage()} prefetch>
                                         <Settings2
                                             className="size-4"
                                             aria-hidden="true"
@@ -582,7 +552,7 @@ export default function VendorDashboard() {
                                     className="w-full justify-start"
                                     variant="outline"
                                 >
-                                    <Link href="/vendor/requests">
+                                    <Link href={vendorRequestsPage()} prefetch>
                                         <FileStack
                                             className="size-4"
                                             aria-hidden="true"
@@ -595,7 +565,7 @@ export default function VendorDashboard() {
                                     className="w-full justify-start"
                                     variant="outline"
                                 >
-                                    <Link href="/vendors">
+                                    <Link href={vendors()} prefetch>
                                         <CircleCheckBig
                                             className="size-4"
                                             aria-hidden="true"
@@ -607,7 +577,7 @@ export default function VendorDashboard() {
                         </Card>
                     </div>
                 </div>
-            </div>
+            </DashboardPage>
         </>
     );
 }
@@ -616,7 +586,7 @@ VendorDashboard.layout = {
     breadcrumbs: [
         {
             title: 'Кабинет компании',
-            href: '/vendor/dashboard',
+            href: vendorDashboard(),
         },
     ],
 };

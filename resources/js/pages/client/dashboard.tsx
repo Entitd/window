@@ -2,14 +2,18 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     CalendarDays,
     CheckCircle2,
+    ClipboardList,
     Clock3,
-    MessageSquareText,
     Plus,
     RefreshCw,
-    Ruler,
-    Star,
     XCircle,
 } from 'lucide-react';
+import {
+    DashboardEmptyState,
+    DashboardHero,
+    DashboardMetric,
+    DashboardPage,
+} from '@/components/dashboard/dashboard-ui';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -19,13 +23,15 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import {
-    getStatusLabel,
-    getStatusVariant,
-    type ClientRequest,
-} from '@/lib/dashboard-format';
+import { getStatusLabel, getStatusVariant } from '@/lib/dashboard-format';
+import type { ClientRequest } from '@/lib/dashboard-format';
 import { dashboard as appDashboard, home } from '@/routes';
 import { dashboard as clientDashboard } from '@/routes/client';
+import {
+    cancel as cancelRequest,
+    repeat as repeatRequest,
+    show as showRequest,
+} from '@/routes/client/requests';
 import type { Auth } from '@/types';
 
 type PageProps = {
@@ -52,7 +58,7 @@ function canCancelClientRequest(request: ClientRequest) {
 
 function cancelClientRequest(requestId: string) {
     router.patch(
-        `/client/requests/${requestId}/cancel`,
+        cancelRequest.url(Number(requestId)),
         {},
         {
             preserveScroll: true,
@@ -62,7 +68,7 @@ function cancelClientRequest(requestId: string) {
 
 function repeatClientRequest(requestId: string) {
     router.post(
-        `/client/requests/${requestId}/repeat`,
+        repeatRequest.url(Number(requestId)),
         {},
         {
             preserveScroll: true,
@@ -72,6 +78,53 @@ function repeatClientRequest(requestId: string) {
 
 function formatWindowSize(request: ClientRequest) {
     return `${request.width} x ${request.height} см`;
+}
+
+function getNextStep(request: ClientRequest) {
+    switch (request.status) {
+        case 'new':
+            return {
+                title: 'Проверьте параметры заявки',
+                description:
+                    'До подтверждения вы можете изменить дату, район и детали заказа.',
+            };
+        case 'awaiting_confirmation':
+            return {
+                title: 'Ожидайте ответа компании',
+                description:
+                    'Исполнитель проверяет детали и подтвердит возможность выполнить работу.',
+            };
+        case 'confirmed':
+            return {
+                title: 'Подготовьтесь к согласованной дате',
+                description:
+                    'Компания приняла заявку. Все параметры заказа сохранены в карточке.',
+            };
+        case 'in_progress':
+            return {
+                title: 'Работы выполняются',
+                description:
+                    'Следите за обновлениями статуса в истории заявки.',
+            };
+        case 'completed':
+            return {
+                title: 'Работа завершена',
+                description:
+                    'Карточка заказа и вся история остаются доступными в кабинете.',
+            };
+        case 'rejected':
+            return {
+                title: 'Создайте новую заявку',
+                description:
+                    'Можно повторить заказ с теми же параметрами и выбрать другую компанию.',
+            };
+        case 'cancelled':
+            return {
+                title: 'Заявка отменена',
+                description:
+                    'При необходимости повторите её — параметры заполнятся автоматически.',
+            };
+    }
 }
 
 function RequestSummaryCard({
@@ -86,7 +139,13 @@ function RequestSummaryCard({
     canRepeat?: boolean;
 }) {
     return (
-        <article className="rounded-xl border border-sidebar-border/70 bg-background p-4 dark:border-sidebar-border">
+        <article
+            className={`rounded-2xl border bg-card p-4 shadow-xs transition-[border-color,box-shadow] hover:border-primary/25 hover:shadow-sm sm:p-5 ${
+                isFeatured
+                    ? 'border-primary/25 ring-1 ring-primary/10'
+                    : 'border-border/70'
+            }`}
+        >
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div className="min-w-0 space-y-3">
                     <div className="flex flex-wrap items-center gap-2">
@@ -108,29 +167,29 @@ function RequestSummaryCard({
                     </div>
                 </div>
 
-                <div className="text-sm font-semibold lg:text-right">
+                <div className="rounded-lg bg-primary/8 px-3 py-2 text-sm font-semibold text-primary lg:text-right">
                     {request.estimatedPrice}
                 </div>
             </div>
 
             <dl className="mt-5 grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-4">
-                <div className="rounded-lg bg-muted/50 p-3">
+                <div className="rounded-xl bg-muted/60 p-3">
                     <dt className="text-muted-foreground">Создана</dt>
                     <dd className="mt-1 font-medium">{request.createdAt}</dd>
                 </div>
-                <div className="rounded-lg bg-muted/50 p-3">
+                <div className="rounded-xl bg-muted/60 p-3">
                     <dt className="text-muted-foreground">Дата работ</dt>
                     <dd className="mt-1 font-medium">
                         {request.installationDate}
                     </dd>
                 </div>
-                <div className="rounded-lg bg-muted/50 p-3">
+                <div className="rounded-xl bg-muted/60 p-3">
                     <dt className="text-muted-foreground">Размер</dt>
                     <dd className="mt-1 font-medium">
                         {formatWindowSize(request)}
                     </dd>
                 </div>
-                <div className="rounded-lg bg-muted/50 p-3">
+                <div className="rounded-xl bg-muted/60 p-3">
                     <dt className="text-muted-foreground">Компания</dt>
                     <dd className="mt-1 font-medium">
                         {request.company ?? 'Компания не выбрана'}
@@ -139,7 +198,7 @@ function RequestSummaryCard({
             </dl>
 
             {isFeatured && (
-                <div className="mt-5 rounded-lg border border-dashed border-sidebar-border/70 p-3 text-sm text-muted-foreground dark:border-sidebar-border">
+                <div className="mt-5 rounded-xl border border-border/70 bg-muted/20 p-3 text-sm text-muted-foreground">
                     <span className="font-medium text-foreground">
                         Комментарий:
                     </span>{' '}
@@ -148,8 +207,12 @@ function RequestSummaryCard({
             )}
 
             <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                <Button variant="outline" size="sm" asChild>
-                    <Link href={`/client/requests/${request.id}`}>
+                <Button
+                    variant={isFeatured ? 'default' : 'outline'}
+                    size="sm"
+                    asChild
+                >
+                    <Link href={showRequest(request.id)} prefetch>
                         Посмотреть заявку
                     </Link>
                 </Button>
@@ -165,16 +228,17 @@ function RequestSummaryCard({
                         Повторить заявку
                     </>
                 </Button>
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    type="button"
-                    disabled={!canCancel || !canCancelClientRequest(request)}
-                    onClick={() => cancelClientRequest(request.id)}
-                >
-                    <XCircle className="size-4" aria-hidden="true" />
-                    Отменить заявку
-                </Button>
+                {canCancel && canCancelClientRequest(request) && (
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        type="button"
+                        onClick={() => cancelClientRequest(request.id)}
+                    >
+                        <XCircle className="size-4" aria-hidden="true" />
+                        Отменить заявку
+                    </Button>
+                )}
             </div>
         </article>
     );
@@ -182,24 +246,19 @@ function RequestSummaryCard({
 
 function EmptyRequestsState() {
     return (
-        <div className="flex min-h-[320px] flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-sidebar-border/70 p-8 text-center dark:border-sidebar-border">
-            <div className="rounded-full bg-muted p-3">
-                <Plus className="size-6" aria-hidden="true" />
-            </div>
-            <div className="max-w-md space-y-2">
-                <h2 className="text-lg font-semibold">У вас пока нет заявок</h2>
-                <p className="text-sm text-muted-foreground">
-                    Создайте первую заявку, чтобы получить расчет, выбрать
-                    компанию и видеть историю заказа в кабинете.
-                </p>
-            </div>
-            <Button asChild>
-                <Link href={home()} prefetch>
-                    <Plus className="size-4" aria-hidden="true" />
-                    Создать заявку
-                </Link>
-            </Button>
-        </div>
+        <DashboardEmptyState
+            icon={ClipboardList}
+            title="Заявок ещё нет"
+            description="Создайте заявку, сравните подходящие компании и следите за заказом в одном месте."
+            action={
+                <Button asChild>
+                    <Link href={home()} prefetch>
+                        <Plus className="size-4" aria-hidden="true" />
+                        Создать заявку
+                    </Link>
+                </Button>
+            }
+        />
     );
 }
 
@@ -211,116 +270,75 @@ export default function ClientDashboard() {
         (request) => request.status === 'completed',
     );
     const selectedRequest = activeRequests[0] ?? requests[0] ?? null;
-    const lastCompletedRequest = completedRequests[0] ?? null;
+    const otherRequests = selectedRequest
+        ? requests.filter((request) => request.id !== selectedRequest.id)
+        : [];
+    const nextStep = selectedRequest ? getNextStep(selectedRequest) : null;
 
     return (
         <>
             <Head title="Кабинет клиента" />
 
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+            <DashboardPage>
+                <DashboardHero
+                    icon={ClipboardList}
+                    badge={
+                        <>
+                            <Badge variant="secondary">Личный кабинет</Badge>
+                            {selectedRequest && (
+                                <Badge
+                                    variant={getStatusVariant(
+                                        selectedRequest.status,
+                                    )}
+                                >
+                                    {getStatusLabel(selectedRequest.status)}
+                                </Badge>
+                            )}
+                        </>
+                    }
+                    title={`Здравствуйте, ${auth.user.name}`}
+                    description="Здесь собраны ваши заявки, сроки работ и история общения с выбранными компаниями."
+                    actions={
+                        <Button asChild size="lg">
+                            <Link href={home()} prefetch>
+                                <Plus className="size-4" aria-hidden="true" />
+                                Новая заявка
+                            </Link>
+                        </Button>
+                    }
+                />
+
                 <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-                    <Card className="border-sidebar-border/70 py-0 shadow-none dark:border-sidebar-border">
-                        <CardContent className="flex min-h-36 flex-col justify-between gap-6 p-5">
-                            <div className="flex items-start justify-between gap-4">
-                                <div>
-                                    <p className="text-sm text-muted-foreground">
-                                        Активные заявки
-                                    </p>
-                                    <p className="mt-2 text-3xl font-semibold">
-                                        {activeRequests.length}
-                                    </p>
-                                </div>
-                                <Clock3
-                                    className="size-5 text-muted-foreground"
-                                    aria-hidden="true"
-                                />
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                                Заявки, по которым компания еще работает или
-                                подтверждает детали.
-                            </p>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="border-sidebar-border/70 py-0 shadow-none dark:border-sidebar-border">
-                        <CardContent className="flex min-h-36 flex-col justify-between gap-6 p-5">
-                            <div className="flex items-start justify-between gap-4">
-                                <div>
-                                    <p className="text-sm text-muted-foreground">
-                                        Ближайшая дата
-                                    </p>
-                                    <p className="mt-2 text-2xl font-semibold">
-                                        {selectedRequest?.installationDate ??
-                                            'Не выбрана'}
-                                    </p>
-                                </div>
-                                <CalendarDays
-                                    className="size-5 text-muted-foreground"
-                                    aria-hidden="true"
-                                />
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                                Дата из последней активной заявки клиента.
-                            </p>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="border-sidebar-border/70 py-0 shadow-none dark:border-sidebar-border">
-                        <CardContent className="flex min-h-36 flex-col justify-between gap-6 p-5">
-                            <div className="flex items-start justify-between gap-4">
-                                <div>
-                                    <p className="text-sm text-muted-foreground">
-                                        Завершенные работы
-                                    </p>
-                                    <p className="mt-2 text-3xl font-semibold">
-                                        {completedRequests.length}
-                                    </p>
-                                </div>
-                                <CheckCircle2
-                                    className="size-5 text-muted-foreground"
-                                    aria-hidden="true"
-                                />
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                                После завершения здесь появится возможность
-                                оставить отзыв.
-                            </p>
-                        </CardContent>
-                    </Card>
+                    <DashboardMetric
+                        icon={Clock3}
+                        label="Активные заявки"
+                        value={activeRequests.length}
+                        description="Заказы на согласовании или в работе."
+                    />
+                    <DashboardMetric
+                        icon={CalendarDays}
+                        label="Ближайшая дата"
+                        value={
+                            selectedRequest?.installationDate ?? 'Не выбрана'
+                        }
+                        description="Дата работ по актуальной заявке."
+                    />
+                    <DashboardMetric
+                        icon={CheckCircle2}
+                        label="Завершённые работы"
+                        value={completedRequests.length}
+                        description="История выполненных заказов."
+                    />
                 </div>
 
                 <div className="grid flex-1 gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
                     <div className="flex flex-col gap-4">
-                        <Card className="border-sidebar-border/70 shadow-none dark:border-sidebar-border">
-                            <CardHeader className="gap-4 sm:flex-row sm:items-start sm:justify-between">
-                                <div className="space-y-2">
-                                    <CardTitle className="text-xl">
-                                        {auth.user.name}, ваш кабинет
-                                    </CardTitle>
-                                    <CardDescription>
-                                        Здесь собраны заявки, выбранные
-                                        компании, сроки работ и история
-                                        изменений по заказам.
-                                    </CardDescription>
-                                </div>
-                                <Button asChild className="w-full sm:w-auto">
-                                    <Link href={home()} prefetch>
-                                        <Plus
-                                            className="size-4"
-                                            aria-hidden="true"
-                                        />
-                                        Новая заявка
-                                    </Link>
-                                </Button>
-                            </CardHeader>
-                        </Card>
-
-                        <Card className="border-sidebar-border/70 shadow-none dark:border-sidebar-border">
+                        <Card className="border-border/70 shadow-sm">
                             <CardHeader>
                                 <CardTitle>Текущая заявка</CardTitle>
                                 <CardDescription>
-                                    Самый важный заказ сейчас: статус, компания,
-                                    цена и параметры окна.
+                                    Статус, исполнитель, дата и основные
+                                    параметры заказа.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
@@ -337,18 +355,17 @@ export default function ClientDashboard() {
                             </CardContent>
                         </Card>
 
-                        <Card className="border-sidebar-border/70 shadow-none dark:border-sidebar-border">
-                            <CardHeader>
-                                <CardTitle>Мои заявки</CardTitle>
-                                <CardDescription>
-                                    Список заказов клиента с быстрыми
-                                    действиями.
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                {requests.length > 0 ? (
+                        {otherRequests.length > 0 && (
+                            <Card className="border-border/70 shadow-sm">
+                                <CardHeader>
+                                    <CardTitle>Остальные заявки</CardTitle>
+                                    <CardDescription>
+                                        Архив и другие активные заказы.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
                                     <div className="grid gap-3">
-                                        {requests.map((request) => (
+                                        {otherRequests.map((request) => (
                                             <RequestSummaryCard
                                                 key={request.id}
                                                 request={request}
@@ -357,15 +374,13 @@ export default function ClientDashboard() {
                                             />
                                         ))}
                                     </div>
-                                ) : (
-                                    <EmptyRequestsState />
-                                )}
-                            </CardContent>
-                        </Card>
+                                </CardContent>
+                            </Card>
+                        )}
                     </div>
 
                     <aside className="flex flex-col gap-4">
-                        <Card className="border-sidebar-border/70 shadow-none dark:border-sidebar-border">
+                        <Card className="border-border/70 shadow-sm">
                             <CardHeader>
                                 <CardTitle>Статус заказа</CardTitle>
                                 <CardDescription>
@@ -408,56 +423,44 @@ export default function ClientDashboard() {
                                     </ol>
                                 ) : (
                                     <p className="text-sm text-muted-foreground">
-                                        История появится после создания первой
-                                        заявки.
+                                        Создайте заявку, чтобы видеть её
+                                        историю.
                                     </p>
                                 )}
                             </CardContent>
                         </Card>
 
-                        <Card className="border-sidebar-border/70 shadow-none dark:border-sidebar-border">
-                            <CardHeader>
-                                <CardTitle>Следующие шаги</CardTitle>
-                                <CardDescription>
-                                    Что клиент ожидает от сервиса после выбора
-                                    компании.
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="grid gap-3">
-                                <div className="flex gap-3 rounded-lg bg-muted/50 p-3">
-                                    <MessageSquareText
-                                        className="mt-0.5 size-4 text-muted-foreground"
-                                        aria-hidden="true"
-                                    />
-                                    <div>
-                                        <p className="text-sm font-medium">
-                                            Переписка с компанией
+                        {nextStep && selectedRequest && (
+                            <Card className="overflow-hidden border-primary/15 bg-primary/5 shadow-sm">
+                                <CardHeader>
+                                    <CardTitle>Что делать дальше</CardTitle>
+                                    <CardDescription>
+                                        Рекомендация по текущей заявке.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="grid gap-4">
+                                    <div className="space-y-2">
+                                        <p className="font-semibold">
+                                            {nextStep.title}
                                         </p>
-                                        <p className="text-sm text-muted-foreground">
-                                            Пока заглушка: позже здесь будут
-                                            сообщения по выбранной заявке.
+                                        <p className="text-sm leading-6 text-muted-foreground">
+                                            {nextStep.description}
                                         </p>
                                     </div>
-                                </div>
-                                <div className="flex gap-3 rounded-lg bg-muted/50 p-3">
-                                    <Ruler
-                                        className="mt-0.5 size-4 text-muted-foreground"
-                                        aria-hidden="true"
-                                    />
-                                    <div>
-                                        <p className="text-sm font-medium">
-                                            Уточнение замера
-                                        </p>
-                                        <p className="text-sm text-muted-foreground">
-                                            Компания сможет предложить новую
-                                            дату или уточнить параметры заказа.
-                                        </p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
+                                    <Button asChild className="w-full">
+                                        <Link
+                                            href={showRequest(
+                                                selectedRequest.id,
+                                            )}
+                                        >
+                                            Открыть заявку
+                                        </Link>
+                                    </Button>
+                                </CardContent>
+                            </Card>
+                        )}
 
-                        <Card className="border-sidebar-border/70 shadow-none dark:border-sidebar-border">
+                        <Card className="border-border/70 shadow-sm">
                             <CardHeader>
                                 <CardTitle>Профиль клиента</CardTitle>
                                 <CardDescription>
@@ -483,44 +486,9 @@ export default function ClientDashboard() {
                                 </div>
                             </CardContent>
                         </Card>
-
-                        {lastCompletedRequest && (
-                            <Card className="border-sidebar-border/70 shadow-none dark:border-sidebar-border">
-                                <CardHeader>
-                                    <CardTitle>Отзыв о работе</CardTitle>
-                                    <CardDescription>
-                                        Блок для оценки завершенной услуги.
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="grid gap-4">
-                                    <div className="flex items-center gap-1 text-muted-foreground">
-                                        {[1, 2, 3, 4, 5].map((item) => (
-                                            <Star
-                                                className="size-5"
-                                                key={item}
-                                                aria-hidden="true"
-                                            />
-                                        ))}
-                                    </div>
-                                    <p className="text-sm text-muted-foreground">
-                                        {lastCompletedRequest.id} завершена.
-                                        Оценка компании станет доступна после
-                                        запуска отзывов по выполненным заявкам{' '}
-                                        {lastCompletedRequest.company}.
-                                    </p>
-                                    <Button
-                                        variant="outline"
-                                        type="button"
-                                        disabled
-                                    >
-                                        Оставить отзыв
-                                    </Button>
-                                </CardContent>
-                            </Card>
-                        )}
                     </aside>
                 </div>
-            </div>
+            </DashboardPage>
         </>
     );
 }

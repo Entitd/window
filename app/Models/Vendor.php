@@ -55,4 +55,10 @@ class Vendor extends Model
     {
         return $this->belongsTo(User::class, 'moderated_by');
     }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class, 'vendor_id');
+    }
+
 }

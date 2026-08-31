@@ -16,7 +16,7 @@ class ClientRequestController extends Controller
 {
     public function index(Request $request): Response
     {
-        $requests = ServiceRequest::with(['service', 'vendor', 'statusHistories'])
+        $requests = ServiceRequest::with(['service', 'vendor', 'statusHistories', 'review'])
             ->where('client_id', $request->user()->id)
             ->latest()
             ->get()
@@ -85,7 +85,7 @@ class ClientRequestController extends Controller
 
     public function show(Request $request, string $requestId): Response
     {
-        $serviceRequest = ServiceRequest::with(['service', 'vendor', 'statusHistories'])
+        $serviceRequest = ServiceRequest::with(['service', 'vendor', 'statusHistories', 'review'])
             ->where('client_id', $request->user()->id)
             ->findOrFail($requestId);
 
@@ -237,6 +237,17 @@ class ClientRequestController extends Controller
             'extras' => $serviceRequest->additional_services ?? [],
             'comment' => $serviceRequest->comment ?? 'Комментарий не указан',
             'commentValue' => $serviceRequest->comment,
+            'review' => $serviceRequest->review
+                ? [
+                    'id' => (string) $serviceRequest->review->id,
+                    'stars' => $serviceRequest->review->stars,
+                    'comment' => $serviceRequest->review->comment,
+                    'tags' => $serviceRequest->review->tags ?? [],
+                    'isPublic' => $serviceRequest->review->is_public,
+                    'status' => $serviceRequest->review->status,
+                    'createdAt' => $serviceRequest->review->created_at?->format('d.m.Y H:i'),
+                ]
+                : null,
             'history' => $serviceRequest->statusHistories->isNotEmpty()
                 ? $serviceRequest->statusHistories->map(fn ($history) => [
                     'label' => $history->label,
@@ -244,17 +255,17 @@ class ClientRequestController extends Controller
                     'note' => $history->note ?? '',
                 ])->values()
                 : [
-                [
-                    'label' => 'Заявка создана',
-                    'timestamp' => $serviceRequest->created_at?->format('d.m.Y H:i'),
-                    'note' => 'Клиент создал заявку через форму подбора.',
+                    [
+                        'label' => 'Заявка создана',
+                        'timestamp' => $serviceRequest->created_at?->format('d.m.Y H:i'),
+                        'note' => 'Клиент создал заявку через форму подбора.',
+                    ],
                 ],
-            ],
         ];
     }
 
     /**
-     * @param array<string, mixed> $validated
+     * @param  array<string, mixed>  $validated
      */
     private function resolveService(array $validated): Service
     {

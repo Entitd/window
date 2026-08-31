@@ -30,7 +30,7 @@ export function LegalPage({
 }: Props) {
     return (
         <MarketShell
-            activePage="home"
+            activePage="docs"
             ctaHref={MARKETPLACE_PATHS.home}
             ctaLabel="К заявке"
         >

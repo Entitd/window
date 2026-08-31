@@ -1,54 +1,102 @@
 import { Link, usePage } from '@inertiajs/react';
+import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { MARKETPLACE_PATHS } from '@/lib/okna-market';
-import { agreement, dashboard, privacy } from '@/routes';
+import {
+    agreement,
+    contacts,
+    dashboard,
+    faq,
+    home,
+    login,
+    privacy,
+    register,
+    searchResults,
+    vendors,
+} from '@/routes';
 import '../../../css/okna-market.css';
 
-type ActivePage = 'home' | 'search-results' | 'vendors';
+type ActivePage =
+    | 'home'
+    | 'search-results'
+    | 'vendors'
+    | 'faq'
+    | 'contacts'
+    | 'docs';
 
 type Props = {
     activePage: ActivePage;
     children: ReactNode;
-    ctaHref: string;
-    ctaLabel: string;
+    ctaHref?: string;
+    ctaLabel?: string;
 };
 
 const navItems = [
-    { key: 'home', label: 'Главная', href: MARKETPLACE_PATHS.home },
+    { key: 'home', label: 'Главная', href: home() },
     {
         key: 'search-results',
-        label: 'Результаты',
-        href: MARKETPLACE_PATHS.searchResults,
+        label: 'Найти компанию',
+        href: `${home.url()}#request`,
     },
-    { key: 'vendors', label: 'Для компаний', href: MARKETPLACE_PATHS.vendors },
+    { key: 'vendors', label: 'Для компаний', href: vendors() },
+    { key: 'faq', label: 'Вопросы', href: faq() },
 ] as const;
 
-export function MarketShell({
-    activePage,
-    children,
-    ctaHref,
-    ctaLabel,
-}: Props) {
+export function MarketShell({ activePage, children }: Props) {
     const { auth } = usePage<{ auth: { user: unknown | null } }>().props;
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
     const isAuthenticated = Boolean(auth.user);
+
+    const closeMenu = () => setIsMenuOpen(false);
 
     return (
         <div className="okna-market-page">
             <header className="site-header">
                 <div className="header-inner container">
-                    <Link className="brand" href={MARKETPLACE_PATHS.home}>
+                    <Link
+                        aria-label="ОкнаМаркет — главная"
+                        className="brand"
+                        href={home()}
+                        onClick={closeMenu}
+                        prefetch
+                    >
                         <span className="brand-mark">О</span>
-                        <span className="brand-name">ОКНА</span>
+                        <span className="brand-copy">
+                            <strong>ОкнаМаркет</strong>
+                            <small>подбор оконных компаний</small>
+                        </span>
                     </Link>
 
-                    <nav aria-label="Основная навигация" className="main-nav">
+                    <button
+                        aria-controls="public-navigation"
+                        aria-expanded={isMenuOpen}
+                        aria-label={
+                            isMenuOpen ? 'Закрыть меню' : 'Открыть меню'
+                        }
+                        className={`nav-toggle ${isMenuOpen ? 'is-open' : ''}`}
+                        onClick={() => setIsMenuOpen((current) => !current)}
+                        type="button"
+                    >
+                        <span />
+                        <span />
+                        <span />
+                    </button>
+
+                    <nav
+                        aria-label="Основная навигация"
+                        className={`main-nav ${isMenuOpen ? 'is-open' : ''}`}
+                        id="public-navigation"
+                    >
                         {navItems.map((item) => (
                             <Link
+                                aria-current={
+                                    activePage === item.key ? 'page' : undefined
+                                }
                                 className={
                                     activePage === item.key ? 'active-link' : ''
                                 }
                                 href={item.href}
                                 key={item.key}
+                                onClick={closeMenu}
                                 prefetch
                             >
                                 {item.label}
@@ -56,14 +104,36 @@ export function MarketShell({
                         ))}
                     </nav>
 
-                    <div className="header-actions">
+                    <div
+                        className={`header-actions ${isMenuOpen ? 'is-open' : ''}`}
+                    >
                         <span className="city-pill">Волгоград</span>
-                        <Link
-                            className="btn btn-primary"
-                            href={isAuthenticated ? dashboard() : ctaHref}
-                        >
-                            {isAuthenticated ? 'Личный кабинет' : ctaLabel}
-                        </Link>
+                        {isAuthenticated ? (
+                            <Link
+                                className="btn btn-primary header-primary-action"
+                                href={dashboard()}
+                                onClick={closeMenu}
+                            >
+                                Личный кабинет
+                            </Link>
+                        ) : (
+                            <>
+                                <Link
+                                    className="btn btn-secondary header-login-action"
+                                    href={login()}
+                                    onClick={closeMenu}
+                                >
+                                    Войти
+                                </Link>
+                                <Link
+                                    className="btn btn-primary header-primary-action"
+                                    href={register()}
+                                    onClick={closeMenu}
+                                >
+                                    Регистрация
+                                </Link>
+                            </>
+                        )}
                     </div>
                 </div>
             </header>
@@ -71,16 +141,61 @@ export function MarketShell({
             <main>{children}</main>
 
             <footer className="okna-footer">
-                <div className="footer-inner container">
-                    <span>ОкнаМаркет, 2026</span>
-                    <div>
+                <div className="footer-grid container">
+                    <div className="footer-brand-block">
+                        <Link className="brand" href={home()} prefetch>
+                            <span className="brand-mark">О</span>
+                            <span className="brand-copy">
+                                <strong>ОкнаМаркет</strong>
+                                <small>подбор оконных компаний</small>
+                            </span>
+                        </Link>
+                        <p>
+                            Помогаем подобрать компанию по услуге, району и
+                            предварительной цене в одной заявке.
+                        </p>
+                    </div>
+
+                    <nav aria-label="Разделы сайта" className="footer-column">
+                        <strong>Сервис</strong>
+                        <Link href={home()} prefetch>
+                            Главная
+                        </Link>
+                        <Link href={`${home.url()}#request`}>
+                            Найти компанию
+                        </Link>
+                        <Link href={vendors()} prefetch>
+                            Для компаний
+                        </Link>
+                    </nav>
+
+                    <nav aria-label="Помощь" className="footer-column">
+                        <strong>Помощь</strong>
+                        <Link href={faq()} prefetch>
+                            Частые вопросы
+                        </Link>
+                        <Link href={contacts()} prefetch>
+                            Контакты
+                        </Link>
+                        <Link href={searchResults()} prefetch>
+                            Результаты подбора
+                        </Link>
+                    </nav>
+
+                    <nav aria-label="Документы" className="footer-column">
+                        <strong>Документы</strong>
                         <Link href={privacy()} prefetch>
-                            Политика конфиденциальности
+                            Конфиденциальность
                         </Link>
                         <Link href={agreement()} prefetch>
                             Пользовательское соглашение
                         </Link>
-                    </div>
+                    </nav>
+                </div>
+
+                <div className="footer-bottom container">
+                    <span>© 2026 ОкнаМаркет</span>
+                    <span>Сервис работает в Волгограде</span>
                 </div>
             </footer>
         </div>

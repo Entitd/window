@@ -6,6 +6,7 @@ import {
     Search,
     ShieldCheck,
 } from 'lucide-react';
+import { show as showChat } from '@/actions/App/Http/Controllers/ChatController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,12 +16,8 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import {
-    getStatusLabel,
-    getStatusVariant,
-    type RequestStatus,
-} from '@/lib/dashboard-format';
-import { show as showChat } from '@/actions/App/Http/Controllers/ChatController';
+import { getStatusLabel, getStatusVariant } from '@/lib/dashboard-format';
+import type { RequestStatus } from '@/lib/dashboard-format';
 
 type ChatListItem = {
     id: string;

@@ -1,9 +1,14 @@
 import { Form, Head } from '@inertiajs/react';
-import InputError from '@/components/input-error';
+import { KeyRound } from 'lucide-react';
+import {
+    AuthField,
+    AuthNotice,
+    authButtonClassName,
+    authControlClassName,
+} from '@/components/auth/auth-form';
 import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { update } from '@/routes/password';
 
@@ -16,74 +21,107 @@ type Props = {
 export default function ResetPassword({ token, email, passwordRules }: Props) {
     return (
         <>
-            <Head title="Reset password" />
+            <Head title="Новый пароль" />
 
             <Form
                 {...update.form()}
                 transform={(data) => ({ ...data, token, email })}
                 resetOnSuccess={['password', 'password_confirmation']}
+                className="grid gap-6"
             >
                 {({ processing, errors }) => (
-                    <div className="grid gap-6">
-                        <div className="grid gap-2">
-                            <Label htmlFor="email">Email</Label>
+                    <>
+                        <AuthNotice>
+                            Ссылка уже подтверждена. Осталось придумать новый
+                            пароль для аккаунта.
+                        </AuthNotice>
+
+                        <AuthField
+                            id="email"
+                            label="Email аккаунта"
+                            error={errors.email}
+                        >
                             <Input
                                 id="email"
                                 type="email"
                                 name="email"
                                 autoComplete="email"
                                 value={email}
-                                className="mt-1 block w-full"
                                 readOnly
+                                className={`${authControlClassName} cursor-default bg-slate-100 text-slate-600 dark:bg-slate-950/80 dark:text-slate-300`}
+                                aria-invalid={Boolean(errors.email)}
+                                aria-describedby={
+                                    errors.email ? 'email-error' : undefined
+                                }
                             />
-                            <InputError
-                                message={errors.email}
-                                className="mt-2"
-                            />
-                        </div>
+                        </AuthField>
 
-                        <div className="grid gap-2">
-                            <Label htmlFor="password">Password</Label>
-                            <PasswordInput
+                        <div className="grid gap-5 sm:grid-cols-2">
+                            <AuthField
                                 id="password"
-                                name="password"
-                                autoComplete="new-password"
-                                className="mt-1 block w-full"
-                                autoFocus
-                                placeholder="Password"
-                                passwordrules={passwordRules}
-                            />
-                            <InputError message={errors.password} />
-                        </div>
+                                label="Новый пароль"
+                                error={errors.password}
+                            >
+                                <PasswordInput
+                                    id="password"
+                                    name="password"
+                                    autoComplete="new-password"
+                                    autoFocus
+                                    required
+                                    placeholder="Не менее 8 символов"
+                                    passwordrules={passwordRules}
+                                    className={authControlClassName}
+                                    aria-invalid={Boolean(errors.password)}
+                                    aria-describedby={
+                                        errors.password
+                                            ? 'password-error'
+                                            : undefined
+                                    }
+                                />
+                            </AuthField>
 
-                        <div className="grid gap-2">
-                            <Label htmlFor="password_confirmation">
-                                Confirm password
-                            </Label>
-                            <PasswordInput
+                            <AuthField
                                 id="password_confirmation"
-                                name="password_confirmation"
-                                autoComplete="new-password"
-                                className="mt-1 block w-full"
-                                placeholder="Confirm password"
-                                passwordrules={passwordRules}
-                            />
-                            <InputError
-                                message={errors.password_confirmation}
-                                className="mt-2"
-                            />
+                                label="Повторите пароль"
+                                error={errors.password_confirmation}
+                            >
+                                <PasswordInput
+                                    id="password_confirmation"
+                                    name="password_confirmation"
+                                    autoComplete="new-password"
+                                    required
+                                    placeholder="Ещё раз"
+                                    passwordrules={passwordRules}
+                                    className={authControlClassName}
+                                    aria-invalid={Boolean(
+                                        errors.password_confirmation,
+                                    )}
+                                    aria-describedby={
+                                        errors.password_confirmation
+                                            ? 'password_confirmation-error'
+                                            : undefined
+                                    }
+                                />
+                            </AuthField>
                         </div>
 
                         <Button
                             type="submit"
-                            className="mt-4 w-full"
+                            className={authButtonClassName}
                             disabled={processing}
                             data-test="reset-password-button"
                         >
-                            {processing && <Spinner />}
-                            Reset password
+                            {processing ? (
+                                <Spinner />
+                            ) : (
+                                <KeyRound
+                                    className="size-4"
+                                    aria-hidden="true"
+                                />
+                            )}
+                            {processing ? 'Сохраняем...' : 'Сохранить пароль'}
                         </Button>
-                    </div>
+                    </>
                 )}
             </Form>
         </>
@@ -91,6 +129,7 @@ export default function ResetPassword({ token, email, passwordRules }: Props) {
 }
 
 ResetPassword.layout = {
-    title: 'Reset password',
-    description: 'Please enter your new password below',
+    title: 'Придумайте новый пароль',
+    description:
+        'После сохранения используйте новый пароль для входа в личный кабинет.',
 };

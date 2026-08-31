@@ -1,18 +1,11 @@
-import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useEffect, useMemo, useState } from 'react';
+import { Head, router } from '@inertiajs/react';
+import { useMemo, useState } from 'react';
 import {
     FaqAccordion,
     homepageFaqItems,
 } from '@/components/okna-market/faq-accordion';
-import {
-    agreement,
-    dashboard,
-    login,
-    privacy,
-    register,
-    searchResults,
-} from '@/routes';
-import { MARKETPLACE_PATHS } from '@/lib/okna-market';
+import { MarketShell } from '@/components/okna-market/market-shell';
+import { searchResults } from '@/routes';
 import '../../css/okna-market.css';
 
 type ServiceKey =
@@ -211,12 +204,11 @@ const problems = [
     },
 ];
 
-// Static trust copy until backend moderation, request privacy, and warranty data are connected.
 const trustItems = [
     {
         number: '01',
         title: 'Профиль компании проходит проверку',
-        text: 'В выдаче можно показывать компании с заполненными услугами, районами работы и контактами. После подключения backend здесь появится статус модерации.',
+        text: 'В подбор попадают компании, которые прошли модерацию и заполнили услуги, районы работы и контакты.',
     },
     {
         number: '02',
@@ -231,7 +223,7 @@ const trustItems = [
     {
         number: '04',
         title: 'Гарантия привязана к заявке',
-        text: 'После выполнения работ в кабинете можно показать компанию, срок гарантии и условия обращения по гарантийному случаю.',
+        text: 'Документы по выполненной работе хранятся рядом с заявкой, чтобы условия и контакты компании не потерялись.',
     },
 ];
 
@@ -286,18 +278,6 @@ const priceFactors = [
         title: 'Район и удаленность',
         text: 'Компания учитывает логистику и ближайшее свободное время.',
     },
-];
-
-const orderStatuses = [
-    'создана',
-    'ожидает подтверждения компании',
-    'подтверждена',
-    'назначен замер',
-    'согласована смета',
-    'в работе',
-    'выполнена',
-    'гарантия активна',
-    'отменена',
 ];
 
 const sortOptions: { key: SortKey; label: string }[] = [
@@ -460,65 +440,20 @@ function getUrgencyByKey(urgencyKey: UrgencyKey): Urgency {
 }
 
 export default function OknaMarket() {
-    const { auth } = usePage<{ auth: { user: unknown | null } }>().props;
-    const isAuthenticated = Boolean(auth.user);
     const [serviceKey, setServiceKey] =
         useState<ServiceKey>('glass_replacement');
     const [windowTypeKey, setWindowTypeKey] = useState<WindowTypeKey>('double');
-    const [urgencyKey, setUrgencyKey] = useState<UrgencyKey>('week');
+    const urgencyKey: UrgencyKey = 'week';
     const [width, setWidth] = useState(130);
     const [height, setHeight] = useState(140);
-    const [clientPhone, setClientPhone] = useState('');
-    const [sortKey, setSortKey] = useState<SortKey>('price');
-    const [selectedCompany, setSelectedCompany] = useState(companies[0].name);
-    const [requestCreated, setRequestCreated] = useState(false);
-    const [demoStepIndex, setDemoStepIndex] = useState(0);
-    const [filters, setFilters] = useState<Record<FilterKey, boolean>>({
-        highRating: true,
-        manyReviews: false,
-        hasPhotos: true,
-        fastDate: true,
-    });
+    const activeDemoStep = catalogDemoSteps[0];
+    const filters = activeDemoStep.filters;
+    const sortKey = activeDemoStep.sortKey;
+    const selectedCompany = activeDemoStep.selectedCompany;
 
     const activeService = getServiceByKey(serviceKey);
     const activeWindowType = getWindowTypeByKey(windowTypeKey);
     const activeUrgency = getUrgencyByKey(urgencyKey);
-    const activeDemoStep =
-        catalogDemoSteps[demoStepIndex] ?? catalogDemoSteps[0];
-
-    const applyCatalogDemoStep = (step: CatalogDemoStep) => {
-        setFilters(step.filters);
-        setUrgencyKey(step.urgencyKey);
-        setSortKey(step.sortKey);
-        setSelectedCompany(step.selectedCompany);
-        setRequestCreated(false);
-    };
-
-    useEffect(() => {
-        const prefersReducedMotion = window.matchMedia(
-            '(prefers-reduced-motion: reduce)',
-        ).matches;
-
-        applyCatalogDemoStep(catalogDemoSteps[0]);
-
-        if (prefersReducedMotion) {
-            return;
-        }
-
-        const intervalId = window.setInterval(() => {
-            setDemoStepIndex((currentStep) => {
-                const nextStepIndex =
-                    (currentStep + 1) % catalogDemoSteps.length;
-
-                applyCatalogDemoStep(catalogDemoSteps[nextStepIndex]);
-
-                return nextStepIndex;
-            });
-        }, 2200);
-
-        return () => window.clearInterval(intervalId);
-    }, []);
-
     const estimatedRange = useMemo<[number, number]>(() => {
         const area = clamp(width, 40, 320) * clamp(height, 40, 260);
         const areaFactor = clamp(area / (130 * 140), 0.72, 1.75);
@@ -568,49 +503,7 @@ export default function OknaMarket() {
         companies.find((company) => company.name === selectedCompany) ??
         companies[0];
 
-    const selectedCompanyPrice = useMemo<[number, number]>(
-        () => [
-            estimatedRange[0] * selectedCompanyData.multiplier,
-            estimatedRange[1] * selectedCompanyData.multiplier,
-        ],
-        [estimatedRange, selectedCompanyData],
-    );
-
-    const catalogEstimatedRange = useMemo<[number, number]>(
-        () => [
-            estimatedRange[0] * activeDemoStep.priceScale,
-            estimatedRange[1] * activeDemoStep.priceScale,
-        ],
-        [activeDemoStep.priceScale, estimatedRange],
-    );
-
-    const scrollTo = (sectionId: string) => {
-        document.getElementById(sectionId)?.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start',
-        });
-    };
-
-    const resetRequest = () => {
-        setRequestCreated(false);
-    };
-
-    const updateFilter = (filterKey: FilterKey) => {
-        setFilters((currentFilters) => ({
-            ...currentFilters,
-            [filterKey]: !currentFilters[filterKey],
-        }));
-    };
-
-    const buildExtraWorksQuery = () => {
-        const extraWorks = ['dismantling'];
-
-        if (urgencyKey === 'urgent') {
-            extraWorks.push('urgent');
-        }
-
-        return extraWorks.join(',');
-    };
+    const catalogEstimatedRange: [number, number] = [6500, 14500];
 
     const submitSearchRequest = () => {
         router.get(searchResults.url(), {
@@ -618,8 +511,7 @@ export default function OknaMarket() {
             width: String(width),
             height: String(height),
             serviceKey,
-            extraWorks: buildExtraWorksQuery(),
-            phone: clientPhone,
+            extraWorks: 'dismantling',
         });
     };
 
@@ -633,750 +525,606 @@ export default function OknaMarket() {
                 />
             </Head>
 
-            <div className="okna-market-page">
-                <header className="site-header">
-                    <div className="header-inner container">
-                        <button
-                            className="brand"
-                            onClick={() => scrollTo('request')}
-                            type="button"
-                        >
-                            <span className="brand-mark">О</span>
-                            <span className="brand-name">ОКНА</span>
-                        </button>
+            <MarketShell activePage="home">
+                <section className="hero" id="request">
+                    <div className="hero-inner container">
+                        <div className="hero-copy">
+                            <span className="eyebrow">
+                                Сравнение оконных компаний за 2 минуты
+                            </span>
+                            <h1>
+                                Сравните предложения на окна по одной заявке{' '}
+                                <span>- без спама и лишних звонков</span>
+                            </h1>
+                        </div>
 
-                        <nav
-                            aria-label="Основная навигация"
-                            className="main-nav"
+                        <form
+                            action="#"
+                            className="request-card"
+                            method="get"
+                            onSubmit={(event) => {
+                                event.preventDefault();
+                                submitSearchRequest();
+                            }}
                         >
-                            <button
-                                onClick={() => scrollTo('companies')}
-                                type="button"
-                            >
-                                Компании
-                            </button>
-                            <button
-                                onClick={() => scrollTo('how-it-works')}
-                                type="button"
-                            >
-                                Как работает
-                            </button>
-                            <button
-                                onClick={() => router.visit(MARKETPLACE_PATHS.vendors)}
-                                type="button"
-                            >
-                                Для компаний
-                            </button>
-                        </nav>
+                            <div className="request-heading">
+                                <div>
+                                    <h2>Что нужно установить?</h2>
+                                    <p>
+                                        Предварительно: от{' '}
+                                        {formatRoubles(estimatedRange[0])} до{' '}
+                                        {formatRoubles(estimatedRange[1])} ₽
+                                    </p>
+                                </div>
+                                <span>Точная цена после замера.</span>
+                            </div>
 
-                        <div className="header-actions">
-                            <span className="city-pill">Волгоград</span>
-                            {isAuthenticated ? (
-                                <Link
-                                    className="btn btn-primary"
-                                    href={dashboard()}
+                            <div
+                                aria-label="Тип услуги"
+                                className="service-chips"
+                                role="list"
+                            >
+                                {services.map((service) => {
+                                    const isActive = service.key === serviceKey;
+
+                                    return (
+                                        <button
+                                            aria-pressed={isActive}
+                                            className={`chip ${isActive ? 'active' : ''}`}
+                                            key={service.key}
+                                            onClick={() => {
+                                                setServiceKey(service.key);
+                                            }}
+                                            type="button"
+                                        >
+                                            {service.title}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+
+                            <div className="form-grid form-grid-mvp">
+                                <label className="field-card">
+                                    <span className="field-icon">⌖</span>
+                                    <span className="field-label">Город</span>
+                                    <input
+                                        name="city"
+                                        readOnly
+                                        value="Волгоград"
+                                    />
+                                </label>
+
+                                <label className="field-card">
+                                    <span className="field-icon">▣</span>
+                                    <span className="field-label">
+                                        Тип окна
+                                    </span>
+                                    <select
+                                        name="window_type"
+                                        onChange={(event) => {
+                                            setWindowTypeKey(
+                                                event.target
+                                                    .value as WindowTypeKey,
+                                            );
+                                        }}
+                                        value={windowTypeKey}
+                                    >
+                                        {windowTypes.map((windowType) => (
+                                            <option
+                                                key={windowType.key}
+                                                value={windowType.key}
+                                            >
+                                                {windowType.title}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </label>
+
+                                <label className="field-card">
+                                    <span className="field-icon">↔</span>
+                                    <span className="field-label">
+                                        Ширина, см
+                                    </span>
+                                    <input
+                                        max={320}
+                                        min={40}
+                                        name="width"
+                                        onChange={(event) => {
+                                            setWidth(
+                                                Number(event.target.value),
+                                            );
+                                        }}
+                                        type="number"
+                                        value={width}
+                                    />
+                                </label>
+
+                                <label className="field-card">
+                                    <span className="field-icon">↕</span>
+                                    <span className="field-label">
+                                        Высота, см
+                                    </span>
+                                    <input
+                                        max={260}
+                                        min={40}
+                                        name="height"
+                                        onChange={(event) => {
+                                            setHeight(
+                                                Number(event.target.value),
+                                            );
+                                        }}
+                                        type="number"
+                                        value={height}
+                                    />
+                                </label>
+
+                                <button
+                                    className="btn btn-accent"
+                                    type="submit"
                                 >
-                                    Личный кабинет
-                                </Link>
-                            ) : (
-                                <>
-                                    <Link
-                                        className="btn btn-secondary"
-                                        href={login()}
-                                    >
-                                        Войти
-                                    </Link>
-                                    <Link
-                                        className="btn btn-primary"
-                                        href={register()}
-                                    >
-                                        Зарегистрироваться
-                                    </Link>
-                                </>
-                            )}
+                                    Найти компании
+                                </button>
+                            </div>
+                        </form>
+
+                        <div
+                            aria-label="Возможности сервиса"
+                            className="metrics"
+                        >
+                            <div className="metric-card">
+                                <strong>1</strong>
+                                <span>заявка вместо обзвона</span>
+                            </div>
+                            <div className="metric-card">
+                                <strong>5</strong>
+                                <span>основных видов услуг</span>
+                            </div>
+                            <div className="metric-card">
+                                <strong>Весь путь</strong>
+                                <span>сохраняется в кабинете</span>
+                            </div>
                         </div>
                     </div>
-                </header>
+                </section>
 
-                <main>
-                    <section className="hero" id="request">
-                        <div className="hero-inner container">
-                            <div className="hero-copy">
-                                <span className="eyebrow">
-                                    Сравнение оконных компаний за 2 минуты
-                                </span>
-                                <h1>
-                                    Сравните предложения на окна по одной заявке{' '}
-                                    <span>- без спама и лишних звонков</span>
-                                </h1>
-                            </div>
-
-                            <form
-                                action="#"
-                                className="request-card"
-                                method="get"
-                                onSubmit={(event) => {
-                                    event.preventDefault();
-                                    submitSearchRequest();
-                                }}
-                            >
-                                <div className="request-heading">
-                                    <div>
-                                        <h2>Что нужно установить?</h2>
-                                        <p>
-                                            Предварительно: от{' '}
-                                            {formatRoubles(estimatedRange[0])}{' '}
-                                            до{' '}
-                                            {formatRoubles(estimatedRange[1])} ₽
-                                        </p>
-                                    </div>
-                                    <span>Точная цена после замера.</span>
-                                </div>
-
-                                <div
-                                    aria-label="Тип услуги"
-                                    className="service-chips"
-                                    role="list"
-                                >
-                                    {services.map((service) => {
-                                        const isActive =
-                                            service.key === serviceKey;
-
-                                        return (
-                                            <button
-                                                aria-pressed={isActive}
-                                                className={`chip ${isActive ? 'active' : ''}`}
-                                                key={service.key}
-                                                onClick={() => {
-                                                    setServiceKey(service.key);
-                                                    resetRequest();
-                                                }}
-                                                type="button"
-                                            >
-                                                {service.title}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-
-                                <div className="form-grid form-grid-mvp">
-                                    <label className="field-card">
-                                        <span className="field-icon">⌖</span>
-                                        <span className="field-label">
-                                            Город
-                                        </span>
-                                        <input
-                                            name="city"
-                                            readOnly
-                                            value="Волгоград"
-                                        />
-                                    </label>
-
-                                    <label className="field-card">
-                                        <span className="field-icon">▣</span>
-                                        <span className="field-label">
-                                            Тип окна
-                                        </span>
-                                        <select
-                                            name="window_type"
-                                            onChange={(event) => {
-                                                setWindowTypeKey(
-                                                    event.target
-                                                        .value as WindowTypeKey,
-                                                );
-                                                resetRequest();
-                                            }}
-                                            value={windowTypeKey}
-                                        >
-                                            {windowTypes.map((windowType) => (
-                                                <option
-                                                    key={windowType.key}
-                                                    value={windowType.key}
-                                                >
-                                                    {windowType.title}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </label>
-
-                                    <label className="field-card">
-                                        <span className="field-icon">↔</span>
-                                        <span className="field-label">
-                                            Ширина, см
-                                        </span>
-                                        <input
-                                            max={320}
-                                            min={40}
-                                            name="width"
-                                            onChange={(event) => {
-                                                setWidth(
-                                                    Number(event.target.value),
-                                                );
-                                                resetRequest();
-                                            }}
-                                            type="number"
-                                            value={width}
-                                        />
-                                    </label>
-
-                                    <label className="field-card">
-                                        <span className="field-icon">↕</span>
-                                        <span className="field-label">
-                                            Высота, см
-                                        </span>
-                                        <input
-                                            max={260}
-                                            min={40}
-                                            name="height"
-                                            onChange={(event) => {
-                                                setHeight(
-                                                    Number(event.target.value),
-                                                );
-                                                resetRequest();
-                                            }}
-                                            type="number"
-                                            value={height}
-                                        />
-                                    </label>
-
-                                    <button
-                                        className="btn btn-accent"
-                                        type="submit"
-                                    >
-                                        Найти компании
-                                    </button>
-                                </div>
-                            </form>
-
-                            <div
-                                aria-label="Ключевые показатели сервиса"
-                                className="metrics"
-                            >
-                                <div className="metric-card">
-                                    <strong>120+</strong>
-                                    <span>проверенных компаний</span>
-                                </div>
-                                <div className="metric-card">
-                                    <strong>4.8</strong>
-                                    <span>средний рейтинг</span>
-                                </div>
-                                <div className="metric-card">
-                                    <strong>1</strong>
-                                    <span>заявка вместо обзвона</span>
-                                </div>
-                            </div>
+                <section className="problems-section">
+                    <div className="container">
+                        <div className="problems-header">
+                            <h2>
+                                Типичные сложности с окнами - и как сервис их
+                                убирает
+                            </h2>
+                            <p>
+                                Вместо хаотичных звонков и разных условий вы
+                                сразу видите подходящие услуги, районы работы и
+                                предварительную цену.
+                            </p>
                         </div>
-                    </section>
 
-                    <section className="problems-section">
-                        <div className="container">
-                            <div className="problems-header">
-                                <h2>
-                                    Типичные сложности с окнами - и как сервис
-                                    их убирает
-                                </h2>
-                                <p>
-                                    Вместо хаотичных звонков и разных условий вы
-                                    сразу видите понятные предложения, цену,
-                                    рейтинг и следующую доступную дату.
-                                </p>
-                            </div>
-
-                            <div className="problem-grid">
-                                {problems.map((item, index) => (
-                                    <article
-                                        className="problem-card"
-                                        key={item.problem}
-                                    >
-                                        <div className="problem-card-top">
-                                            <div
-                                                aria-hidden="true"
-                                                className="problem-icon"
-                                            >
-                                                {item.icon}
-                                            </div>
-                                            <span className="problem-number">
-                                                {String(index + 1).padStart(
-                                                    2,
-                                                    '0',
-                                                )}
-                                            </span>
-                                        </div>
-
-                                        <div className="problem-copy">
-                                            <span className="card-label">
-                                                Проблема
-                                            </span>
-                                            <h3>{item.problem}</h3>
-                                        </div>
-
-                                        <div className="solution-copy">
-                                            <span className="card-label">
-                                                Решение
-                                            </span>
-                                            <p>{item.solution}</p>
-                                        </div>
-                                    </article>
-                                ))}
-                            </div>
-                        </div>
-                    </section>
-
-                    <section className="trust-section">
-                        <div className="container">
-                            <div className="problems-header">
-                                <h2>Почему сервису можно доверять</h2>
-                                <p>
-                                    Важные условия показываются до заявки:
-                                    пользователь понимает, что цена
-                                    предварительная, контакт защищен, а гарантия
-                                    будет связана с выполненными работами.
-                                </p>
-                            </div>
-
-                            <div className="trust-grid">
-                                {trustItems.map((item) => (
-                                    <article
-                                        className="trust-card"
-                                        key={item.title}
-                                    >
-                                        <span>{item.number}</span>
-                                        <h3>{item.title}</h3>
-                                        <p>{item.text}</p>
-                                    </article>
-                                ))}
-                            </div>
-                        </div>
-                    </section>
-
-                    <section className="catalog-section" id="companies">
-                        <div className="container">
-                            <div className="problems-header">
-                                <h2>
-                                    Гибкий фильтр для подбора надежной компании
-                                </h2>
-                                <p>
-                                    Ниже показан пример выдачи: анимация
-                                    имитирует, как клиент меняет цену, сроки,
-                                    чекбоксы и сортировку.
-                                </p>
-                            </div>
-
-                            <div
-                                className={`catalog-layout catalog-demo-layout demo-step-${activeDemoStep.key}`}
-                            >
-                                <span
-                                    aria-hidden="true"
-                                    className="demo-watermark"
-                                >
-                                    пример
-                                </span>
-                                <span
-                                    aria-hidden="true"
-                                    className="demo-click-cursor"
-                                >
-                                    <span />
-                                </span>
-                                <aside
-                                    aria-label="Фильтры компаний"
-                                    className="filters-card"
-                                >
-                                    <h3>Фильтры примера</h3>
-                                    <p className="filters-caption">
-                                        Данные не отправляются. Блок показывает
-                                        будущую механику выдачи.
-                                    </p>
-
-                                    <div
-                                        className={`filter-group ${
-                                            activeDemoStep.focus === 'price'
-                                                ? 'demo-focus'
-                                                : ''
-                                        }`}
-                                    >
-                                        <h4>Цена</h4>
-                                        <div
-                                            className={`price-range demo-price-range ${
-                                                activeDemoStep.focus === 'price'
-                                                    ? 'demo-touched'
-                                                    : ''
-                                            }`}
-                                        >
-                                            <span className="price-range-value">
-                                                <small>от</small>
-                                                <strong>
-                                                    {formatRoubles(
-                                                        catalogEstimatedRange[0],
-                                                    )}{' '}
-                                                    ₽
-                                                </strong>
-                                            </span>
-                                            <span className="price-range-line">
-                                                <i
-                                                    style={{
-                                                        left: `${activeDemoStep.priceFill[0]}%`,
-                                                        width: `${
-                                                            activeDemoStep
-                                                                .priceFill[1] -
-                                                            activeDemoStep
-                                                                .priceFill[0]
-                                                        }%`,
-                                                    }}
-                                                />
-                                            </span>
-                                            <span className="price-range-value">
-                                                <small>до</small>
-                                                <strong>
-                                                    {formatRoubles(
-                                                        catalogEstimatedRange[1],
-                                                    )}{' '}
-                                                    ₽
-                                                </strong>
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <div
-                                        className={`filter-group ${
-                                            activeDemoStep.focus === 'rating'
-                                                ? 'demo-focus'
-                                                : ''
-                                        }`}
-                                    >
-                                        <h4>Рейтинг компании</h4>
-                                        {filterOptions
-                                            .slice(0, 3)
-                                            .map((filter) => (
-                                                <label
-                                                    className={`checkbox-row ${
-                                                        activeDemoStep.touchedFilter ===
-                                                        filter.key
-                                                            ? 'demo-touched'
-                                                            : ''
-                                                    }`}
-                                                    key={filter.key}
-                                                >
-                                                    <input
-                                                        checked={
-                                                            filters[filter.key]
-                                                        }
-                                                        onChange={() =>
-                                                            updateFilter(
-                                                                filter.key,
-                                                            )
-                                                        }
-                                                        type="checkbox"
-                                                    />
-                                                    {filter.label}
-                                                </label>
-                                            ))}
-                                    </div>
-
-                                    <div
-                                        className={`filter-group ${
-                                            activeDemoStep.focus === 'deadline'
-                                                ? 'demo-focus'
-                                                : ''
-                                        }`}
-                                    >
-                                        <h4>Сроки</h4>
-                                        <label
-                                            className={`checkbox-row ${
-                                                activeDemoStep.touchedFilter ===
-                                                'urgent'
-                                                    ? 'demo-touched'
-                                                    : ''
-                                            }`}
-                                        >
-                                            <input
-                                                checked={
-                                                    urgencyKey === 'urgent'
-                                                }
-                                                onChange={() => {
-                                                    setUrgencyKey('urgent');
-                                                    resetRequest();
-                                                }}
-                                                type="checkbox"
-                                            />
-                                            сегодня/завтра
-                                        </label>
-                                        <label
-                                            className={`checkbox-row ${
-                                                activeDemoStep.touchedFilter ===
-                                                'fastDate'
-                                                    ? 'demo-touched'
-                                                    : ''
-                                            }`}
-                                        >
-                                            <input
-                                                checked={filters.fastDate}
-                                                onChange={() =>
-                                                    updateFilter('fastDate')
-                                                }
-                                                type="checkbox"
-                                            />
-                                            до 3 дней
-                                        </label>
-                                        <label
-                                            className={`checkbox-row ${
-                                                activeDemoStep.touchedFilter ===
-                                                'week'
-                                                    ? 'demo-touched'
-                                                    : ''
-                                            }`}
-                                        >
-                                            <input
-                                                checked={urgencyKey === 'week'}
-                                                onChange={() => {
-                                                    setUrgencyKey('week');
-                                                    resetRequest();
-                                                }}
-                                                type="checkbox"
-                                            />
-                                            на этой неделе
-                                        </label>
-                                    </div>
-
-                                    <button
-                                        className="btn btn-primary full-width"
-                                        onClick={() => setDemoStepIndex(2)}
-                                        type="button"
-                                    >
-                                        Показать сортировку
-                                    </button>
-                                </aside>
-
-                                <div className="catalog-content">
-                                    <div
-                                        className={`sort-panel ${
-                                            activeDemoStep.focus === 'sort'
-                                                ? 'demo-focus'
-                                                : ''
-                                        }`}
-                                    >
-                                        <span>Сортировать:</span>
-                                        {sortOptions.map((option) => (
-                                            <button
-                                                className={`sort-chip ${
-                                                    sortKey === option.key
-                                                        ? 'active'
-                                                        : ''
-                                                } ${
-                                                    activeDemoStep.focus ===
-                                                        'sort' &&
-                                                    sortKey === option.key
-                                                        ? 'demo-touched'
-                                                        : ''
-                                                }`}
-                                                key={option.key}
-                                                onClick={() => {
-                                                    setSortKey(option.key);
-                                                    setDemoStepIndex(2);
-                                                }}
-                                                type="button"
-                                            >
-                                                {option.label}
-                                            </button>
-                                        ))}
-                                    </div>
-
-                                    {visibleCompanies.map((company) => {
-                                        const priceMin =
-                                            catalogEstimatedRange[0] *
-                                            company.multiplier;
-                                        const priceMax =
-                                            catalogEstimatedRange[1] *
-                                            company.multiplier;
-                                        const isSelected =
-                                            selectedCompany === company.name;
-                                        const companyCardClass = [
-                                            'company-card',
-                                            isSelected ? 'selected' : '',
-                                            activeDemoStep.focus ===
-                                                'company' && isSelected
-                                                ? 'demo-focus-card'
-                                                : '',
-                                        ]
-                                            .filter(Boolean)
-                                            .join(' ');
-
-                                        return (
-                                            <article
-                                                className={companyCardClass}
-                                                key={company.name}
-                                            >
-                                                <div
-                                                    className={`company-logo ${company.tone}`}
-                                                >
-                                                    {company.initials}
-                                                </div>
-                                                <div className="company-info">
-                                                    <h3>{company.name}</h3>
-                                                    <p>{company.description}</p>
-                                                    <div className="company-tags">
-                                                        <span className="rating-tag">
-                                                            ★{' '}
-                                                            {company.rating.toFixed(
-                                                                1,
-                                                            )}{' '}
-                                                            / {company.reviews}{' '}
-                                                            отзывов
-                                                        </span>
-                                                        <span className="green-tag">
-                                                            {company.badge}
-                                                        </span>
-                                                    </div>
-                                                    <ul className="company-features">
-                                                        <li>
-                                                            Дата:{' '}
-                                                            {company.nextDate}
-                                                        </li>
-                                                        <li>
-                                                            Гарантия:{' '}
-                                                            {company.guarantee}
-                                                        </li>
-                                                        <li>
-                                                            Заказов:{' '}
-                                                            {company.orders}
-                                                        </li>
-                                                        <li>
-                                                            {company.feature}
-                                                        </li>
-                                                    </ul>
-                                                    <p className="details-line">
-                                                        {company.districts}
-                                                    </p>
-                                                </div>
-                                                <div className="company-action">
-                                                    <span>Цена в примере</span>
-                                                    <strong>
-                                                        {formatRoubles(
-                                                            priceMin,
-                                                        )}
-                                                        -
-                                                        {formatRoubles(
-                                                            priceMax,
-                                                        )}{' '}
-                                                        ₽
-                                                    </strong>
-                                                    <button
-                                                        className="btn btn-primary"
-                                                        onClick={() => {
-                                                            setSelectedCompany(
-                                                                company.name,
-                                                            );
-                                                            setRequestCreated(
-                                                                false,
-                                                            );
-                                                            setDemoStepIndex(3);
-                                                        }}
-                                                        type="button"
-                                                    >
-                                                        {isSelected
-                                                            ? 'В примере выбрана'
-                                                            : 'Показать выбор'}
-                                                    </button>
-                                                </div>
-                                            </article>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section className="steps-section" id="how-it-works">
-                        <div className="steps-grid container">
-                            {steps.map((step, index) => (
+                        <div className="problem-grid">
+                            {problems.map((item, index) => (
                                 <article
-                                    className="step-card problem-card"
-                                    key={step.title}
+                                    className="problem-card"
+                                    key={item.problem}
                                 >
-                                    <span>{index + 1}</span>
-                                    <h3>{step.title}</h3>
-                                    <p>{step.text}</p>
+                                    <div className="problem-card-top">
+                                        <div
+                                            aria-hidden="true"
+                                            className="problem-icon"
+                                        >
+                                            {item.icon}
+                                        </div>
+                                        <span className="problem-number">
+                                            {String(index + 1).padStart(2, '0')}
+                                        </span>
+                                    </div>
+
+                                    <div className="problem-copy">
+                                        <span className="card-label">
+                                            Проблема
+                                        </span>
+                                        <h3>{item.problem}</h3>
+                                    </div>
+
+                                    <div className="solution-copy">
+                                        <span className="card-label">
+                                            Решение
+                                        </span>
+                                        <p>{item.solution}</p>
+                                    </div>
                                 </article>
                             ))}
                         </div>
-                    </section>
+                    </div>
+                </section>
 
-                    <section className="price-section">
-                        <div className="container">
-                            <h2>Почему цена на окна может отличаться</h2>
-
-                            <div className="price-grid">
-                                {priceFactors.map((factor) => (
-                                    <article
-                                        className="price-card"
-                                        key={factor.title}
-                                    >
-                                        <div className="price-icon">
-                                            {factor.icon}
-                                        </div>
-                                        <h3>{factor.title}</h3>
-                                        <p>{factor.text}</p>
-                                    </article>
-                                ))}
-                            </div>
+                <section className="trust-section">
+                    <div className="container">
+                        <div className="problems-header">
+                            <h2>Почему сервису можно доверять</h2>
+                            <p>
+                                Важные условия показываются до заявки:
+                                пользователь понимает, что цена предварительная,
+                                контакт получает выбранная компания, а история
+                                обращения сохраняется в кабинете.
+                            </p>
                         </div>
-                    </section>
 
-                    <section className="guarantee-section">
-                        <div className="guarantee-box container">
-                            <div>
-                                <span className="faq-kicker">
-                                    Гарантия после выполнения
-                                </span>
-                                <h2>
-                                    Гарантия появляется в кабинете, когда заказ
-                                    выполнен
-                                </h2>
-                                <p>
-                                    После статуса "выполнена" сервис показывает
-                                    связанную заявку, компанию, дату начала,
-                                    дату окончания и условия гарантийных работ.
-                                </p>
-                            </div>
-                            <div
-                                // className="guarantee-card">
-                                className={`catalog-demo-layout guarantee-card`}
-                            >
-                                <span className="demo-watermark">пример</span>
-                                <strong>Гарантийный талон</strong>
-                                <span>
-                                    Компания: {selectedCompanyData.name}
-                                </span>
-                                <span>
-                                    Срок: {selectedCompanyData.guarantee}
-                                </span>
-                                <span>Условия фиксируются после работ</span>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section className="faq-section" id="faq">
-                        <div className="narrow container">
-                            <span className="faq-kicker">FAQ</span>
-                            <h2>Часто задаваемые вопросы</h2>
-                            <FaqAccordion items={homepageFaqItems} />
-                        </div>
-                    </section>
-                </main>
-
-                <footer className="okna-footer">
-                    <div className="footer-inner container">
-                        <span>ОкнаМаркет, 2026</span>
-                        <div>
-                            <Link href={privacy()} prefetch>
-                                Политика конфиденциальности
-                            </Link>
-                            <Link href={agreement()} prefetch>
-                                Пользовательское соглашение
-                            </Link>
+                        <div className="trust-grid">
+                            {trustItems.map((item) => (
+                                <article
+                                    className="trust-card"
+                                    key={item.title}
+                                >
+                                    <span>{item.number}</span>
+                                    <h3>{item.title}</h3>
+                                    <p>{item.text}</p>
+                                </article>
+                            ))}
                         </div>
                     </div>
-                </footer>
-            </div>
+                </section>
+
+                <section className="catalog-section" id="companies">
+                    <div className="container">
+                        <div className="problems-header">
+                            <span className="eyebrow">Как выглядит подбор</span>
+                            <h2>
+                                Компании сравниваются по одинаковым параметрам
+                            </h2>
+                            <p>
+                                Один фиксированный сценарий показывает, как
+                                клиент увидит цену, срок, районы и условия
+                                разных компаний. Он не меняет параметры формы
+                                выше.
+                            </p>
+                        </div>
+
+                        <div
+                            className={`catalog-layout catalog-demo-layout demo-step-${activeDemoStep.key}`}
+                        >
+                            <aside
+                                aria-label="Фильтры компаний"
+                                className="filters-card"
+                            >
+                                <h3>Параметры подбора</h3>
+                                <p className="filters-caption">
+                                    Замена стеклопакета · Волгоград · на этой
+                                    неделе
+                                </p>
+
+                                <div
+                                    className={`filter-group ${
+                                        activeDemoStep.focus === 'price'
+                                            ? 'demo-focus'
+                                            : ''
+                                    }`}
+                                >
+                                    <h4>Цена</h4>
+                                    <div
+                                        className={`price-range demo-price-range ${
+                                            activeDemoStep.focus === 'price'
+                                                ? 'demo-touched'
+                                                : ''
+                                        }`}
+                                    >
+                                        <span className="price-range-value">
+                                            <small>от</small>
+                                            <strong>
+                                                {formatRoubles(
+                                                    catalogEstimatedRange[0],
+                                                )}{' '}
+                                                ₽
+                                            </strong>
+                                        </span>
+                                        <span className="price-range-line">
+                                            <i
+                                                style={{
+                                                    left: `${activeDemoStep.priceFill[0]}%`,
+                                                    width: `${
+                                                        activeDemoStep
+                                                            .priceFill[1] -
+                                                        activeDemoStep
+                                                            .priceFill[0]
+                                                    }%`,
+                                                }}
+                                            />
+                                        </span>
+                                        <span className="price-range-value">
+                                            <small>до</small>
+                                            <strong>
+                                                {formatRoubles(
+                                                    catalogEstimatedRange[1],
+                                                )}{' '}
+                                                ₽
+                                            </strong>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div
+                                    className={`filter-group ${
+                                        activeDemoStep.focus === 'rating'
+                                            ? 'demo-focus'
+                                            : ''
+                                    }`}
+                                >
+                                    <h4>Рейтинг компании</h4>
+                                    {filterOptions.slice(0, 3).map((filter) => (
+                                        <label
+                                            className={`checkbox-row ${
+                                                activeDemoStep.touchedFilter ===
+                                                filter.key
+                                                    ? 'demo-touched'
+                                                    : ''
+                                            }`}
+                                            key={filter.key}
+                                        >
+                                            <input
+                                                checked={filters[filter.key]}
+                                                readOnly
+                                                type="checkbox"
+                                            />
+                                            {filter.label}
+                                        </label>
+                                    ))}
+                                </div>
+
+                                <div
+                                    className={`filter-group ${
+                                        activeDemoStep.focus === 'deadline'
+                                            ? 'demo-focus'
+                                            : ''
+                                    }`}
+                                >
+                                    <h4>Сроки</h4>
+                                    <label
+                                        className={`checkbox-row ${
+                                            activeDemoStep.touchedFilter ===
+                                            'urgent'
+                                                ? 'demo-touched'
+                                                : ''
+                                        }`}
+                                    >
+                                        <input
+                                            checked={
+                                                activeDemoStep.urgencyKey ===
+                                                'urgent'
+                                            }
+                                            readOnly
+                                            type="checkbox"
+                                        />
+                                        сегодня/завтра
+                                    </label>
+                                    <label
+                                        className={`checkbox-row ${
+                                            activeDemoStep.touchedFilter ===
+                                            'fastDate'
+                                                ? 'demo-touched'
+                                                : ''
+                                        }`}
+                                    >
+                                        <input
+                                            checked={filters.fastDate}
+                                            readOnly
+                                            type="checkbox"
+                                        />
+                                        до 3 дней
+                                    </label>
+                                    <label
+                                        className={`checkbox-row ${
+                                            activeDemoStep.touchedFilter ===
+                                            'week'
+                                                ? 'demo-touched'
+                                                : ''
+                                        }`}
+                                    >
+                                        <input
+                                            checked={
+                                                activeDemoStep.urgencyKey ===
+                                                'week'
+                                            }
+                                            readOnly
+                                            type="checkbox"
+                                        />
+                                        на этой неделе
+                                    </label>
+                                </div>
+
+                                <p className="filters-caption">
+                                    Фильтры зафиксированы, чтобы результат было
+                                    удобно рассмотреть.
+                                </p>
+                            </aside>
+
+                            <div className="catalog-content">
+                                <div
+                                    className={`sort-panel ${
+                                        activeDemoStep.focus === 'sort'
+                                            ? 'demo-focus'
+                                            : ''
+                                    }`}
+                                >
+                                    <span>Сортировать:</span>
+                                    {sortOptions.map((option) => (
+                                        <span
+                                            className={`sort-chip ${
+                                                sortKey === option.key
+                                                    ? 'active'
+                                                    : ''
+                                            } ${
+                                                activeDemoStep.focus ===
+                                                    'sort' &&
+                                                sortKey === option.key
+                                                    ? 'demo-touched'
+                                                    : ''
+                                            }`}
+                                            key={option.key}
+                                        >
+                                            {option.label}
+                                        </span>
+                                    ))}
+                                </div>
+
+                                {visibleCompanies.map((company) => {
+                                    const priceMin =
+                                        catalogEstimatedRange[0] *
+                                        company.multiplier;
+                                    const priceMax =
+                                        catalogEstimatedRange[1] *
+                                        company.multiplier;
+                                    const isSelected =
+                                        selectedCompany === company.name;
+                                    const companyCardClass = [
+                                        'company-card',
+                                        isSelected ? 'selected' : '',
+                                        activeDemoStep.focus === 'company' &&
+                                        isSelected
+                                            ? 'demo-focus-card'
+                                            : '',
+                                    ]
+                                        .filter(Boolean)
+                                        .join(' ');
+
+                                    return (
+                                        <article
+                                            className={companyCardClass}
+                                            key={company.name}
+                                        >
+                                            <div
+                                                className={`company-logo ${company.tone}`}
+                                            >
+                                                {company.initials}
+                                            </div>
+                                            <div className="company-info">
+                                                <h3>{company.name}</h3>
+                                                <p>{company.description}</p>
+                                                <div className="company-tags">
+                                                    <span className="rating-tag">
+                                                        ★{' '}
+                                                        {company.rating.toFixed(
+                                                            1,
+                                                        )}{' '}
+                                                        / {company.reviews}{' '}
+                                                        отзывов
+                                                    </span>
+                                                    <span className="green-tag">
+                                                        {company.badge}
+                                                    </span>
+                                                </div>
+                                                <ul className="company-features">
+                                                    <li>
+                                                        Дата: {company.nextDate}
+                                                    </li>
+                                                    <li>
+                                                        Гарантия:{' '}
+                                                        {company.guarantee}
+                                                    </li>
+                                                    <li>
+                                                        Заказов:{' '}
+                                                        {company.orders}
+                                                    </li>
+                                                    <li>{company.feature}</li>
+                                                </ul>
+                                                <p className="details-line">
+                                                    {company.districts}
+                                                </p>
+                                            </div>
+                                            <div className="company-action">
+                                                <span>Ориентир по заявке</span>
+                                                <strong>
+                                                    {formatRoubles(priceMin)}-
+                                                    {formatRoubles(priceMax)} ₽
+                                                </strong>
+                                                <span
+                                                    className={`selection-label ${
+                                                        isSelected
+                                                            ? 'is-selected'
+                                                            : ''
+                                                    }`}
+                                                >
+                                                    {isSelected
+                                                        ? 'Выбор клиента'
+                                                        : 'Подходит по условиям'}
+                                                </span>
+                                            </div>
+                                        </article>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section className="steps-section" id="how-it-works">
+                    <div className="steps-grid container">
+                        {steps.map((step, index) => (
+                            <article
+                                className="step-card problem-card"
+                                key={step.title}
+                            >
+                                <span>{index + 1}</span>
+                                <h3>{step.title}</h3>
+                                <p>{step.text}</p>
+                            </article>
+                        ))}
+                    </div>
+                </section>
+
+                <section className="price-section">
+                    <div className="container">
+                        <h2>Почему цена на окна может отличаться</h2>
+
+                        <div className="price-grid">
+                            {priceFactors.map((factor) => (
+                                <article
+                                    className="price-card"
+                                    key={factor.title}
+                                >
+                                    <div className="price-icon">
+                                        {factor.icon}
+                                    </div>
+                                    <h3>{factor.title}</h3>
+                                    <p>{factor.text}</p>
+                                </article>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
+                <section className="guarantee-section">
+                    <div className="guarantee-box container">
+                        <div>
+                            <span className="faq-kicker">
+                                Гарантия после выполнения
+                            </span>
+                            <h2>
+                                Гарантия появляется в кабинете, когда заказ
+                                выполнен
+                            </h2>
+                            <p>
+                                После статуса "выполнена" сервис показывает
+                                связанную заявку, компанию, дату начала, дату
+                                окончания и условия гарантийных работ.
+                            </p>
+                        </div>
+                        <div className="guarantee-card">
+                            <strong>Гарантийный талон</strong>
+                            <span>Компания: {selectedCompanyData.name}</span>
+                            <span>Срок: {selectedCompanyData.guarantee}</span>
+                            <span>Условия фиксируются после работ</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section className="faq-section" id="faq">
+                    <div className="narrow container">
+                        <span className="faq-kicker">FAQ</span>
+                        <h2>Часто задаваемые вопросы</h2>
+                        <FaqAccordion items={homepageFaqItems} />
+                    </div>
+                </section>
+            </MarketShell>
         </>
     );
 }

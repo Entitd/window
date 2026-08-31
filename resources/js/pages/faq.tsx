@@ -12,7 +12,7 @@ export default function FaqPage() {
             <Head title="FAQ" />
 
             <MarketShell
-                activePage="home"
+                activePage="faq"
                 ctaHref={MARKETPLACE_PATHS.contacts}
                 ctaLabel="Связаться с нами"
             >
@@ -32,7 +32,7 @@ export default function FaqPage() {
                 </section>
 
                 <section className="faq-page-section">
-                    <div className="container faq-page-grid">
+                    <div className="faq-page-grid container">
                         <FaqAccordion sections={faqSections} />
                     </div>
                 </section>

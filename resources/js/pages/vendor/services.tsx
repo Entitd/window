@@ -9,6 +9,12 @@ import {
     Trash2,
 } from 'lucide-react';
 import type { FormEvent } from 'react';
+import {
+    DashboardEmptyState,
+    DashboardHero,
+    DashboardMetric,
+    DashboardPage,
+} from '@/components/dashboard/dashboard-ui';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,6 +26,18 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    dashboard as vendorDashboard,
+    profile as vendorProfilePage,
+    requests as vendorRequestsPage,
+    services as vendorServicesPage,
+} from '@/routes/vendor';
+import {
+    destroy as destroyService,
+    store as storeService,
+    toggle as toggleService,
+    update as updateService,
+} from '@/routes/vendor/services';
 
 type PricingType = 'fixed' | 'sqm';
 
@@ -53,18 +71,18 @@ function ServiceEditor({ service }: { service: VendorService }) {
 
     function update(event: FormEvent) {
         event.preventDefault();
-        form.patch(`/vendor/services/${service.id}`, {
+        form.patch(updateService.url(service.id), {
             preserveScroll: true,
         });
     }
 
     return (
-        <article className="rounded-xl border border-sidebar-border/70 p-4 dark:border-sidebar-border">
+        <article className="rounded-2xl border border-border/70 bg-card p-4 shadow-xs sm:p-5">
             <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="max-w-2xl">
                     <h3 className="font-semibold">{service.name}</h3>
                     <p className="mt-2 text-sm text-muted-foreground">
-                        {service.description || 'Описание пока не заполнено.'}
+                        {service.description || 'Описание не заполнено.'}
                     </p>
                 </div>
                 <Badge variant={service.isActive ? 'default' : 'outline'}>
@@ -134,7 +152,7 @@ function ServiceEditor({ service }: { service: VendorService }) {
                             Тип цены
                         </Label>
                         <select
-                            className="h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-xs outline-none transition focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                            className="h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-xs transition outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                             id={`service-price-type-${service.id}`}
                             onChange={(event) =>
                                 form.setData(
@@ -160,7 +178,7 @@ function ServiceEditor({ service }: { service: VendorService }) {
                         Описание
                     </Label>
                     <textarea
-                        className="min-h-24 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                        className="min-h-24 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                         id={`service-description-${service.id}`}
                         onChange={(event) =>
                             form.setData('description', event.target.value)
@@ -182,12 +200,9 @@ function ServiceEditor({ service }: { service: VendorService }) {
                     <Button
                         disabled={toggleForm.processing}
                         onClick={() =>
-                            toggleForm.patch(
-                                `/vendor/services/${service.id}/toggle`,
-                                {
-                                    preserveScroll: true,
-                                },
-                            )
+                            toggleForm.patch(toggleService.url(service.id), {
+                                preserveScroll: true,
+                            })
                         }
                         size="sm"
                         type="button"
@@ -198,7 +213,7 @@ function ServiceEditor({ service }: { service: VendorService }) {
                     <Button
                         disabled={deleteForm.processing}
                         onClick={() =>
-                            deleteForm.delete(`/vendor/services/${service.id}`, {
+                            deleteForm.delete(destroyService.url(service.id), {
                                 preserveScroll: true,
                             })
                         }
@@ -225,7 +240,7 @@ function CreateServiceForm() {
 
     function submit(event: FormEvent) {
         event.preventDefault();
-        form.post('/vendor/services', {
+        form.post(storeService.url(), {
             preserveScroll: true,
             onSuccess: () => {
                 form.reset();
@@ -275,10 +290,13 @@ function CreateServiceForm() {
             <div className="grid gap-2">
                 <Label htmlFor="price_type">Тип цены</Label>
                 <select
-                    className="h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-xs outline-none transition focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                    className="h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-xs transition outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                     id="price_type"
                     onChange={(event) =>
-                        form.setData('price_type', event.target.value as PricingType)
+                        form.setData(
+                            'price_type',
+                            event.target.value as PricingType,
+                        )
                     }
                     value={form.data.price_type}
                 >
@@ -295,7 +313,7 @@ function CreateServiceForm() {
             <div className="grid gap-2">
                 <Label htmlFor="description">Описание</Label>
                 <textarea
-                    className="min-h-28 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                    className="min-h-28 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                     id="description"
                     onChange={(event) =>
                         form.setData('description', event.target.value)
@@ -320,7 +338,9 @@ function CreateServiceForm() {
 export default function VendorServicesPage({ services }: PageProps) {
     const activeServices = services.filter((service) => service.isActive);
     const inactiveServices = services.filter((service) => !service.isActive);
-    const sqmServices = services.filter((service) => service.pricingType === 'sqm');
+    const sqmServices = services.filter(
+        (service) => service.pricingType === 'sqm',
+    );
     const fixedServices = services.filter(
         (service) => service.pricingType === 'fixed',
     );
@@ -370,74 +390,55 @@ export default function VendorServicesPage({ services }: PageProps) {
         <>
             <Head title="Услуги и цены" />
 
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <Card className="border-sidebar-border/70 shadow-none dark:border-sidebar-border">
-                    <CardHeader className="gap-4 xl:flex-row xl:items-start xl:justify-between">
-                        <div className="space-y-3">
-                            <div className="flex flex-wrap items-center gap-2">
-                                <Badge variant="outline">
-                                    {activeServices.length} активных услуг
-                                </Badge>
-                                <Badge variant="outline">
-                                    {sqmServices.length} с ценой за м²
-                                </Badge>
-                            </div>
-
-                            <div>
-                                <CardTitle className="text-2xl">
-                                    Услуги и цены компании
-                                </CardTitle>
-                                <CardDescription className="mt-2 max-w-3xl">
-                                    Эти позиции используются в выдаче для клиентов.
-                                    Активные услуги помогают понять, по каким заявкам
-                                    компанию можно показывать.
-                                </CardDescription>
-                            </div>
-                        </div>
-
-                        <div className="flex flex-col gap-2 sm:flex-row xl:flex-col">
+            <DashboardPage>
+                <DashboardHero
+                    icon={BriefcaseBusiness}
+                    badge={
+                        <>
+                            <Badge variant="outline">
+                                {activeServices.length} активных услуг
+                            </Badge>
+                            <Badge variant="secondary">
+                                {sqmServices.length} с ценой за м²
+                            </Badge>
+                        </>
+                    }
+                    title="Услуги и цены"
+                    description="Управляйте каталогом компании: обновляйте стоимость, описание и доступность каждой услуги."
+                    actions={
+                        <>
                             <Button asChild>
-                                <Link href="/vendor/requests">Смотреть заявки</Link>
+                                <Link href={vendorRequestsPage()} prefetch>
+                                    Смотреть заявки
+                                </Link>
                             </Button>
                             <Button asChild variant="outline">
-                                <Link href="/vendor/profile">Профиль компании</Link>
+                                <Link href={vendorProfilePage()} prefetch>
+                                    Профиль компании
+                                </Link>
                             </Button>
-                        </div>
-                    </CardHeader>
-                </Card>
+                        </>
+                    }
+                />
 
                 <div className="grid auto-rows-min gap-4 md:grid-cols-2 xl:grid-cols-4">
                     {serviceStats.map((item) => (
-                        <Card
-                            className="border-sidebar-border/70 py-0 shadow-none dark:border-sidebar-border"
+                        <DashboardMetric
                             key={item.label}
-                        >
-                            <CardContent className="flex min-h-32 flex-col justify-between gap-4 p-5">
-                                <div className="flex items-start justify-between gap-4">
-                                    <div>
-                                        <p className="text-sm text-muted-foreground">
-                                            {item.label}
-                                        </p>
-                                        <p className="mt-2 text-xl font-semibold">
-                                            {item.value}
-                                        </p>
-                                    </div>
-                                    <item.icon
-                                        className="size-5 text-muted-foreground"
-                                        aria-hidden="true"
-                                    />
-                                </div>
-                            </CardContent>
-                        </Card>
+                            icon={item.icon}
+                            label={item.label}
+                            value={item.value}
+                        />
                     ))}
                 </div>
 
                 <div className="grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(340px,1fr)]">
-                    <Card className="border-sidebar-border/70 shadow-none dark:border-sidebar-border">
+                    <Card className="border-border/70 shadow-sm">
                         <CardHeader>
                             <CardTitle>Каталог услуг компании</CardTitle>
                             <CardDescription>
-                                Здесь можно обновлять цены, описания и доступность услуг.
+                                Здесь можно обновлять цены, описания и
+                                доступность услуг.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
@@ -449,21 +450,23 @@ export default function VendorServicesPage({ services }: PageProps) {
                                     />
                                 ))
                             ) : (
-                                <div className="rounded-xl border border-dashed border-sidebar-border/70 p-6 text-sm text-muted-foreground dark:border-sidebar-border">
-                                    Услуг пока нет. Добавьте хотя бы одну активную
-                                    позицию, иначе компания не будет нормально
-                                    матчиться с заявками в выдаче.
-                                </div>
+                                <DashboardEmptyState
+                                    className="min-h-56"
+                                    icon={BriefcaseBusiness}
+                                    title="Каталог услуг пуст"
+                                    description="Добавьте первую услугу и включите её, чтобы компания участвовала в подборе."
+                                />
                             )}
                         </CardContent>
                     </Card>
 
                     <div className="flex flex-col gap-4">
-                        <Card className="border-sidebar-border/70 shadow-none dark:border-sidebar-border">
+                        <Card className="border-border/70 shadow-sm xl:sticky xl:top-5">
                             <CardHeader>
                                 <CardTitle>Добавить услугу</CardTitle>
                                 <CardDescription>
-                                    Новая услуга сразу сохраняется в `vendor_services`.
+                                    Укажите понятное название, цену и короткое
+                                    описание.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
@@ -471,7 +474,7 @@ export default function VendorServicesPage({ services }: PageProps) {
                             </CardContent>
                         </Card>
 
-                        <Card className="border-sidebar-border/70 shadow-none dark:border-sidebar-border">
+                        <Card className="border-border/70 shadow-sm">
                             <CardHeader>
                                 <CardTitle>Состояние каталога</CardTitle>
                             </CardHeader>
@@ -487,10 +490,14 @@ export default function VendorServicesPage({ services }: PageProps) {
                                             </p>
                                             <Badge
                                                 variant={
-                                                    item.done ? 'default' : 'outline'
+                                                    item.done
+                                                        ? 'default'
+                                                        : 'outline'
                                                 }
                                             >
-                                                {item.done ? 'OK' : 'Проверить'}
+                                                {item.done
+                                                    ? 'Готово'
+                                                    : 'Проверить'}
                                             </Badge>
                                         </div>
                                         <p className="mt-2 text-sm text-muted-foreground">
@@ -501,7 +508,7 @@ export default function VendorServicesPage({ services }: PageProps) {
                             </CardContent>
                         </Card>
 
-                        <Card className="border-sidebar-border/70 shadow-none dark:border-sidebar-border">
+                        <Card className="border-border/70 shadow-sm">
                             <CardHeader>
                                 <CardTitle>Быстрые заметки</CardTitle>
                             </CardHeader>
@@ -512,9 +519,10 @@ export default function VendorServicesPage({ services }: PageProps) {
                                         aria-hidden="true"
                                     />
                                     <div>
-                                        В выдаче учитываются только активные услуги.
-                                        Отключённые позиции остаются в кабинете, но не
-                                        помогают компании попасть в подбор.
+                                        В выдаче учитываются только активные
+                                        услуги. Отключённые позиции остаются в
+                                        кабинете, но не помогают компании
+                                        попасть в подбор.
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-3 rounded-xl bg-muted/50 p-4">
@@ -523,16 +531,16 @@ export default function VendorServicesPage({ services }: PageProps) {
                                         aria-hidden="true"
                                     />
                                     <div>
-                                        Минимальная цена влияет на примерный диапазон в
-                                        карточке компании. Это пока простая формула, без
-                                        большого калькулятора.
+                                        Минимальная цена используется как
+                                        ориентир в карточке компании и
+                                        результатах подбора.
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
                     </div>
                 </div>
-            </div>
+            </DashboardPage>
         </>
     );
 }
@@ -541,11 +549,11 @@ VendorServicesPage.layout = {
     breadcrumbs: [
         {
             title: 'Кабинет компании',
-            href: '/vendor/dashboard',
+            href: vendorDashboard(),
         },
         {
             title: 'Услуги и цены',
-            href: '/vendor/services',
+            href: vendorServicesPage(),
         },
     ],
 };

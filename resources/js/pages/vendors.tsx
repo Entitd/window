@@ -17,9 +17,11 @@ export default function Vendors() {
                 ctaLabel="Перейти на главную"
             >
                 <section className="hero">
-                    <div className="hero-inner container hero-split">
+                    <div className="hero-inner hero-split container">
                         <div className="hero-copy">
-                            <span className="eyebrow">Для компаний и монтажных бригад</span>
+                            <span className="eyebrow">
+                                Для компаний и монтажных бригад
+                            </span>
                             <h1>
                                 Получайте релевантные заявки на окна без
                                 хаотичного потока лидов
@@ -28,21 +30,27 @@ export default function Vendors() {
                                 ОкнаМаркет помогает компаниям управлять районами
                                 работы, услугами, ценами и заявками в одном
                                 кабинете. Подключение проходит через модерацию,
-                                чтобы клиент видел понятный и аккуратный каталог.
+                                чтобы клиент видел понятный и аккуратный
+                                каталог.
                             </p>
                             <div className="hero-actions">
-                                <Link className="btn btn-primary" href="/register/vendor">
+                                <Link
+                                    className="btn btn-primary"
+                                    href="/register/vendor"
+                                >
                                     Зарегистрировать компанию
                                 </Link>
                                 <span className="hero-note">
-                                    Регистрация уже доступна, дальше компанию можно
-                                    вести в кабинет, профиль и услуги.
+                                    Регистрация уже доступна, дальше компанию
+                                    можно вести в кабинет, профиль и услуги.
                                 </span>
                             </div>
                         </div>
 
                         <div className="hero-side-card">
-                            <span className="hero-side-kicker">Что получает вендор</span>
+                            <span className="hero-side-kicker">
+                                Что получает вендор
+                            </span>
                             <strong>Поток понятных заявок</strong>
                             <ul>
                                 <li>Новые обращения по районам работы</li>
@@ -57,10 +65,13 @@ export default function Vendors() {
                 <section className="benefits-section">
                     <div className="section-copy container">
                         <span className="faq-kicker">Преимущества</span>
-                        <h2>Страница объясняет выгоду без лишнего маркетингового шума</h2>
+                        <h2>
+                            Страница объясняет выгоду без лишнего маркетингового
+                            шума
+                        </h2>
                     </div>
 
-                    <div className="benefit-grid container benefit-grid-wide">
+                    <div className="benefit-grid benefit-grid-wide container">
                         {vendorBenefits.map((benefit) => (
                             <article className="benefit-card" key={benefit}>
                                 <div className="benefit-bullet">+</div>
@@ -73,10 +84,13 @@ export default function Vendors() {
                 <section className="steps-section">
                     <div className="section-copy container">
                         <span className="faq-kicker">Как подключиться</span>
-                        <h2>Подключение вендора раскладывается на четыре понятных шага</h2>
+                        <h2>
+                            Подключение вендора раскладывается на четыре
+                            понятных шага
+                        </h2>
                     </div>
 
-                    <div className="steps-grid container steps-grid-wide">
+                    <div className="steps-grid steps-grid-wide container">
                         {vendorSteps.map((step, index) => (
                             <article className="step-card" key={step.title}>
                                 <span>{index + 1}</span>
@@ -91,7 +105,9 @@ export default function Vendors() {
                     <div className="vendor-cta container">
                         <div>
                             <span className="faq-kicker">Подключение</span>
-                            <h2>Зарегистрируйте компанию и пройдите модерацию</h2>
+                            <h2>
+                                Зарегистрируйте компанию и пройдите модерацию
+                            </h2>
                             <p>
                                 После регистрации компания получает кабинет,
                                 заполняет профиль, добавляет услуги и районы
@@ -100,7 +116,10 @@ export default function Vendors() {
                             </p>
                         </div>
                         <div className="vendor-cta-actions">
-                            <Link className="btn btn-primary" href="/register/vendor">
+                            <Link
+                                className="btn btn-primary"
+                                href="/register/vendor"
+                            >
                                 Стать партнером
                             </Link>
                             <Link

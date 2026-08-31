@@ -1,16 +1,25 @@
 import { Form, Head } from '@inertiajs/react';
-import InputError from '@/components/input-error';
+import { LogIn } from 'lucide-react';
+import {
+    AuthField,
+    AuthFooter,
+    AuthNotice,
+    authButtonClassName,
+    authControlClassName,
+} from '@/components/auth/auth-form';
 import PasskeyVerify from '@/components/passkey-verify';
 import PasswordInput from '@/components/password-input';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import { register } from '@/routes';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
+import {
+    client as registerClient,
+    vendor as registerVendor,
+} from '@/routes/register';
 
 type Props = {
     status?: string;
@@ -20,98 +29,139 @@ type Props = {
 export default function Login({ status, canResetPassword }: Props) {
     return (
         <>
-            <Head title="Log in" />
+            <Head title="Вход" />
 
-            <PasskeyVerify />
+            <div className="grid gap-6">
+                {status && <AuthNotice tone="success">{status}</AuthNotice>}
 
-            <Form
-                {...store.form()}
-                resetOnSuccess={['password']}
-                className="flex flex-col gap-6"
-            >
-                {({ processing, errors }) => (
-                    <>
-                        <div className="grid gap-6">
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
-                                <Input
+                <PasskeyVerify
+                    label="Войти с ключом доступа"
+                    loadingLabel="Проверяем ключ..."
+                    separator="или войдите по email"
+                />
+
+                <Form
+                    {...store.form()}
+                    resetOnSuccess={['password']}
+                    className="grid gap-6"
+                >
+                    {({ processing, errors }) => (
+                        <>
+                            <div className="grid gap-5">
+                                <AuthField
                                     id="email"
-                                    type="email"
-                                    name="email"
-                                    required
-                                    autoFocus
-                                    tabIndex={1}
-                                    autoComplete="email"
-                                    placeholder="email@example.com"
-                                />
-                                <InputError message={errors.email} />
-                            </div>
+                                    label="Email"
+                                    error={errors.email}
+                                >
+                                    <Input
+                                        id="email"
+                                        type="email"
+                                        name="email"
+                                        required
+                                        autoFocus
+                                        tabIndex={1}
+                                        autoComplete="email"
+                                        placeholder="name@example.com"
+                                        className={authControlClassName}
+                                        aria-invalid={Boolean(errors.email)}
+                                        aria-describedby={
+                                            errors.email
+                                                ? 'email-error'
+                                                : undefined
+                                        }
+                                    />
+                                </AuthField>
 
-                            <div className="grid gap-2">
-                                <div className="flex items-center">
-                                    <Label htmlFor="password">Password</Label>
-                                    {canResetPassword && (
-                                        <TextLink
-                                            href={request()}
-                                            className="ml-auto text-sm"
-                                            tabIndex={5}
-                                        >
-                                            Forgot your password?
-                                        </TextLink>
-                                    )}
-                                </div>
-                                <PasswordInput
+                                <AuthField
                                     id="password"
-                                    name="password"
-                                    required
-                                    tabIndex={2}
-                                    autoComplete="current-password"
-                                    placeholder="Password"
-                                />
-                                <InputError message={errors.password} />
-                            </div>
+                                    label="Пароль"
+                                    hint={
+                                        canResetPassword ? (
+                                            <TextLink
+                                                href={request()}
+                                                className="font-medium text-blue-600 no-underline hover:text-blue-700 hover:underline dark:text-blue-400"
+                                                tabIndex={5}
+                                            >
+                                                Не помню пароль
+                                            </TextLink>
+                                        ) : undefined
+                                    }
+                                    error={errors.password}
+                                >
+                                    <PasswordInput
+                                        id="password"
+                                        name="password"
+                                        required
+                                        tabIndex={2}
+                                        autoComplete="current-password"
+                                        placeholder="Введите пароль"
+                                        className={authControlClassName}
+                                        aria-invalid={Boolean(errors.password)}
+                                        aria-describedby={
+                                            errors.password
+                                                ? 'password-error'
+                                                : undefined
+                                        }
+                                    />
+                                </AuthField>
 
-                            <div className="flex items-center space-x-3">
-                                <Checkbox
-                                    id="remember"
-                                    name="remember"
-                                    tabIndex={3}
-                                />
-                                <Label htmlFor="remember">Remember me</Label>
+                                <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-3.5 text-sm text-slate-700 transition hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950/35 dark:text-slate-300 dark:hover:border-slate-700">
+                                    <Checkbox
+                                        id="remember"
+                                        name="remember"
+                                        tabIndex={3}
+                                    />
+                                    <span>
+                                        Запомнить меня на этом устройстве
+                                    </span>
+                                </label>
                             </div>
 
                             <Button
                                 type="submit"
-                                className="mt-4 w-full"
+                                className={authButtonClassName}
                                 tabIndex={4}
                                 disabled={processing}
                                 data-test="login-button"
                             >
-                                {processing && <Spinner />}
-                                Log in
+                                {processing ? (
+                                    <Spinner />
+                                ) : (
+                                    <LogIn
+                                        className="size-4"
+                                        aria-hidden="true"
+                                    />
+                                )}
+                                {processing ? 'Входим...' : 'Войти'}
                             </Button>
-                        </div>
+                        </>
+                    )}
+                </Form>
 
-                        <div className="text-center text-sm text-muted-foreground">
-                            Don't have an account?{' '}
-                            <TextLink href={register()} tabIndex={5}>
-                                Sign up
-                            </TextLink>
-                        </div>
-                    </>
-                )}
-            </Form>
-
-            {status && (
-                <div className="mb-4 text-center text-sm font-medium text-green-600">
-                    {status}
-                </div>
-            )}
+                <AuthFooter>
+                    <p>Впервые в ОкнаМаркет?</p>
+                    <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                        <TextLink
+                            href={registerClient()}
+                            className="rounded-xl border border-slate-200 px-4 py-3 font-semibold text-slate-800 no-underline transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 dark:border-slate-700 dark:text-slate-100 dark:hover:border-blue-800 dark:hover:bg-blue-950/35 dark:hover:text-blue-300"
+                        >
+                            Я клиент
+                        </TextLink>
+                        <TextLink
+                            href={registerVendor()}
+                            className="rounded-xl border border-slate-200 px-4 py-3 font-semibold text-slate-800 no-underline transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 dark:border-slate-700 dark:text-slate-100 dark:hover:border-blue-800 dark:hover:bg-blue-950/35 dark:hover:text-blue-300"
+                        >
+                            Я компания
+                        </TextLink>
+                    </div>
+                </AuthFooter>
+            </div>
         </>
     );
 }
 
 Login.layout = {
-    title: 'Log in to your account',
-    description: 'Enter your email and password below to log in',
+    title: 'Войдите в личный кабинет',
+    description:
+        'Используйте email и пароль, указанные при регистрации клиента или компании.',
 };

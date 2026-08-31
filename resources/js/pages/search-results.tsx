@@ -55,7 +55,8 @@ export default function SearchResults() {
             .filter((company) => {
                 if (
                     priceFilter !== 'all' &&
-                    (!company.sortPrice || company.sortPrice > Number(priceFilter))
+                    (!company.sortPrice ||
+                        company.sortPrice > Number(priceFilter))
                 ) {
                     return false;
                 }
@@ -89,6 +90,7 @@ export default function SearchResults() {
     const createRequest = (company: MarketplaceCompany) => {
         if (!company.id) {
             setSubmitError('Не удалось определить компанию для заявки.');
+
             return;
         }
 
@@ -144,8 +146,8 @@ export default function SearchResults() {
                         </h1>
                         <p className="page-intro">
                             В выдаче только подтвержденные компании с активной
-                            услугой. Цена берется из профиля компании, а сроки
-                            и детали подтверждаются после заявки.
+                            услугой. Цена берется из профиля компании, а сроки и
+                            детали подтверждаются после заявки.
                         </p>
                     </div>
                 </section>
@@ -234,9 +236,8 @@ export default function SearchResults() {
                                     {createdRequest.companyName}
                                 </h2>
                                 <p>
-                                    Заявка создана в базе и доступна в личном
-                                    кабинете клиента. Компания сможет обработать
-                                    ее после подключения очереди заявок.
+                                    Заявка сохранена в личном кабинете и уже
+                                    доступна выбранной компании для обработки.
                                 </p>
                             </div>
 
@@ -449,8 +450,7 @@ export default function SearchResults() {
                             {visibleCompanies.length === 0 && (
                                 <div className="request-created-card">
                                     <strong>
-                                        Подходящих подтвержденных компаний пока
-                                        нет
+                                        По этим параметрам компании не найдены
                                     </strong>
                                     <p>
                                         В выдачу попадают только компании,

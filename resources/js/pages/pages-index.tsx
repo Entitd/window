@@ -88,7 +88,7 @@ export default function PagesIndex({ pages }: Props) {
                                                 </p>
                                             </div>
 
-                                            <div className="flex flex-wrap gap-2 text-xs uppercase tracking-[0.18em] text-black/72">
+                                            <div className="flex flex-wrap gap-2 text-xs tracking-[0.18em] text-black/72 uppercase">
                                                 <span className="rounded-full border border-black/12 px-3 py-2">
                                                     {statusLabels[page.status]}
                                                 </span>
@@ -174,7 +174,7 @@ export default function PagesIndex({ pages }: Props) {
                                                 </p>
                                             </div>
 
-                                            <div className="flex flex-wrap gap-2 text-xs uppercase tracking-[0.18em] text-black/72">
+                                            <div className="flex flex-wrap gap-2 text-xs tracking-[0.18em] text-black/72 uppercase">
                                                 <span className="rounded-full border border-black/12 px-3 py-2">
                                                     {statusLabels[page.status]}
                                                 </span>

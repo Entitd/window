@@ -1,4 +1,5 @@
 import { createInertiaApp } from '@inertiajs/react';
+import { CookieConsentBanner } from '@/components/cookie-consent-banner';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
@@ -34,6 +35,7 @@ createInertiaApp({
         return (
             <TooltipProvider delayDuration={0}>
                 {app}
+                <CookieConsentBanner />
                 <Toaster />
             </TooltipProvider>
         );

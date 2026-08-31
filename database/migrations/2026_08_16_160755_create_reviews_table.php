@@ -14,15 +14,18 @@ return new class extends Migration
         Schema::create('reviews', function (Blueprint $table) {
             $table->id();
             $table->text('comment');
-            $table->enum('stars', [1, 2, 3, 4, 5]);
-            $table->string('status')->default('pending');
-            $table->foreignId('user_id')->nullable()->constrained('users')->cascadeOnDelete();
-            $table->foreignId('vendor_id')->constrained('users')->cascadeOnDelete();
+            $table->unsignedTinyInteger('stars');
+            $table->json('tags')->nullable();
+            $table->boolean('is_public')->default(true);
+            $table->string('status')->default('pending')->index();
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('vendor_id')->constrained('vendors')->cascadeOnDelete();
             $table->foreignId('request_id')->unique()->constrained()->cascadeOnDelete();
             $table->softDeletes();
             $table->timestamps();
 
-            $table->index(['vendor_id', 'stars']);// Для быстрого запроса среднего балла
+            $table->index(['vendor_id', 'stars']);
+            $table->index(['vendor_id', 'status', 'created_at']);
         });
     }
 

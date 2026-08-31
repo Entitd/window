@@ -6,7 +6,7 @@ import {
     ShieldCheck,
     XCircle,
 } from 'lucide-react';
-import { FormEvent } from 'react';
+import type { FormEvent } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -135,14 +135,19 @@ function VendorModerationCard({ vendor }: { vendor: ModerationVendor }) {
             <CardContent className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
                 <div className="space-y-4">
                     <div className="rounded-xl bg-muted/50 p-4">
-                        <p className="text-sm text-muted-foreground">Описание</p>
+                        <p className="text-sm text-muted-foreground">
+                            Описание
+                        </p>
                         <p className="mt-2 text-sm leading-6">
-                            {vendor.description || 'Компания пока не добавила описание.'}
+                            {vendor.description ||
+                                'Компания пока не добавила описание.'}
                         </p>
                     </div>
 
                     <div className="rounded-xl bg-muted/50 p-4">
-                        <p className="text-sm text-muted-foreground">Районы работы</p>
+                        <p className="text-sm text-muted-foreground">
+                            Районы работы
+                        </p>
                         <div className="mt-3 flex flex-wrap gap-2">
                             {vendor.districts.length > 0 ? (
                                 vendor.districts.map((district) => (
@@ -205,7 +210,10 @@ function VendorModerationCard({ vendor }: { vendor: ModerationVendor }) {
                         <div className="mt-3 flex flex-wrap gap-2">
                             {vendor.activeServices.length > 0 ? (
                                 vendor.activeServices.map((service) => (
-                                    <Badge key={service.name} variant="secondary">
+                                    <Badge
+                                        key={service.name}
+                                        variant="secondary"
+                                    >
                                         {service.name}
                                         {service.price > 0
                                             ? ` от ${new Intl.NumberFormat(
@@ -240,7 +248,7 @@ function VendorModerationCard({ vendor }: { vendor: ModerationVendor }) {
                         Комментарий админа
                     </label>
                     <textarea
-                        className="min-h-32 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                        className="min-h-32 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                         id={`moderation-note-${vendor.id}`}
                         onChange={(event) =>
                             setData('moderation_note', event.target.value)
@@ -260,7 +268,10 @@ function VendorModerationCard({ vendor }: { vendor: ModerationVendor }) {
                             onClick={approve}
                             type="submit"
                         >
-                            <CheckCircle2 className="size-4" aria-hidden="true" />
+                            <CheckCircle2
+                                className="size-4"
+                                aria-hidden="true"
+                            />
                             Подтвердить
                         </Button>
                         <Button
@@ -280,8 +291,12 @@ function VendorModerationCard({ vendor }: { vendor: ModerationVendor }) {
 }
 
 export default function AdminVendorModeration({ vendors, stats }: PageProps) {
-    const pendingVendors = vendors.filter((vendor) => vendor.status === 'pending');
-    const reviewedVendors = vendors.filter((vendor) => vendor.status !== 'pending');
+    const pendingVendors = vendors.filter(
+        (vendor) => vendor.status === 'pending',
+    );
+    const reviewedVendors = vendors.filter(
+        (vendor) => vendor.status !== 'pending',
+    );
 
     const statCards = [
         {
@@ -317,9 +332,10 @@ export default function AdminVendorModeration({ vendors, stats }: PageProps) {
                             Модерация компаний
                         </CardTitle>
                         <CardDescription className="max-w-3xl">
-                            Новые компании попадают сюда со статусом «На проверке».
-                            После подтверждения карточку можно показывать клиентам, после
-                            отклонения компания остаётся в базе с причиной отказа.
+                            Новые компании попадают сюда со статусом «На
+                            проверке». После подтверждения карточку можно
+                            показывать клиентам, после отклонения компания
+                            остаётся в базе с причиной отказа.
                         </CardDescription>
                     </CardHeader>
                 </Card>
@@ -368,8 +384,8 @@ export default function AdminVendorModeration({ vendors, stats }: PageProps) {
                     ) : (
                         <Card className="border-sidebar-border/70 shadow-none dark:border-sidebar-border">
                             <CardContent className="p-6 text-sm text-muted-foreground">
-                                Очередь пустая. Редкий момент, когда админка выглядит
-                                почти оптимистично.
+                                Очередь пустая. Редкий момент, когда админка
+                                выглядит почти оптимистично.
                             </CardContent>
                         </Card>
                     )}

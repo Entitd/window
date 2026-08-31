@@ -25,6 +25,15 @@ export type ClientRequest = {
     status: RequestStatus;
     company: string | null;
     estimatedPrice: string;
+    review: {
+        id: string;
+        stars: number;
+        comment: string;
+        tags: string[];
+        isPublic: boolean;
+        status: string;
+        createdAt: string | null;
+    } | null;
     history: Array<{
         label: string;
         timestamp: string;

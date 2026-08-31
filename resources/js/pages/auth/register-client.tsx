@@ -1,5 +1,12 @@
-import { Head, useForm } from '@inertiajs/react';
-import InputError from '@/components/input-error';
+import { Head, Link, useForm } from '@inertiajs/react';
+import { Building2, UserRoundPlus } from 'lucide-react';
+import {
+    AuthField,
+    AuthFooter,
+    AuthSection,
+    authButtonClassName,
+    authControlClassName,
+} from '@/components/auth/auth-form';
 import PasswordInput from '@/components/password-input';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
@@ -7,7 +14,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import { login } from '@/routes';
+import { agreement, login, privacy } from '@/routes';
+import { vendor as registerVendor } from '@/routes/register';
+import { store as registerClientStore } from '@/routes/register/client';
 
 export default function RegisterClient() {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -24,145 +33,247 @@ export default function RegisterClient() {
             <Head title="Регистрация клиента" />
 
             <form
-                className="flex flex-col gap-6"
+                className="grid gap-6"
                 onSubmit={(event) => {
                     event.preventDefault();
-                    post('/register/client', {
+                    post(registerClientStore.url(), {
                         onSuccess: () =>
                             reset('password', 'password_confirmation'),
                     });
                 }}
             >
-                <div className="grid gap-6">
-                    <div className="grid gap-2">
-                        <Label htmlFor="name">Имя</Label>
-                        <Input
-                            id="name"
-                            name="name"
-                            type="text"
-                            required
-                            autoFocus
-                            autoComplete="name"
-                            placeholder="Как к вам обращаться"
-                            value={data.name}
-                            onChange={(event) =>
-                                setData('name', event.target.value)
-                            }
-                        />
-                        <InputError message={errors.name} />
+                <div className="flex items-center justify-between gap-3 rounded-2xl border border-blue-100 bg-blue-50/75 p-2 dark:border-blue-900/60 dark:bg-blue-950/30">
+                    <div className="flex items-center gap-3 px-2 text-sm font-semibold text-blue-800 dark:text-blue-200">
+                        <span className="grid size-9 place-items-center rounded-xl bg-blue-600 text-white">
+                            <UserRoundPlus
+                                className="size-4"
+                                aria-hidden="true"
+                            />
+                        </span>
+                        Для клиента
                     </div>
+                    <Link
+                        href={registerVendor()}
+                        className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm transition hover:text-blue-700 focus-visible:ring-4 focus-visible:ring-blue-500/20 focus-visible:outline-none dark:bg-slate-900 dark:text-slate-200 dark:hover:text-blue-300"
+                    >
+                        <Building2 className="size-4" aria-hidden="true" />Я
+                        компания
+                    </Link>
+                </div>
 
-                    <div className="grid gap-2">
-                        <Label htmlFor="phone">Телефон</Label>
-                        <Input
+                <AuthSection
+                    title="Контактные данные"
+                    description="Они понадобятся для заявок и уведомлений о смене статуса."
+                >
+                    <div className="grid gap-5 sm:grid-cols-2">
+                        <AuthField id="name" label="Имя" error={errors.name}>
+                            <Input
+                                id="name"
+                                name="name"
+                                type="text"
+                                required
+                                autoFocus
+                                autoComplete="name"
+                                placeholder="Как к вам обращаться"
+                                value={data.name}
+                                onChange={(event) =>
+                                    setData('name', event.target.value)
+                                }
+                                className={authControlClassName}
+                                aria-invalid={Boolean(errors.name)}
+                                aria-describedby={
+                                    errors.name ? 'name-error' : undefined
+                                }
+                            />
+                        </AuthField>
+
+                        <AuthField
                             id="phone"
-                            name="phone"
-                            type="tel"
-                            required
-                            autoComplete="tel"
-                            placeholder="+7 (___) ___-__-__"
-                            value={data.phone}
-                            onChange={(event) =>
-                                setData('phone', event.target.value)
-                            }
-                        />
-                        <InputError message={errors.phone} />
+                            label="Телефон"
+                            error={errors.phone}
+                        >
+                            <Input
+                                id="phone"
+                                name="phone"
+                                type="tel"
+                                required
+                                autoComplete="tel"
+                                inputMode="tel"
+                                placeholder="+7 (___) ___-__-__"
+                                value={data.phone}
+                                onChange={(event) =>
+                                    setData('phone', event.target.value)
+                                }
+                                className={authControlClassName}
+                                aria-invalid={Boolean(errors.phone)}
+                                aria-describedby={
+                                    errors.phone ? 'phone-error' : undefined
+                                }
+                            />
+                        </AuthField>
                     </div>
 
-                    <div className="grid gap-2">
-                        <Label htmlFor="email">Email</Label>
+                    <AuthField
+                        id="email"
+                        label="Email"
+                        hint="Для входа"
+                        error={errors.email}
+                    >
                         <Input
                             id="email"
                             name="email"
                             type="email"
                             required
                             autoComplete="email"
-                            placeholder="email@example.com"
+                            placeholder="name@example.com"
                             value={data.email}
                             onChange={(event) =>
                                 setData('email', event.target.value)
                             }
+                            className={authControlClassName}
+                            aria-invalid={Boolean(errors.email)}
+                            aria-describedby={
+                                errors.email ? 'email-error' : undefined
+                            }
                         />
-                        <InputError message={errors.email} />
-                    </div>
+                    </AuthField>
+                </AuthSection>
 
-                    <div className="grid gap-2">
-                        <Label htmlFor="password">Пароль</Label>
-                        <PasswordInput
+                <AuthSection
+                    title="Доступ к кабинету"
+                    description="Используйте не менее 8 символов и не передавайте пароль другим."
+                >
+                    <div className="grid gap-5 sm:grid-cols-2">
+                        <AuthField
                             id="password"
-                            name="password"
-                            required
-                            autoComplete="new-password"
-                            placeholder="Не менее 8 символов"
-                            value={data.password}
-                            onChange={(event) =>
-                                setData('password', event.target.value)
-                            }
-                        />
-                        <InputError message={errors.password} />
-                    </div>
+                            label="Пароль"
+                            error={errors.password}
+                        >
+                            <PasswordInput
+                                id="password"
+                                name="password"
+                                required
+                                autoComplete="new-password"
+                                placeholder="Не менее 8 символов"
+                                value={data.password}
+                                onChange={(event) =>
+                                    setData('password', event.target.value)
+                                }
+                                className={authControlClassName}
+                                aria-invalid={Boolean(errors.password)}
+                                aria-describedby={
+                                    errors.password
+                                        ? 'password-error'
+                                        : undefined
+                                }
+                            />
+                        </AuthField>
 
-                    <div className="grid gap-2">
-                        <Label htmlFor="password_confirmation">
-                            Повтор пароля
-                        </Label>
-                        <PasswordInput
+                        <AuthField
                             id="password_confirmation"
-                            name="password_confirmation"
-                            required
-                            autoComplete="new-password"
-                            placeholder="Повторите пароль"
-                            value={data.password_confirmation}
-                            onChange={(event) =>
-                                setData(
-                                    'password_confirmation',
-                                    event.target.value,
-                                )
-                            }
-                        />
-                        <InputError message={errors.password_confirmation} />
+                            label="Повторите пароль"
+                            error={errors.password_confirmation}
+                        >
+                            <PasswordInput
+                                id="password_confirmation"
+                                name="password_confirmation"
+                                required
+                                autoComplete="new-password"
+                                placeholder="Ещё раз"
+                                value={data.password_confirmation}
+                                onChange={(event) =>
+                                    setData(
+                                        'password_confirmation',
+                                        event.target.value,
+                                    )
+                                }
+                                className={authControlClassName}
+                                aria-invalid={Boolean(
+                                    errors.password_confirmation,
+                                )}
+                                aria-describedby={
+                                    errors.password_confirmation
+                                        ? 'password_confirmation-error'
+                                        : undefined
+                                }
+                            />
+                        </AuthField>
                     </div>
+                </AuthSection>
 
-                    <label className="flex items-start gap-3 rounded-lg border border-border/70 p-4">
+                <div className="grid gap-2">
+                    <div className="flex items-start gap-3 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950/35">
                         <Checkbox
                             id="policy"
                             checked={data.policy}
                             onCheckedChange={(checked) =>
                                 setData('policy', checked === true)
                             }
+                            aria-invalid={Boolean(errors.policy)}
+                            aria-describedby={
+                                errors.policy ? 'policy-error' : undefined
+                            }
                         />
-                        <span className="text-sm leading-6 text-muted-foreground">
-                            Согласен с политикой конфиденциальности и условиями
-                            обработки персональных данных.
-                        </span>
-                    </label>
-                    <InputError message={errors.policy} />
+                        <Label
+                            htmlFor="policy"
+                            className="text-sm leading-6 font-normal text-slate-600 dark:text-slate-400"
+                        >
+                            Я принимаю{' '}
+                            <TextLink
+                                href={agreement()}
+                                className="font-medium text-slate-900 dark:text-slate-100"
+                            >
+                                условия сервиса
+                            </TextLink>{' '}
+                            и{' '}
+                            <TextLink
+                                href={privacy()}
+                                className="font-medium text-slate-900 dark:text-slate-100"
+                            >
+                                политику конфиденциальности
+                            </TextLink>
+                            .
+                        </Label>
+                    </div>
+                    {errors.policy && (
+                        <p
+                            id="policy-error"
+                            className="text-sm text-red-600 dark:text-red-400"
+                        >
+                            {errors.policy}
+                        </p>
+                    )}
+                </div>
 
-                    <Button
-                        className="mt-2 w-full"
-                        type="submit"
-                        disabled={processing}
+                <Button
+                    className={authButtonClassName}
+                    type="submit"
+                    disabled={processing}
+                >
+                    {processing ? (
+                        <Spinner />
+                    ) : (
+                        <UserRoundPlus className="size-4" aria-hidden="true" />
+                    )}
+                    {processing ? 'Создаём аккаунт...' : 'Создать аккаунт'}
+                </Button>
+
+                <AuthFooter>
+                    Уже есть аккаунт?{' '}
+                    <TextLink
+                        href={login()}
+                        className="font-semibold text-blue-600 dark:text-blue-400"
                     >
-                        {processing && <Spinner />}
-                        Зарегистрироваться как клиент
-                    </Button>
-                </div>
-
-                <div className="rounded-lg border border-dashed border-border bg-muted/40 p-4 text-sm leading-6 text-muted-foreground">
-                    Форма уже пишет клиента в базу, логинит его и переводит в
-                    кабинет. Следующим этапом сюда можно будет добавлять
-                    автоподтяжку заявок и реальную бизнес-логику.
-                </div>
-
-                <div className="text-center text-sm text-muted-foreground">
-                    Уже есть аккаунт? <TextLink href={login()}>Войти</TextLink>
-                </div>
+                        Войти
+                    </TextLink>
+                </AuthFooter>
             </form>
         </>
     );
 }
 
 RegisterClient.layout = {
-    title: 'Регистрация клиента',
-    description: 'Создайте аккаунт, чтобы сохранять заявки и отслеживать их статус',
+    title: 'Создайте аккаунт клиента',
+    description:
+        'Сохраняйте заявки, следите за статусами и общайтесь с выбранной компанией в личном кабинете.',
 };

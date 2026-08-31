@@ -1,7 +1,4 @@
-import type {
-    MarketplaceCompany,
-    RequestFormState,
-} from '@/lib/okna-market';
+import type { MarketplaceCompany, RequestFormState } from '@/lib/okna-market';
 
 type Props = {
     company: MarketplaceCompany;
@@ -12,18 +9,20 @@ type Props = {
 export function CompanyCard({ company, actionLabel }: Props) {
     return (
         <article className="company-card">
-            <div className={`company-logo ${company.tone}`}>{company.initials}</div>
+            <div className={`company-logo ${company.tone}`}>
+                {company.initials}
+            </div>
             <div className="company-info">
                 <h3>{company.name}</h3>
                 <p>{company.description}</p>
                 <div className="company-tags">
-                    <span className="rating-tag">
-                        {company.reviewsLabel}
-                    </span>
+                    <span className="rating-tag">{company.reviewsLabel}</span>
                     <span className="green-tag">{company.badge}</span>
                 </div>
                 <ul className="company-features">
-                    <li>Услуга: {company.matchedServiceName ?? 'уточняется'}</li>
+                    <li>
+                        Услуга: {company.matchedServiceName ?? 'уточняется'}
+                    </li>
                     <li>Срок: {company.availabilityLabel}</li>
                     <li>Районы: {company.districts.join(', ')}</li>
                     <li>{company.feature}</li>
@@ -48,10 +47,7 @@ export function buildCompanyEstimate(
         return baseEstimate;
     }
 
-    return [
-        Math.round(company.sortPrice),
-        Math.round(company.sortPrice),
-    ];
+    return [Math.round(company.sortPrice), Math.round(company.sortPrice)];
 }
 
 export function matchesRequest(

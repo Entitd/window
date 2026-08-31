@@ -1,9 +1,6 @@
 import { router } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
-import type {
-    ExtraWorkKey,
-    RequestFormState,
-} from '@/lib/okna-market';
+import type { ExtraWorkKey, RequestFormState } from '@/lib/okna-market';
 import {
     buildEstimate,
     buildSearchParams,
@@ -136,7 +133,9 @@ export function RequestForm({ compact = false }: Props) {
                         {extraWorkOptions.map((option) => (
                             <label className="checkbox-row" key={option.key}>
                                 <input
-                                    checked={form.extraWorks.includes(option.key)}
+                                    checked={form.extraWorks.includes(
+                                        option.key,
+                                    )}
                                     onChange={() => toggleExtraWork(option.key)}
                                     type="checkbox"
                                 />

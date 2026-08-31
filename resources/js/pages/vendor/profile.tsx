@@ -1,14 +1,19 @@
-import { FormEvent } from 'react';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import {
     BriefcaseBusiness,
-    Camera,
+    Building2,
     CircleAlert,
     Globe,
     MapPinned,
     Phone,
     ShieldCheck,
 } from 'lucide-react';
+import type { FormEvent } from 'react';
+import {
+    DashboardHero,
+    DashboardMetric,
+    DashboardPage,
+} from '@/components/dashboard/dashboard-ui';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -23,9 +28,14 @@ import { Label } from '@/components/ui/label';
 import {
     getModerationLabel,
     getModerationVariant,
-    type VendorProfile,
-    type VendorService,
 } from '@/lib/dashboard-format';
+import type { VendorProfile, VendorService } from '@/lib/dashboard-format';
+import {
+    dashboard as vendorDashboard,
+    profile as vendorProfilePage,
+    services as vendorServicesPage,
+} from '@/routes/vendor';
+import { update as updateProfile } from '@/routes/vendor/profile';
 
 type PageProps = {
     vendorProfile: VendorProfile;
@@ -82,9 +92,9 @@ export default function VendorProfilePage() {
             note: 'Хотя бы одна услуга уже опубликована.',
         },
         {
-            title: 'Логотип или инициалы',
+            title: 'Обозначение компании',
             done: data.logo.trim().length > 0,
-            note: 'Пока сохраняем текстовое обозначение, загрузку файлов добавим позже.',
+            note: 'Указаны инициалы для аватара компании.',
         },
     ];
 
@@ -112,16 +122,16 @@ export default function VendorProfilePage() {
             icon: BriefcaseBusiness,
         },
         {
-            label: 'Логотип',
+            label: 'Обозначение',
             value: data.logo || 'Не указан',
-            icon: Camera,
+            icon: Building2,
         },
     ];
 
     function submit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
 
-        patch('/vendor/profile', {
+        patch(updateProfile.url(), {
             preserveScroll: true,
         });
     }
@@ -130,88 +140,64 @@ export default function VendorProfilePage() {
         <>
             <Head title="Профиль компании" />
 
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <Card className="border-sidebar-border/70 shadow-none dark:border-sidebar-border">
-                    <CardHeader className="gap-4 xl:flex-row xl:items-start xl:justify-between">
-                        <div className="space-y-3">
-                            <div className="flex flex-wrap items-center gap-2">
-                                <Badge
-                                    variant={getModerationVariant(
-                                        vendorProfile.moderationStatus,
-                                    )}
-                                >
-                                    {getModerationLabel(
-                                        vendorProfile.moderationStatus,
-                                    )}
-                                </Badge>
-                                <Badge variant="outline">
-                                    Профиль готов на {profileCompletion}%
-                                </Badge>
-                                {recentlySuccessful && (
-                                    <Badge variant="default">Сохранено</Badge>
+            <DashboardPage>
+                <DashboardHero
+                    icon={Building2}
+                    badge={
+                        <>
+                            <Badge
+                                variant={getModerationVariant(
+                                    vendorProfile.moderationStatus,
                                 )}
-                            </div>
-
-                            <div>
-                                <CardTitle className="text-2xl">
-                                    Профиль {data.company_name || 'компании'}
-                                </CardTitle>
-                                <CardDescription className="mt-2 max-w-3xl">
-                                    Данные сохраняются в профиле компании. Если
-                                    подтвержденная компания меняет карточку,
-                                    профиль отправляется на повторную модерацию.
-                                </CardDescription>
-                            </div>
-                        </div>
-
-                        <div className="flex flex-col gap-2 sm:flex-row xl:flex-col">
+                            >
+                                {getModerationLabel(
+                                    vendorProfile.moderationStatus,
+                                )}
+                            </Badge>
+                            <Badge variant="outline">
+                                Профиль готов на {profileCompletion}%
+                            </Badge>
+                            {recentlySuccessful && (
+                                <Badge variant="default">Сохранено</Badge>
+                            )}
+                        </>
+                    }
+                    title={data.company_name || 'Профиль компании'}
+                    description="Заполните контакты, районы работы и описание. После изменений подтверждённый профиль проходит повторную проверку."
+                    actions={
+                        <>
                             <Button asChild>
-                                <Link href="/vendor/services">
+                                <Link href={vendorServicesPage()} prefetch>
                                     Услуги и цены
                                 </Link>
                             </Button>
                             <Button asChild variant="outline">
-                                <Link href="/vendor/dashboard">
+                                <Link href={vendorDashboard()} prefetch>
                                     Назад в кабинет
                                 </Link>
                             </Button>
-                        </div>
-                    </CardHeader>
-                </Card>
+                        </>
+                    }
+                />
 
                 <div className="grid auto-rows-min gap-4 md:grid-cols-2 xl:grid-cols-4">
                     {profileSignals.map((item) => (
-                        <Card
-                            className="border-sidebar-border/70 py-0 shadow-none dark:border-sidebar-border"
+                        <DashboardMetric
                             key={item.label}
-                        >
-                            <CardContent className="flex min-h-32 flex-col justify-between gap-4 p-5">
-                                <div className="flex items-start justify-between gap-4">
-                                    <div>
-                                        <p className="text-sm text-muted-foreground">
-                                            {item.label}
-                                        </p>
-                                        <p className="mt-2 text-xl font-semibold">
-                                            {item.value}
-                                        </p>
-                                    </div>
-                                    <item.icon
-                                        className="size-5 text-muted-foreground"
-                                        aria-hidden="true"
-                                    />
-                                </div>
-                            </CardContent>
-                        </Card>
+                            icon={item.icon}
+                            label={item.label}
+                            value={item.value}
+                        />
                     ))}
                 </div>
 
                 <div className="grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(340px,1fr)]">
-                    <Card className="border-sidebar-border/70 shadow-none dark:border-sidebar-border">
+                    <Card className="border-border/70 shadow-sm">
                         <CardHeader>
                             <CardTitle>Редактирование профиля</CardTitle>
                             <CardDescription>
-                                Эти поля уже сохраняются в базе и используются в
-                                кабинете компании.
+                                Эти данные формируют карточку компании и
+                                помогают клиенту принять решение.
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -321,7 +307,7 @@ export default function VendorProfilePage() {
 
                                 <div className="grid gap-2">
                                     <Label htmlFor="logo">
-                                        Логотип или инициалы
+                                        Инициалы компании
                                     </Label>
                                     <Input
                                         id="logo"
@@ -334,13 +320,6 @@ export default function VendorProfilePage() {
                                     <ErrorText message={errors.logo} />
                                 </div>
 
-                                <div className="rounded-xl border border-dashed border-sidebar-border/70 p-4 text-sm text-muted-foreground dark:border-sidebar-border">
-                                    Загрузка логотипа и фотографий работ пока не
-                                    подключена. Для MVP сохраняем текстовое
-                                    обозначение, а реальные файлы вынесены в
-                                    следующий этап.
-                                </div>
-
                                 <Button type="submit" disabled={processing}>
                                     {processing
                                         ? 'Сохраняем...'
@@ -351,12 +330,11 @@ export default function VendorProfilePage() {
                     </Card>
 
                     <div className="flex flex-col gap-4">
-                        <Card className="border-sidebar-border/70 shadow-none dark:border-sidebar-border">
+                        <Card className="border-border/70 shadow-sm">
                             <CardHeader>
                                 <CardTitle>Готовность к публикации</CardTitle>
                                 <CardDescription>
-                                    Чеклист показывает, чего уже хватает для
-                                    нормальной карточки компании.
+                                    Основные данные для карточки компании.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
@@ -408,7 +386,7 @@ export default function VendorProfilePage() {
                             </CardContent>
                         </Card>
 
-                        <Card className="border-sidebar-border/70 shadow-none dark:border-sidebar-border">
+                        <Card className="border-border/70 shadow-sm">
                             <CardHeader>
                                 <CardTitle>Модерация</CardTitle>
                             </CardHeader>
@@ -464,24 +442,39 @@ export default function VendorProfilePage() {
                             </CardContent>
                         </Card>
 
-                        <Card className="border-sidebar-border/70 shadow-none dark:border-sidebar-border">
+                        <Card className="overflow-hidden border-primary/15 bg-primary/5 shadow-sm">
                             <CardHeader>
-                                <CardTitle>Логотип и фото</CardTitle>
+                                <CardTitle>Предпросмотр компании</CardTitle>
+                                <CardDescription>
+                                    Основные данные карточки в компактном виде.
+                                </CardDescription>
                             </CardHeader>
-                            <CardContent className="space-y-3">
-                                <div className="flex size-16 items-center justify-center rounded-2xl bg-muted text-lg font-semibold">
-                                    {data.logo || data.company_name.slice(0, 2)}
+                            <CardContent className="space-y-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-primary text-lg font-semibold text-primary-foreground shadow-sm">
+                                        {data.logo ||
+                                            data.company_name.slice(0, 2)}
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="truncate font-semibold">
+                                            {data.company_name ||
+                                                'Название компании'}
+                                        </p>
+                                        <p className="text-sm text-muted-foreground">
+                                            {data.city || 'Город не указан'}
+                                        </p>
+                                    </div>
                                 </div>
-                                <div className="rounded-xl border border-dashed border-sidebar-border/70 p-3 text-sm text-muted-foreground dark:border-sidebar-border">
-                                    Файловая галерея не подключена в MVP-задаче.
-                                    Здесь останется место под реальные миниатюры
-                                    работ.
+                                <div className="rounded-xl border border-border/70 bg-background/70 p-3 text-sm text-muted-foreground">
+                                    {districts.length > 0
+                                        ? `Работает в районах: ${districts.join(', ')}`
+                                        : 'Районы работы не указаны'}
                                 </div>
                             </CardContent>
                         </Card>
                     </div>
                 </div>
-            </div>
+            </DashboardPage>
         </>
     );
 }
@@ -490,11 +483,11 @@ VendorProfilePage.layout = {
     breadcrumbs: [
         {
             title: 'Кабинет компании',
-            href: '/vendor/dashboard',
+            href: vendorDashboard(),
         },
         {
             title: 'Профиль',
-            href: '/vendor/profile',
+            href: vendorProfilePage(),
         },
     ],
 };

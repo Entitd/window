@@ -1,19 +1,19 @@
 <?php
 
+use App\Http\Controllers\AdminVendorModerationController;
 use App\Http\Controllers\Auth\RegisterClientController;
 use App\Http\Controllers\Auth\RegisterVendorController;
-use App\Http\Controllers\AdminVendorModerationController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ClientRequestController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SearchResultsController;
 use App\Http\Controllers\VendorDashboardController;
 use App\Http\Controllers\VendorProfileController;
 use App\Http\Controllers\VendorRequestController;
 use App\Http\Controllers\VendorServiceController;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
-
+use Inertia\Inertia;
 
 Route::inertia('/', 'okna-market')->name('home');
 Route::get('pages', function () {
@@ -113,6 +113,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('client.requests.repeat');
         Route::patch('client/requests/{serviceRequest}/cancel', [ClientRequestController::class, 'cancel'])
             ->name('client.requests.cancel');
+        Route::post('client/requests/{serviceRequest}/review', [ReviewController::class, 'store'])
+            ->name('client.requests.review.store');
     });
 
     Route::middleware('role:vendor')->group(function () {
