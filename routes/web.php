@@ -16,6 +16,7 @@ use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 Route::inertia('/', 'okna-market')->name('home');
+Route::get('calculate', [SearchResultsController::class, 'calculate'])->name('calculate');
 Route::get('pages', function () {
     abort_unless(app()->environment(['local', 'testing']), 404);
 

@@ -35,12 +35,6 @@ type WindowType = {
     factor: number;
 };
 
-type Urgency = {
-    key: UrgencyKey;
-    title: string;
-    factor: number;
-};
-
 type Company = {
     initials: string;
     tone: 'blue' | 'green' | 'violet';
@@ -115,12 +109,6 @@ const windowTypes: WindowType[] = [
     { key: 'double', title: 'Двухстворчатое', factor: 1 },
     { key: 'triple', title: 'Трехстворчатое', factor: 1.18 },
     { key: 'balcony', title: 'Балконный блок', factor: 1.42 },
-];
-
-const urgencyOptions: Urgency[] = [
-    { key: 'flexible', title: 'Гибкая дата', factor: 0.96 },
-    { key: 'week', title: 'На этой неделе', factor: 1 },
-    { key: 'urgent', title: 'Сегодня/завтра', factor: 1.15 },
 ];
 
 const companies: Company[] = [
@@ -415,53 +403,16 @@ function formatRoubles(value: number): string {
     return new Intl.NumberFormat('ru-RU').format(Math.round(value / 100) * 100);
 }
 
-function clamp(value: number, min: number, max: number): number {
-    return Math.min(Math.max(value, min), max);
-}
-
-function getServiceByKey(serviceKey: ServiceKey): Service {
-    return (
-        services.find((service) => service.key === serviceKey) ?? services[0]
-    );
-}
-
-function getWindowTypeByKey(windowTypeKey: WindowTypeKey): WindowType {
-    return (
-        windowTypes.find((windowType) => windowType.key === windowTypeKey) ??
-        windowTypes[1]
-    );
-}
-
-function getUrgencyByKey(urgencyKey: UrgencyKey): Urgency {
-    return (
-        urgencyOptions.find((urgency) => urgency.key === urgencyKey) ??
-        urgencyOptions[1]
-    );
-}
-
 export default function OknaMarket() {
     const [serviceKey, setServiceKey] =
         useState<ServiceKey>('glass_replacement');
     const [windowTypeKey, setWindowTypeKey] = useState<WindowTypeKey>('double');
-    const urgencyKey: UrgencyKey = 'week';
     const [width, setWidth] = useState(130);
     const [height, setHeight] = useState(140);
     const activeDemoStep = catalogDemoSteps[0];
     const filters = activeDemoStep.filters;
     const sortKey = activeDemoStep.sortKey;
     const selectedCompany = activeDemoStep.selectedCompany;
-
-    const activeService = getServiceByKey(serviceKey);
-    const activeWindowType = getWindowTypeByKey(windowTypeKey);
-    const activeUrgency = getUrgencyByKey(urgencyKey);
-    const estimatedRange = useMemo<[number, number]>(() => {
-        const area = clamp(width, 40, 320) * clamp(height, 40, 260);
-        const areaFactor = clamp(area / (130 * 140), 0.72, 1.75);
-        const factor =
-            areaFactor * activeWindowType.factor * activeUrgency.factor;
-
-        return [activeService.baseMin * factor, activeService.baseMax * factor];
-    }, [activeService, activeUrgency, activeWindowType, height, width]);
 
     const visibleCompanies = useMemo(() => {
         return companies
@@ -550,11 +501,6 @@ export default function OknaMarket() {
                             <div className="request-heading">
                                 <div>
                                     <h2>Что нужно установить?</h2>
-                                    <p>
-                                        Предварительно: от{' '}
-                                        {formatRoubles(estimatedRange[0])} до{' '}
-                                        {formatRoubles(estimatedRange[1])} ₽
-                                    </p>
                                 </div>
                                 <span>Точная цена после замера.</span>
                             </div>

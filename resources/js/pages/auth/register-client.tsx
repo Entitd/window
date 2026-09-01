@@ -6,6 +6,12 @@ import {
     AuthSection,
     authButtonClassName,
     authControlClassName,
+    authFieldsGridClassName,
+    authFormClassName,
+    authRoleSwitchClassName,
+    authRoleSwitchIconClassName,
+    authRoleSwitchLabelClassName,
+    authRoleSwitchLinkClassName,
 } from '@/components/auth/auth-form';
 import PasswordInput from '@/components/password-input';
 import TextLink from '@/components/text-link';
@@ -33,7 +39,7 @@ export default function RegisterClient() {
             <Head title="Регистрация клиента" />
 
             <form
-                className="grid gap-6"
+                className={authFormClassName}
                 onSubmit={(event) => {
                     event.preventDefault();
                     post(registerClientStore.url(), {
@@ -42,11 +48,11 @@ export default function RegisterClient() {
                     });
                 }}
             >
-                <div className="flex items-center justify-between gap-3 rounded-2xl border border-blue-100 bg-blue-50/75 p-2 dark:border-blue-900/60 dark:bg-blue-950/30">
-                    <div className="flex items-center gap-3 px-2 text-sm font-semibold text-blue-800 dark:text-blue-200">
-                        <span className="grid size-9 place-items-center rounded-xl bg-blue-600 text-white">
+                <div className={authRoleSwitchClassName}>
+                    <div className={authRoleSwitchLabelClassName}>
+                        <span className={authRoleSwitchIconClassName}>
                             <UserRoundPlus
-                                className="size-4"
+                                className="size-3.5"
                                 aria-hidden="true"
                             />
                         </span>
@@ -54,18 +60,16 @@ export default function RegisterClient() {
                     </div>
                     <Link
                         href={registerVendor()}
-                        className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm transition hover:text-blue-700 focus-visible:ring-4 focus-visible:ring-blue-500/20 focus-visible:outline-none dark:bg-slate-900 dark:text-slate-200 dark:hover:text-blue-300"
+                        className={authRoleSwitchLinkClassName}
                     >
-                        <Building2 className="size-4" aria-hidden="true" />Я
+                        <Building2 className="size-3.5" aria-hidden="true" />Я
                         компания
                     </Link>
                 </div>
-
+{/* 
                 <AuthSection
-                    title="Контактные данные"
-                    description="Они понадобятся для заявок и уведомлений о смене статуса."
-                >
-                    <div className="grid gap-5 sm:grid-cols-2">
+                > */}
+                    <div className={authFieldsGridClassName}>
                         <AuthField id="name" label="Имя" error={errors.name}>
                             <Input
                                 id="name"
@@ -111,39 +115,34 @@ export default function RegisterClient() {
                                 }
                             />
                         </AuthField>
-                    </div>
 
-                    <AuthField
-                        id="email"
-                        label="Email"
-                        hint="Для входа"
-                        error={errors.email}
-                    >
-                        <Input
-                            id="email"
-                            name="email"
-                            type="email"
-                            required
-                            autoComplete="email"
-                            placeholder="name@example.com"
-                            value={data.email}
-                            onChange={(event) =>
-                                setData('email', event.target.value)
-                            }
-                            className={authControlClassName}
-                            aria-invalid={Boolean(errors.email)}
-                            aria-describedby={
-                                errors.email ? 'email-error' : undefined
-                            }
-                        />
-                    </AuthField>
-                </AuthSection>
+                        <div className="sm:col-span-2">
+                            <AuthField
+                                id="email"
+                                label="Email"
+                                hint="Для входа"
+                                error={errors.email}
+                            >
+                                <Input
+                                    id="email"
+                                    name="email"
+                                    type="email"
+                                    required
+                                    autoComplete="email"
+                                    placeholder="name@example.com"
+                                    value={data.email}
+                                    onChange={(event) =>
+                                        setData('email', event.target.value)
+                                    }
+                                    className={authControlClassName}
+                                    aria-invalid={Boolean(errors.email)}
+                                    aria-describedby={
+                                        errors.email ? 'email-error' : undefined
+                                    }
+                                />
+                            </AuthField>
+                        </div>
 
-                <AuthSection
-                    title="Доступ к кабинету"
-                    description="Используйте не менее 8 символов и не передавайте пароль другим."
-                >
-                    <div className="grid gap-5 sm:grid-cols-2">
                         <AuthField
                             id="password"
                             label="Пароль"
@@ -154,7 +153,7 @@ export default function RegisterClient() {
                                 name="password"
                                 required
                                 autoComplete="new-password"
-                                placeholder="Не менее 8 символов"
+                                placeholder="От 8 символов"
                                 value={data.password}
                                 onChange={(event) =>
                                     setData('password', event.target.value)
@@ -199,10 +198,10 @@ export default function RegisterClient() {
                             />
                         </AuthField>
                     </div>
-                </AuthSection>
+                {/* </AuthSection> */}
 
-                <div className="grid gap-2">
-                    <div className="flex items-start gap-3 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950/35">
+                <div>
+                    <div className="flex items-start gap-2.5 rounded-lg border border-slate-200 bg-white p-2.5 dark:border-slate-800 dark:bg-slate-950/35">
                         <Checkbox
                             id="policy"
                             checked={data.policy}
@@ -216,7 +215,7 @@ export default function RegisterClient() {
                         />
                         <Label
                             htmlFor="policy"
-                            className="text-sm leading-6 font-normal text-slate-600 dark:text-slate-400"
+                            className="text-xs leading-normal font-normal text-slate-600 dark:text-slate-400"
                         >
                             Я принимаю{' '}
                             <TextLink
@@ -238,7 +237,7 @@ export default function RegisterClient() {
                     {errors.policy && (
                         <p
                             id="policy-error"
-                            className="text-sm text-red-600 dark:text-red-400"
+                            className="mt-1 text-xs text-red-600 dark:text-red-400"
                         >
                             {errors.policy}
                         </p>
@@ -274,6 +273,5 @@ export default function RegisterClient() {
 
 RegisterClient.layout = {
     title: 'Создайте аккаунт клиента',
-    description:
-        'Сохраняйте заявки, следите за статусами и общайтесь с выбранной компанией в личном кабинете.',
+    description: 'Сохраняйте заявки и следите за статусами в кабинете.',
 };

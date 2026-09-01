@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { ArrowLeft, Check, MapPin, Search, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Search, ShieldCheck } from 'lucide-react';
 import { home } from '@/routes';
 import type { AuthLayoutProps } from '@/types';
 
@@ -46,25 +46,34 @@ export default function AuthSimpleLayout({
     description,
 }: AuthLayoutProps) {
     return (
-        <div className="relative min-h-svh overflow-hidden bg-[#f4f7fb] text-slate-950 dark:bg-slate-950 dark:text-slate-50">
-            <div
-                className="pointer-events-none absolute -top-40 left-1/4 size-[34rem] rounded-full bg-blue-200/55 blur-3xl dark:bg-blue-950/25"
-                aria-hidden="true"
-            />
-            <div
-                className="pointer-events-none absolute right-0 bottom-0 size-[28rem] translate-x-1/3 translate-y-1/3 rounded-full bg-orange-100/75 blur-3xl dark:bg-orange-950/15"
-                aria-hidden="true"
-            />
-
-            <main className="relative mx-auto flex min-h-svh w-full max-w-[1280px] items-center justify-center p-3 sm:p-6 lg:p-8">
-                <section className="grid w-full max-w-[1160px] overflow-hidden rounded-[28px] border border-white/90 bg-white shadow-[0_30px_90px_rgba(15,23,42,0.12)] lg:grid-cols-[0.88fr_1.12fr] dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/30">
-                    <aside className="relative hidden min-h-[760px] overflow-hidden bg-slate-950 p-10 text-white lg:flex lg:flex-col xl:p-12">
+        <div className="relative min-h-svh overflow-x-hidden bg-[linear-gradient(135deg,#eaf2ff_0%,#f7fbff_42%,#fff3e8_100%)] font-sans text-slate-950 dark:bg-[linear-gradient(135deg,#020617_0%,#0f172a_46%,#1e293b_100%)] dark:text-slate-50">
+            <main className="relative mx-auto flex min-h-svh w-full max-w-[1280px] items-center justify-center p-2 sm:p-4 lg:p-5">
+                <section className="grid w-full max-w-[1120px] overflow-hidden rounded-[24px] border border-white/65 bg-white/30 shadow-[0_30px_90px_rgba(15,23,42,0.12)] backdrop-blur-xl lg:max-h-[calc(100svh-40px)] lg:grid-cols-[0.88fr_1.12fr] dark:border-white/10 dark:bg-slate-950/35 dark:shadow-black/30">
+                    <aside className="relative hidden min-h-[calc(100svh-40px)] overflow-hidden rounded-l-[24px] border-r border-white/30 bg-white/10 p-8 text-slate-950 shadow-[inset_0_1px_1px_rgba(255,255,255,0.6)] backdrop-blur-2xl backdrop-saturate-150 lg:flex lg:flex-col xl:p-10 dark:border-white/10 dark:bg-slate-900/20 dark:text-white dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
                         <div
-                            className="absolute top-20 -right-24 size-72 rounded-full bg-blue-500/20 blur-3xl"
+                            className="pointer-events-none absolute -inset-10 opacity-60 blur-3xl dark:opacity-40"
+                            aria-hidden="true"
+                        >
+                            <div className="absolute top-0 left-0 size-[500px] rounded-full bg-blue-400/30 dark:bg-blue-600/20" />
+                            <div className="absolute right-0 bottom-0 size-[400px] rounded-full bg-sky-300/30 dark:bg-sky-500/15" />
+                        </div>
+
+                        <div
+                            className="pointer-events-none absolute inset-0 opacity-[0.15] dark:opacity-[0.08]"
+                            style={{
+                                backgroundImage: `radial-gradient(#2563eb 0.75px, transparent 0.75px), radial-gradient(#2563eb 0.75px, transparent 0.75px)`,
+                                backgroundSize: '15px 15px',
+                                backgroundPosition: '0 0, 7.5px 7.5px',
+                                WebkitMaskImage:
+                                    'radial-gradient(ellipse at center, black 20%, transparent 80%)',
+                                maskImage:
+                                    'radial-gradient(ellipse at center, black 20%, transparent 80%)',
+                            }}
                             aria-hidden="true"
                         />
+
                         <div
-                            className="absolute -bottom-28 -left-20 size-80 rounded-full bg-orange-400/10 blur-3xl"
+                            className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/25 via-transparent to-white/5 dark:from-white/10 dark:to-transparent"
                             aria-hidden="true"
                         />
 
@@ -72,40 +81,40 @@ export default function AuthSimpleLayout({
                             <Brand />
                         </div>
 
-                        <div className="relative z-10 my-auto grid gap-9 py-12">
-                            <div className="grid gap-4">
-                                <span className="w-fit rounded-full border border-blue-400/25 bg-blue-400/10 px-3 py-1.5 text-xs font-semibold tracking-wide text-blue-200 uppercase">
+                        <div className="relative z-10 my-auto grid gap-7 py-8">
+                            <div className="grid gap-3">
+                                <span className="w-fit rounded-full border border-white/80 bg-white/70 px-3 py-1.5 text-xs font-semibold text-blue-700 uppercase shadow-[0_2px_10px_rgba(255,255,255,0.4),inset_0_1px_0_#ffffff] backdrop-blur-md dark:border-white/20 dark:bg-white/10 dark:text-blue-300">
                                     Сервис подбора компаний
                                 </span>
-                                <h2 className="max-w-md text-4xl leading-[1.08] font-semibold tracking-[-0.035em] text-balance">
+                                <h2 className="max-w-md text-3xl leading-tight font-semibold text-balance text-slate-950 dark:text-white">
                                     Окна без десятков звонков
                                 </h2>
-                                <p className="max-w-md text-sm leading-7 text-slate-300">
+                                <p className="max-w-md text-sm leading-6 text-slate-600 dark:text-slate-300">
                                     Опишите задачу, сравните предложения и
                                     выберите компанию в удобном темпе.
                                 </p>
                             </div>
 
-                            <div className="grid gap-4">
+                            <div className="grid gap-3">
                                 {benefits.map((benefit) => {
                                     const Icon = benefit.icon;
 
                                     return (
                                         <div
                                             key={benefit.title}
-                                            className="flex gap-4 rounded-2xl border border-white/10 bg-white/[0.055] p-4 backdrop-blur-sm"
+                                            className="flex gap-3 rounded-xl border border-white/80 bg-white/60 p-3.5 shadow-[0_8px_20px_rgba(15,23,42,0.03),inset_0_1px_1px_#ffffff] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.06] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
                                         >
-                                            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-blue-500/15 text-blue-300">
+                                            <span className="grid size-9 shrink-0 place-items-center rounded-lg border border-white bg-white/80 text-blue-600 shadow-sm backdrop-blur-md dark:border-white/15 dark:bg-blue-400/10 dark:text-blue-300">
                                                 <Icon
-                                                    className="size-5"
+                                                    className="size-4"
                                                     aria-hidden="true"
                                                 />
                                             </span>
                                             <div className="grid gap-1">
-                                                <p className="text-sm font-semibold">
+                                                <p className="text-sm font-semibold text-slate-950 dark:text-white">
                                                     {benefit.title}
                                                 </p>
-                                                <p className="text-xs leading-5 text-slate-400">
+                                                <p className="text-xs leading-5 text-slate-600 dark:text-slate-400">
                                                     {benefit.text}
                                                 </p>
                                             </div>
@@ -113,41 +122,15 @@ export default function AuthSimpleLayout({
                                     );
                                 })}
                             </div>
-
-                            <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.07] p-5">
-                                <div className="flex items-center justify-between gap-4">
-                                    <div className="grid gap-2">
-                                        <span className="text-xs text-slate-400">
-                                            Ваш запрос
-                                        </span>
-                                        <span className="font-semibold">
-                                            Замена стеклопакета
-                                        </span>
-                                    </div>
-                                    <span className="grid size-10 place-items-center rounded-full bg-emerald-400/15 text-emerald-300">
-                                        <Check
-                                            className="size-5"
-                                            aria-hidden="true"
-                                        />
-                                    </span>
-                                </div>
-                                <div className="mt-4 flex items-center gap-2 border-t border-white/10 pt-4 text-xs text-slate-300">
-                                    <MapPin
-                                        className="size-4 text-blue-300"
-                                        aria-hidden="true"
-                                    />
-                                    Волгоград · выбранный район
-                                </div>
-                            </div>
                         </div>
 
-                        <p className="relative z-10 text-xs text-slate-500">
+                        <p className="relative z-10 text-xs text-slate-500 dark:text-slate-400">
                             ОкнаМаркет · понятный выбор исполнителя
                         </p>
                     </aside>
 
-                    <div className="flex min-h-[640px] flex-col bg-white px-5 py-6 sm:px-9 sm:py-9 lg:min-h-[760px] lg:px-12 lg:py-11 xl:px-16 dark:bg-slate-900">
-                        <div className="mb-10 flex items-center justify-between gap-4 lg:hidden">
+                    <div className="flex min-h-[calc(100svh-16px)] flex-col bg-white/95 px-5 py-5 sm:min-h-[calc(100svh-32px)] sm:px-8 sm:py-7 lg:max-h-[calc(100svh-40px)] lg:min-h-0 lg:overflow-y-auto lg:px-10 lg:py-8 xl:px-12 dark:bg-slate-900/95">
+                        <div className="mb-6 flex items-center justify-between gap-4 lg:hidden">
                             <Brand compact />
                             <Link
                                 href={home()}
@@ -161,16 +144,16 @@ export default function AuthSimpleLayout({
                             </Link>
                         </div>
 
-                        <div className="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center">
-                            <header className="mb-8 grid gap-3">
-                                <span className="text-xs font-semibold tracking-[0.14em] text-blue-600 uppercase dark:text-blue-400">
+                        <div className="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center py-2">
+                            <header className="mb-6 grid gap-2">
+                                <span className="text-xs font-semibold text-blue-600 uppercase dark:text-blue-400">
                                     ОкнаМаркет
                                 </span>
-                                <h1 className="text-3xl leading-tight font-semibold tracking-[-0.025em] text-slate-950 sm:text-[2rem] dark:text-white">
+                                <h1 className="text-2xl leading-tight font-semibold text-slate-950 sm:text-[1.65rem] dark:text-white">
                                     {title}
                                 </h1>
                                 {description && (
-                                    <p className="max-w-lg text-sm leading-6 text-slate-500 dark:text-slate-400">
+                                    <p className="max-w-lg text-sm leading-5 text-slate-500 dark:text-slate-400">
                                         {description}
                                     </p>
                                 )}
@@ -179,7 +162,7 @@ export default function AuthSimpleLayout({
                             {children}
                         </div>
 
-                        <div className="mx-auto mt-8 hidden w-full max-w-xl lg:block">
+                        <div className="mx-auto mt-6 hidden w-full max-w-xl lg:block">
                             <Link
                                 href={home()}
                                 className="inline-flex items-center gap-2 rounded-lg text-sm font-medium text-slate-500 transition hover:text-slate-900 focus-visible:ring-4 focus-visible:ring-blue-500/20 focus-visible:outline-none dark:text-slate-400 dark:hover:text-white"

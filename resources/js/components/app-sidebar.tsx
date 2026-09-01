@@ -82,8 +82,8 @@ const vendorNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
-    const { auth } = usePage<{ auth: Auth }>().props;
-    const userRole = String(auth.user.role ?? '');
+    const { auth } = usePage<{ auth: { user: Auth['user'] | null } }>().props;
+    const userRole = String(auth.user?.role ?? '');
     const roleItems =
         userRole === 'admin'
             ? adminNavItems

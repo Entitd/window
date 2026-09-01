@@ -5,6 +5,8 @@ import {
     AuthNotice,
     authButtonClassName,
     authControlClassName,
+    authFieldsGridClassName,
+    authFormClassName,
 } from '@/components/auth/auth-form';
 import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
@@ -27,7 +29,7 @@ export default function ResetPassword({ token, email, passwordRules }: Props) {
                 {...update.form()}
                 transform={(data) => ({ ...data, token, email })}
                 resetOnSuccess={['password', 'password_confirmation']}
-                className="grid gap-6"
+                className={authFormClassName}
             >
                 {({ processing, errors }) => (
                     <>
@@ -56,7 +58,7 @@ export default function ResetPassword({ token, email, passwordRules }: Props) {
                             />
                         </AuthField>
 
-                        <div className="grid gap-5 sm:grid-cols-2">
+                        <div className={authFieldsGridClassName}>
                             <AuthField
                                 id="password"
                                 label="Новый пароль"
@@ -130,6 +132,5 @@ export default function ResetPassword({ token, email, passwordRules }: Props) {
 
 ResetPassword.layout = {
     title: 'Придумайте новый пароль',
-    description:
-        'После сохранения используйте новый пароль для входа в личный кабинет.',
+    description: 'Сохраните новый пароль для входа.',
 };

@@ -6,8 +6,8 @@ import {
     AuthNotice,
     authButtonClassName,
     authControlClassName,
+    authFormClassName,
 } from '@/components/auth/auth-form';
-import PasskeyVerify from '@/components/passkey-verify';
 import PasswordInput from '@/components/password-input';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
@@ -31,23 +31,23 @@ export default function Login({ status, canResetPassword }: Props) {
         <>
             <Head title="Вход" />
 
-            <div className="grid gap-6">
+            <div className={authFormClassName}>
                 {status && <AuthNotice tone="success">{status}</AuthNotice>}
 
-                <PasskeyVerify
+                {/* <PasskeyVerify
                     label="Войти с ключом доступа"
                     loadingLabel="Проверяем ключ..."
                     separator="или войдите по email"
-                />
+                /> */}
 
                 <Form
                     {...store.form()}
                     resetOnSuccess={['password']}
-                    className="grid gap-6"
+                    className={authFormClassName}
                 >
                     {({ processing, errors }) => (
                         <>
-                            <div className="grid gap-5">
+                            <div className="grid gap-4">
                                 <AuthField
                                     id="email"
                                     label="Email"
@@ -105,7 +105,7 @@ export default function Login({ status, canResetPassword }: Props) {
                                     />
                                 </AuthField>
 
-                                <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-3.5 text-sm text-slate-700 transition hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950/35 dark:text-slate-300 dark:hover:border-slate-700">
+                                <label className="flex cursor-pointer items-center gap-2.5 rounded-lg border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm text-slate-700 transition hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950/35 dark:text-slate-300 dark:hover:border-slate-700">
                                     <Checkbox
                                         id="remember"
                                         name="remember"
@@ -143,13 +143,13 @@ export default function Login({ status, canResetPassword }: Props) {
                     <div className="mt-3 grid gap-2 sm:grid-cols-2">
                         <TextLink
                             href={registerClient()}
-                            className="rounded-xl border border-slate-200 px-4 py-3 font-semibold text-slate-800 no-underline transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 dark:border-slate-700 dark:text-slate-100 dark:hover:border-blue-800 dark:hover:bg-blue-950/35 dark:hover:text-blue-300"
+                            className="rounded-lg border border-slate-200 px-3.5 py-2.5 font-semibold text-slate-800 no-underline transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 dark:border-slate-700 dark:text-slate-100 dark:hover:border-blue-800 dark:hover:bg-blue-950/35 dark:hover:text-blue-300"
                         >
                             Я клиент
                         </TextLink>
                         <TextLink
                             href={registerVendor()}
-                            className="rounded-xl border border-slate-200 px-4 py-3 font-semibold text-slate-800 no-underline transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 dark:border-slate-700 dark:text-slate-100 dark:hover:border-blue-800 dark:hover:bg-blue-950/35 dark:hover:text-blue-300"
+                            className="rounded-lg border border-slate-200 px-3.5 py-2.5 font-semibold text-slate-800 no-underline transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 dark:border-slate-700 dark:text-slate-100 dark:hover:border-blue-800 dark:hover:bg-blue-950/35 dark:hover:text-blue-300"
                         >
                             Я компания
                         </TextLink>
@@ -162,6 +162,5 @@ export default function Login({ status, canResetPassword }: Props) {
 
 Login.layout = {
     title: 'Войдите в личный кабинет',
-    description:
-        'Используйте email и пароль, указанные при регистрации клиента или компании.',
+    description: 'Введите email и пароль от аккаунта.',
 };

@@ -6,6 +6,7 @@ import {
     AuthField,
     authButtonClassName,
     authControlClassName,
+    authFormClassName,
 } from '@/components/auth/auth-form';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -31,16 +32,14 @@ export default function TwoFactorChallenge() {
         if (showRecoveryInput) {
             return {
                 title: 'Введите резервный код',
-                description:
-                    'Используйте один из резервных кодов, сохранённых при настройке двухфакторной защиты.',
+                description: 'Используйте сохранённый резервный код.',
                 toggleText: 'Ввести код из приложения',
             };
         }
 
         return {
             title: 'Двухфакторная защита',
-            description:
-                'Введите шестизначный код из приложения-аутентификатора.',
+            description: 'Введите шестизначный код из приложения.',
             toggleText: 'Использовать резервный код',
         };
     }, [showRecoveryInput]);
@@ -62,7 +61,7 @@ export default function TwoFactorChallenge() {
 
             <Form
                 {...store.form()}
-                className="grid gap-6"
+                className={authFormClassName}
                 resetOnError
                 resetOnSuccess={!showRecoveryInput}
             >
@@ -92,7 +91,7 @@ export default function TwoFactorChallenge() {
                                 />
                             </AuthField>
                         ) : (
-                            <div className="grid gap-4 rounded-2xl border border-slate-200 bg-slate-50/70 p-5 text-center dark:border-slate-800 dark:bg-slate-950/35">
+                            <div className="grid gap-3 rounded-xl border border-slate-200 bg-slate-50/70 p-4 text-center dark:border-slate-800 dark:bg-slate-950/35">
                                 <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
                                     Код подтверждения
                                 </p>
@@ -115,7 +114,7 @@ export default function TwoFactorChallenge() {
                                                     <InputOTPSlot
                                                         key={index}
                                                         index={index}
-                                                        className="size-11 rounded-xl border border-slate-200 bg-white text-base shadow-none first:rounded-xl last:rounded-xl dark:border-slate-700 dark:bg-slate-900"
+                                                        className="size-10 rounded-lg border border-slate-200 bg-white text-sm shadow-none first:rounded-lg last:rounded-lg dark:border-slate-700 dark:bg-slate-900"
                                                     />
                                                 ),
                                             )}

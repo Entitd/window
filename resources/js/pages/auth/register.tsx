@@ -6,6 +6,12 @@ import {
     AuthSection,
     authButtonClassName,
     authControlClassName,
+    authFieldsGridClassName,
+    authFormClassName,
+    authRoleSwitchClassName,
+    authRoleSwitchIconClassName,
+    authRoleSwitchLabelClassName,
+    authRoleSwitchLinkClassName,
 } from '@/components/auth/auth-form';
 import PasswordInput from '@/components/password-input';
 import TextLink from '@/components/text-link';
@@ -29,15 +35,15 @@ export default function Register({ passwordRules }: Props) {
                 {...store.form()}
                 resetOnSuccess={['password', 'password_confirmation']}
                 disableWhileProcessing
-                className="grid gap-6"
+                className={authFormClassName}
             >
                 {({ processing, errors }) => (
                     <>
-                        <div className="flex items-center justify-between gap-3 rounded-2xl border border-blue-100 bg-blue-50/75 p-2 dark:border-blue-900/60 dark:bg-blue-950/30">
-                            <div className="flex items-center gap-3 px-2 text-sm font-semibold text-blue-800 dark:text-blue-200">
-                                <span className="grid size-9 place-items-center rounded-xl bg-blue-600 text-white">
+                        <div className={authRoleSwitchClassName}>
+                            <div className={authRoleSwitchLabelClassName}>
+                                <span className={authRoleSwitchIconClassName}>
                                     <UserRoundPlus
-                                        className="size-4"
+                                        className="size-3.5"
                                         aria-hidden="true"
                                     />
                                 </span>
@@ -45,10 +51,10 @@ export default function Register({ passwordRules }: Props) {
                             </div>
                             <Link
                                 href={registerVendor()}
-                                className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm transition hover:text-blue-700 focus-visible:ring-4 focus-visible:ring-blue-500/20 focus-visible:outline-none dark:bg-slate-900 dark:text-slate-200 dark:hover:text-blue-300"
+                                className={authRoleSwitchLinkClassName}
                             >
                                 <Building2
-                                    className="size-4"
+                                    className="size-3.5"
                                     aria-hidden="true"
                                 />
                                 Я компания
@@ -59,9 +65,9 @@ export default function Register({ passwordRules }: Props) {
 
                         <AuthSection
                             title="Ваши данные"
-                            description="Email будет использоваться для входа в личный кабинет."
+                            description="Email нужен для входа."
                         >
-                            <div className="grid gap-5 sm:grid-cols-2">
+                            <div className={authFieldsGridClassName}>
                                 <AuthField
                                     id="name"
                                     label="Имя"
@@ -136,9 +142,9 @@ export default function Register({ passwordRules }: Props) {
 
                         <AuthSection
                             title="Доступ к кабинету"
-                            description="Придумайте пароль и повторите его без изменений."
+                            description="Придумайте пароль."
                         >
-                            <div className="grid gap-5 sm:grid-cols-2">
+                            <div className={authFieldsGridClassName}>
                                 <AuthField
                                     id="password"
                                     label="Пароль"
@@ -228,6 +234,5 @@ export default function Register({ passwordRules }: Props) {
 
 Register.layout = {
     title: 'Создайте аккаунт клиента',
-    description:
-        'Сохраняйте заявки и следите за работой выбранной компании в одном кабинете.',
+    description: 'Сохраняйте заявки и следите за статусами в кабинете.',
 };

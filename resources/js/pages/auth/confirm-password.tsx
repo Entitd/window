@@ -8,6 +8,7 @@ import {
     AuthField,
     authButtonClassName,
     authControlClassName,
+    authFormClassName,
 } from '@/components/auth/auth-form';
 import PasskeyVerify from '@/components/passkey-verify';
 import PasswordInput from '@/components/password-input';
@@ -20,7 +21,7 @@ export default function ConfirmPassword() {
         <>
             <Head title="Подтверждение пароля" />
 
-            <div className="grid gap-6">
+            <div className={authFormClassName}>
                 <PasskeyVerify
                     routes={{
                         options: confirmOptions(),
@@ -33,7 +34,7 @@ export default function ConfirmPassword() {
 
                 <Form {...store.form()} resetOnSuccess={['password']}>
                     {({ processing, errors }) => (
-                        <div className="grid gap-6">
+                        <div className={authFormClassName}>
                             <AuthField
                                 id="password"
                                 label="Текущий пароль"
@@ -81,6 +82,5 @@ export default function ConfirmPassword() {
 
 ConfirmPassword.layout = {
     title: 'Подтвердите, что это вы',
-    description:
-        'Для защиты аккаунта нужно ещё раз подтвердить пароль перед продолжением.',
+    description: 'Введите пароль, чтобы продолжить.',
 };

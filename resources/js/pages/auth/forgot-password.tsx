@@ -6,6 +6,7 @@ import {
     AuthNotice,
     authButtonClassName,
     authControlClassName,
+    authFormClassName,
 } from '@/components/auth/auth-form';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
@@ -19,10 +20,10 @@ export default function ForgotPassword({ status }: { status?: string }) {
         <>
             <Head title="Восстановление пароля" />
 
-            <div className="grid gap-6">
+            <div className={authFormClassName}>
                 {status && <AuthNotice tone="success">{status}</AuthNotice>}
 
-                <Form {...email.form()} className="grid gap-6">
+                <Form {...email.form()} className={authFormClassName}>
                     {({ processing, errors }) => (
                         <>
                             <AuthField
@@ -84,6 +85,5 @@ export default function ForgotPassword({ status }: { status?: string }) {
 
 ForgotPassword.layout = {
     title: 'Восстановите доступ',
-    description:
-        'Укажите email аккаунта — мы отправим письмо со ссылкой для создания нового пароля.',
+    description: 'Укажите email — отправим ссылку для нового пароля.',
 };

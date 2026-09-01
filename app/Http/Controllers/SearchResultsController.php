@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Vendor;
+use App\Models\VendorService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -11,7 +12,17 @@ use Inertia\Response;
 
 class SearchResultsController extends Controller
 {
+    public function calculate(Request $request): Response
+    {
+        return $this->renderResults($request, 'calculate');
+    }
+
     public function index(Request $request): Response
+    {
+        return $this->renderResults($request, 'search-results');
+    }
+
+    private function renderResults(Request $request, string $component): Response
     {
         $serviceKey = $request->string('serviceKey')->toString();
         $serviceName = $this->serviceNamesByKey()[$serviceKey] ?? null;
@@ -35,7 +46,7 @@ class SearchResultsController extends Controller
             ->latest()
             ->get();
 
-        return Inertia::render('search-results', [
+        return Inertia::render($component, [
             'companies' => $vendors
                 ->map(fn (Vendor $vendor) => $this->serializeVendor(
                     $vendor,
@@ -48,7 +59,7 @@ class SearchResultsController extends Controller
     }
 
     /**
-     * @param Collection<int, \App\Models\VendorService> $services
+     * @param  Collection<int, VendorService>  $services
      * @return array<string, mixed>
      */
     private function serializeVendor(Vendor $vendor, Collection $services, ?string $serviceName): array

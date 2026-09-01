@@ -4,6 +4,7 @@ import {
     AuthFooter,
     AuthNotice,
     authButtonClassName,
+    authFormClassName,
 } from '@/components/auth/auth-form';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
@@ -16,7 +17,7 @@ export default function VerifyEmail({ status }: { status?: string }) {
         <>
             <Head title="Подтверждение email" />
 
-            <div className="grid gap-6">
+            <div className={authFormClassName}>
                 {status === 'verification-link-sent' && (
                     <AuthNotice tone="success">
                         Новая ссылка отправлена на email, указанный при
@@ -24,9 +25,9 @@ export default function VerifyEmail({ status }: { status?: string }) {
                     </AuthNotice>
                 )}
 
-                <div className="grid place-items-center gap-4 rounded-2xl border border-slate-200 bg-slate-50/70 px-6 py-8 text-center dark:border-slate-800 dark:bg-slate-950/35">
-                    <span className="grid size-14 place-items-center rounded-2xl bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300">
-                        <MailCheck className="size-6" aria-hidden="true" />
+                <div className="grid place-items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/70 px-5 py-6 text-center dark:border-slate-800 dark:bg-slate-950/35">
+                    <span className="grid size-12 place-items-center rounded-xl bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300">
+                        <MailCheck className="size-5" aria-hidden="true" />
                     </span>
                     <p className="max-w-sm text-sm leading-6 text-slate-600 dark:text-slate-400">
                         Откройте письмо от ОкнаМаркет и нажмите кнопку
@@ -74,6 +75,5 @@ export default function VerifyEmail({ status }: { status?: string }) {
 
 VerifyEmail.layout = {
     title: 'Подтвердите email',
-    description:
-        'Мы отправили письмо со ссылкой, чтобы защитить аккаунт и убедиться, что адрес принадлежит вам.',
+    description: 'Перейдите по ссылке из письма или запросите новое.',
 };

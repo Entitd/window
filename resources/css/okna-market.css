@@ -1318,6 +1318,10 @@
     padding: 72px 0 18px;
 }
 
+.okna-market-page .page-hero-compact {
+    padding-bottom: 6px;
+}
+
 .okna-market-page .page-title {
     max-width: 860px;
     margin: 20px 0 18px;
@@ -1376,6 +1380,115 @@
     margin-top: 22px;
     display: flex;
     justify-content: flex-end;
+}
+
+.okna-market-page .calculator-card {
+    padding: 28px;
+    border: 1px solid var(--line);
+    border-radius: 30px;
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+}
+
+.okna-market-page .calculator-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(220px, 320px);
+    gap: 16px;
+    align-items: stretch;
+}
+
+.okna-market-page .calculator-total {
+    min-height: 58px;
+    padding: 12px 18px;
+    border-radius: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    background: var(--surface-soft);
+}
+
+.okna-market-page .calculator-total span,
+.okna-market-page .calculator-line-actions span {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.okna-market-page .calculator-total strong {
+    color: var(--primary-dark);
+    font-size: 20px;
+    line-height: 1.25;
+}
+
+.okna-market-page .calculator-lines {
+    margin-top: 18px;
+    display: grid;
+    gap: 16px;
+}
+
+.okna-market-page .calculator-line {
+    padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    background: var(--bg);
+}
+
+.okna-market-page .calculator-line-header,
+.okna-market-page .calculator-line-actions {
+    display: flex;
+    align-items: center;
+}
+
+.okna-market-page .calculator-line-header {
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.okna-market-page .calculator-line-header > strong {
+    font-size: 17px;
+}
+
+.okna-market-page .calculator-line-actions {
+    gap: 12px;
+}
+
+.okna-market-page .calculator-line-actions span {
+    color: var(--primary-dark);
+}
+
+.okna-market-page .calculator-grid {
+    margin-top: 18px;
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.okna-market-page .calculator-extra-field {
+    min-height: 96px;
+}
+
+.okna-market-page .calculator-add {
+    margin-top: 18px;
+    gap: 8px;
+}
+
+.okna-market-page .calculator-add svg,
+.okna-market-page .icon-button svg {
+    width: 18px;
+    height: 18px;
+}
+
+.okna-market-page .icon-button {
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    background: var(--surface);
+    color: var(--muted-strong);
 }
 
 .okna-market-page .request-created-card {
@@ -2107,6 +2220,8 @@
     .okna-market-page .hero-split,
     .okna-market-page .vendor-cta,
     .okna-market-page .benefit-grid-wide,
+    .okna-market-page .calculator-grid,
+    .okna-market-page .calculator-toolbar,
     .okna-market-page .summary-grid,
     .okna-market-page .request-created-grid,
     .okna-market-page .contacts-layout {
@@ -2114,6 +2229,7 @@
     }
 
     .okna-market-page .form-grid .btn-accent,
+    .okna-market-page .calculator-toolbar .field-card-wide,
     .okna-market-page .catalog-content,
     .okna-market-page .company-info,
     .okna-market-page .field-card-wide {
@@ -2254,6 +2370,8 @@
 
     .okna-market-page .request-heading,
     .okna-market-page .request-summary,
+    .okna-market-page .calculator-line-header,
+    .okna-market-page .calculator-line-actions,
     .okna-market-page .footer-inner {
         flex-direction: column;
         align-items: flex-start;
@@ -2269,6 +2387,8 @@
     .okna-market-page .trust-grid,
     .okna-market-page .catalog-layout,
     .okna-market-page .company-card,
+    .okna-market-page .calculator-grid,
+    .okna-market-page .calculator-toolbar,
     .okna-market-page .benefit-grid,
     .okna-market-page .steps-grid,
     .okna-market-page .status-grid,
@@ -2314,6 +2434,8 @@
     }
 
     .okna-market-page .summary-card,
+    .okna-market-page .calculator-card,
+    .okna-market-page .calculator-line,
     .okna-market-page .request-created-card,
     .okna-market-page .vendor-cta,
     .okna-market-page .hero-side-card,
@@ -2321,6 +2443,10 @@
     .okna-market-page .contacts-card {
         padding: 22px;
         border-radius: 24px;
+    }
+
+    .okna-market-page .calculator-total strong {
+        font-size: 17px;
     }
 
     .okna-market-page .summary-actions {

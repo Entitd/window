@@ -12,11 +12,21 @@ import {
 } from '@/lib/okna-market';
 
 type Props = {
+    action?: string;
     compact?: boolean;
+    initialForm?: RequestFormState;
+    preserveScroll?: boolean;
+    submitLabel?: string;
 };
 
-export function RequestForm({ compact = false }: Props) {
-    const [form, setForm] = useState<RequestFormState>(defaultRequestForm);
+export function RequestForm({
+    action = MARKETPLACE_PATHS.searchResults,
+    compact = false,
+    initialForm = defaultRequestForm,
+    preserveScroll = false,
+    submitLabel = 'Рассчитать стоимость',
+}: Props) {
+    const [form, setForm] = useState<RequestFormState>(initialForm);
     const estimate = useMemo(() => buildEstimate(form), [form]);
 
     const updateField = <Key extends keyof RequestFormState>(
@@ -43,10 +53,9 @@ export function RequestForm({ compact = false }: Props) {
             className={`request-card ${compact ? 'compact-card' : ''}`}
             onSubmit={(event) => {
                 event.preventDefault();
-                router.get(
-                    MARKETPLACE_PATHS.searchResults,
-                    buildSearchParams(form),
-                );
+                router.get(action, buildSearchParams(form), {
+                    preserveScroll,
+                });
             }}
         >
             <div className="request-heading">
@@ -170,7 +179,7 @@ export function RequestForm({ compact = false }: Props) {
                 </label>
 
                 <button className="btn btn-accent" type="submit">
-                    Рассчитать стоимость
+                    {submitLabel}
                 </button>
             </div>
         </form>

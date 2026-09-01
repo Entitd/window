@@ -6,6 +6,12 @@ import {
     AuthSection,
     authButtonClassName,
     authControlClassName,
+    authFieldsGridClassName,
+    authFormClassName,
+    authRoleSwitchClassName,
+    authRoleSwitchIconClassName,
+    authRoleSwitchLabelClassName,
+    authRoleSwitchLinkClassName,
     authTextareaClassName,
 } from '@/components/auth/auth-form';
 import PasswordInput from '@/components/password-input';
@@ -38,7 +44,7 @@ export default function RegisterVendor() {
             <Head title="Регистрация компании" />
 
             <form
-                className="grid gap-6"
+                className={authFormClassName}
                 onSubmit={(event) => {
                     event.preventDefault();
                     post(registerVendorStore.url(), {
@@ -47,27 +53,30 @@ export default function RegisterVendor() {
                     });
                 }}
             >
-                <div className="flex items-center justify-between gap-3 rounded-2xl border border-blue-100 bg-blue-50/75 p-2 dark:border-blue-900/60 dark:bg-blue-950/30">
-                    <div className="flex items-center gap-3 px-2 text-sm font-semibold text-blue-800 dark:text-blue-200">
-                        <span className="grid size-9 place-items-center rounded-xl bg-blue-600 text-white">
-                            <Building2 className="size-4" aria-hidden="true" />
+                <div className={authRoleSwitchClassName}>
+                    <div className={authRoleSwitchLabelClassName}>
+                        <span className={authRoleSwitchIconClassName}>
+                            <Building2
+                                className="size-3.5"
+                                aria-hidden="true"
+                            />
                         </span>
                         Для компании
                     </div>
                     <Link
                         href={registerClient()}
-                        className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm transition hover:text-blue-700 focus-visible:ring-4 focus-visible:ring-blue-500/20 focus-visible:outline-none dark:bg-slate-900 dark:text-slate-200 dark:hover:text-blue-300"
+                        className={authRoleSwitchLinkClassName}
                     >
-                        <UserRound className="size-4" aria-hidden="true" />Я
+                        <UserRound className="size-3.5" aria-hidden="true" />Я
                         клиент
                     </Link>
                 </div>
 
-                <AuthSection
+                {/* <AuthSection
                     title="О компании"
-                    description="Эти данные помогут клиенту понять вашу специализацию."
-                >
-                    <div className="grid gap-5 sm:grid-cols-2">
+                    description="Название и короткое описание."
+                > */}
+                    <div className={authFieldsGridClassName}>
                         <AuthField
                             id="company_name"
                             label="Название компании"
@@ -146,13 +155,13 @@ export default function RegisterVendor() {
                             }
                         />
                     </AuthField>
-                </AuthSection>
+                {/* </AuthSection> */}
 
-                <AuthSection
+                {/* <AuthSection
                     title="Контакты и география"
-                    description="Укажите рабочие контакты и территорию, где принимаете заявки."
-                >
-                    <div className="grid gap-5 sm:grid-cols-2">
+                    description="Где принимаете заявки."
+                > */}
+                    <div className={authFieldsGridClassName}>
                         <AuthField
                             id="phone"
                             label="Телефон"
@@ -204,7 +213,7 @@ export default function RegisterVendor() {
                         </AuthField>
                     </div>
 
-                    <div className="grid gap-5 sm:grid-cols-2">
+                    <div className={authFieldsGridClassName}>
                         <AuthField id="city" label="Город" error={errors.city}>
                             <Input
                                 id="city"
@@ -251,13 +260,13 @@ export default function RegisterVendor() {
                             />
                         </AuthField>
                     </div>
-                </AuthSection>
+                {/* </AuthSection> */}
 
-                <AuthSection
+                {/* <AuthSection
                     title="Доступ к кабинету"
-                    description="После регистрации вы попадёте в кабинет и сможете дополнить профиль."
-                >
-                    <div className="grid gap-5 sm:grid-cols-2">
+                    description="Пароль для входа."
+                > */}
+                    <div className={authFieldsGridClassName}>
                         <AuthField
                             id="password"
                             label="Пароль"
@@ -313,10 +322,10 @@ export default function RegisterVendor() {
                             />
                         </AuthField>
                     </div>
-                </AuthSection>
+                {/* </AuthSection> */}
 
                 <div className="grid gap-2">
-                    <div className="flex items-start gap-3 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950/35">
+                    <div className="flex items-start gap-2.5 rounded-lg border border-slate-200 bg-white p-2.5 dark:border-slate-800 dark:bg-slate-950/35">
                         <Checkbox
                             id="terms"
                             checked={data.terms}
@@ -330,7 +339,7 @@ export default function RegisterVendor() {
                         />
                         <Label
                             htmlFor="terms"
-                            className="text-sm leading-6 font-normal text-slate-600 dark:text-slate-400"
+                            className="text-xs leading-5 font-normal text-slate-600 dark:text-slate-400"
                         >
                             Я принимаю{' '}
                             <TextLink
@@ -352,7 +361,7 @@ export default function RegisterVendor() {
                     {errors.terms && (
                         <p
                             id="terms-error"
-                            className="text-sm text-red-600 dark:text-red-400"
+                            className="text-xs text-red-600 dark:text-red-400"
                         >
                             {errors.terms}
                         </p>
@@ -390,6 +399,5 @@ export default function RegisterVendor() {
 
 RegisterVendor.layout = {
     title: 'Подключите свою компанию',
-    description:
-        'Заполните основные данные. После регистрации вы сможете настроить услуги, цены и районы работы.',
+    description: 'Заполните профиль, контакты и районы работы.',
 };

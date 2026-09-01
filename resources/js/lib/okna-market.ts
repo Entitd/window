@@ -1,5 +1,6 @@
 export const MARKETPLACE_PATHS = {
     home: '/',
+    calculate: '/calculate',
     searchResults: '/search-results',
     vendors: '/vendors',
     faq: '/faq',

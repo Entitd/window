@@ -134,7 +134,7 @@ export default function SearchResults() {
 
             <MarketShell
                 activePage="search-results"
-                ctaHref={MARKETPLACE_PATHS.home}
+                ctaHref={MARKETPLACE_PATHS.calculate}
                 ctaLabel="Новая заявка"
             >
                 <section className="page-hero">
@@ -213,7 +213,7 @@ export default function SearchResults() {
                         <div className="summary-actions">
                             <Link
                                 className="btn btn-primary"
-                                href={MARKETPLACE_PATHS.home}
+                                href={MARKETPLACE_PATHS.calculate}
                             >
                                 Изменить заявку
                             </Link>
@@ -272,7 +272,7 @@ export default function SearchResults() {
                                 </Link>
                                 <Link
                                     className="btn btn-secondary"
-                                    href={MARKETPLACE_PATHS.home}
+                                    href={MARKETPLACE_PATHS.calculate}
                                 >
                                     Изменить заявку
                                 </Link>
