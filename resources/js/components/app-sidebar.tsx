@@ -94,7 +94,11 @@ export function AppSidebar() {
                 : [];
 
     return (
-        <Sidebar collapsible="icon" variant="inset">
+        <Sidebar
+            collapsible="icon"
+            variant="inset"
+            className="border-white/65 bg-white/35 backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/35"
+        >
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>

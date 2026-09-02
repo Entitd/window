@@ -3,7 +3,6 @@ import { Building2, UserRound } from 'lucide-react';
 import {
     AuthField,
     AuthFooter,
-    AuthSection,
     authButtonClassName,
     authControlClassName,
     authFieldsGridClassName,

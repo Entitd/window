@@ -37,7 +37,7 @@ export function DashboardPage({ children, className }: DashboardPageProps) {
     return (
         <div
             className={cn(
-                'flex min-w-0 flex-1 flex-col gap-5 overflow-x-hidden bg-muted/30 p-3 sm:p-5 lg:p-6',
+                'flex min-w-0 flex-1 flex-col gap-5 overflow-x-hidden bg-transparent p-3 sm:p-5 lg:p-6',
                 className,
             )}
         >
@@ -57,18 +57,14 @@ export function DashboardHero({
     return (
         <section
             className={cn(
-                'relative isolate overflow-hidden rounded-2xl border border-primary/15 bg-gradient-to-br from-primary/12 via-card to-card p-5 shadow-sm sm:p-7',
+                'relative isolate overflow-hidden rounded-2xl border border-white/65 bg-white/65 p-5 shadow-[0_18px_48px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-7 dark:border-white/10 dark:bg-slate-950/35 dark:shadow-black/25',
                 className,
             )}
         >
-            <div
-                className="pointer-events-none absolute -top-24 -right-20 -z-10 size-64 rounded-full bg-primary/10 blur-3xl"
-                aria-hidden="true"
-            />
             <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
                 <div className="flex min-w-0 items-start gap-4">
                     {Icon && (
-                        <span className="hidden size-12 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-sm sm:flex">
+                        <span className="hidden size-12 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-lg shadow-blue-900/15 sm:flex dark:bg-blue-500">
                             <Icon className="size-6" aria-hidden="true" />
                         </span>
                     )}
@@ -107,7 +103,7 @@ export function DashboardMetric({
     return (
         <Card
             className={cn(
-                'group overflow-hidden border-border/70 py-0 shadow-sm transition-[box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:shadow-md',
+                'group overflow-hidden border-slate-200/80 bg-white/90 py-0 shadow-sm transition-[box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md dark:border-slate-800 dark:bg-slate-950/45 dark:hover:border-blue-900/70',
                 className,
             )}
         >
@@ -121,7 +117,7 @@ export function DashboardMetric({
                             {value}
                         </p>
                     </div>
-                    <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600 transition-colors group-hover:bg-blue-600 group-hover:text-white dark:bg-blue-950/45 dark:text-blue-300 dark:group-hover:bg-blue-500">
                         <Icon className="size-5" aria-hidden="true" />
                     </span>
                 </div>
@@ -145,11 +141,11 @@ export function DashboardEmptyState({
     return (
         <div
             className={cn(
-                'flex min-h-64 flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-border bg-muted/20 p-6 text-center sm:p-8',
+                'flex min-h-64 flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-slate-300 bg-slate-50/80 p-6 text-center sm:p-8 dark:border-slate-700 dark:bg-slate-950/35',
                 className,
             )}
         >
-            <span className="flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <span className="flex size-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/45 dark:text-blue-300">
                 <Icon className="size-6" aria-hidden="true" />
             </span>
             <div className="max-w-md space-y-2">
