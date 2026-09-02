@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { home } from '@/routes';
+import { OknaMarketLogo } from './okna-market-logo';
 
 type Props = {
     ariaLabel?: string;
@@ -18,11 +19,7 @@ export function MarketBrand({
             onClick={onClick}
             prefetch
         >
-            <span className="brand-mark">О</span>
-            <span className="brand-copy">
-                <strong>ОкнаМаркет</strong>
-                <small>подбор оконных компаний</small>
-            </span>
+            <OknaMarketLogo />
         </Link>
     );
 }

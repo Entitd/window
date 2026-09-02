@@ -165,76 +165,72 @@ const companies: Company[] = [
     },
 ];
 
-const problems = [
-    {
-        icon: '☎',
-        problem: 'Оставил заявку - звонят 10 компаний.',
-        solution:
-            'Предложения остаются в сервисе. Телефон получает только выбранная компания.',
-    },
-    {
-        icon: '≋',
-        problem: 'Одна цена без откосов, другая с монтажом, третья примерная.',
-        solution:
-            'Карточки сравниваются по одной логике: цена, дата, гарантия и район.',
-    },
+const benefits = [
     {
         icon: '₽',
-        problem: 'Непонятно, почему цена выросла после замера.',
-        solution:
-            'Сервис сразу показывает диапазон и предупреждает, что точная цена после замера.',
+        title: 'Цены разных компаний',
+        description:
+            'Получите предварительные расчёты от нескольких компаний в одном месте.',
+    },
+    {
+        icon: '⇄',
+        title: 'Условия легко сравнить',
+        description:
+            'Сравнивайте стоимость, комплектацию, сроки, гарантию и рейтинг.',
     },
     {
         icon: '★',
-        problem: 'Сложно понять, кому можно доверять.',
-        solution:
-            'Видны рейтинг, отзывы, выполненные заказы, фото работ и гарантия.',
+        title: 'Проверенные исполнители',
+        description:
+            'Изучайте отзывы, фотографии работ и информацию о каждой компании.',
+    },
+    {
+        icon: '☎',
+        title: 'Без лишних звонков',
+        description:
+            'Ваш номер получит только та компания, которую вы выберете сами.',
     },
 ];
 
 const trustItems = [
     {
         number: '01',
-        title: 'Профиль компании проходит проверку',
-        text: 'В подбор попадают компании, которые прошли модерацию и заполнили услуги, районы работы и контакты.',
+        title: 'Профиль компании проходит модерацию',
     },
     {
         number: '02',
-        title: 'Цена остается предварительной',
-        text: 'Сервис показывает понятный диапазон, а не обещает финальную смету. Точная стоимость фиксируется после замера и согласования работ.',
+        title: 'Сервис не скрывает что цена предварительная',
     },
     {
         number: '03',
-        title: 'Телефон не уходит всем подряд',
-        text: 'Контакт получает только выбранная компания после заявки. Остальные предложения можно спокойно сравнить без массовых звонков.',
+        title: 'Контакт получает только выбранная компания после отправления заявки',
     },
     {
         number: '04',
-        title: 'Гарантия привязана к заявке',
-        text: 'Документы по выполненной работе хранятся рядом с заявкой, чтобы условия и контакты компании не потерялись.',
+        title: 'Дополнительно продлеваем гарантию',
     },
 ];
 
 const steps = [
     {
         title: 'Укажите задачу',
-        text: 'Выберите услугу, примерные размеры и оставьте телефон для связи.',
+        text: 'Выберите услугу, примерные размеры, тип фурнитуры и другие условия.',
     },
     {
         title: 'Сравните варианты',
-        text: 'Цена, рейтинг, дата, район работы и гарантия в одном списке.',
+        text: 'Сравните цену, рейтинг, сроки, район работы и гарантию в одном списке.',
     },
     {
         title: 'Выберите компанию',
-        text: 'Оставьте заявку и дождитесь подтверждения или другого времени.',
+        text: 'Оставьте заявку и дождитесь подтверждения.',
     },
 ];
 
 const priceFactors = [
     {
         icon: '↔',
-        title: 'Размер и количество створок',
-        text: 'Чем больше окно и больше створок, тем больше материалов и сложнее работа.',
+        title: 'Размер и количество',
+        text: 'Например, чем больше окно и больше створок, тем больше материалов и сложнее работа.',
     },
     {
         icon: '▣',
@@ -244,7 +240,7 @@ const priceFactors = [
     {
         icon: '⚙',
         title: 'Фурнитура',
-        text: 'Тип и состояние фурнитуры уточняются при осмотре.',
+        text: 'Тип и сложность работы с фурнитурой уточняются при осмотре.',
     },
     {
         icon: '⌂',
@@ -612,88 +608,41 @@ export default function OknaMarket() {
                                 </button>
                             </div>
                         </form>
-
-                        <div
-                            aria-label="Возможности сервиса"
-                            className="metrics"
-                        >
-                            <div className="metric-card">
-                                <strong>1</strong>
-                                <span>заявка вместо обзвона</span>
-                            </div>
-                            <div className="metric-card">
-                                <strong>5</strong>
-                                <span>основных видов услуг</span>
-                            </div>
-                            <div className="metric-card">
-                                <strong>Весь путь</strong>
-                                <span>сохраняется в кабинете</span>
-                            </div>
-                        </div>
                     </div>
                 </section>
 
-                <section className="problems-section">
-                    <div className="container">
-                        <div className="problems-header">
-                            <h2>
-                                Типичные сложности с окнами - и как сервис их
-                                убирает
-                            </h2>
-                            <p>
-                                Вместо хаотичных звонков и разных условий вы
-                                сразу видите подходящие услуги, районы работы и
-                                предварительную цену.
-                            </p>
-                        </div>
+<section className="benefits-section">
+    <div className="container">
+        <div className="benefits-header">
+            <span className="section-label">Удобный выбор</span>
 
-                        <div className="problem-grid">
-                            {problems.map((item, index) => (
-                                <article
-                                    className="problem-card"
-                                    key={item.problem}
-                                >
-                                    <div className="problem-card-top">
-                                        <div
-                                            aria-hidden="true"
-                                            className="problem-icon"
-                                        >
-                                            {item.icon}
-                                        </div>
-                                        <span className="problem-number">
-                                            {String(index + 1).padStart(2, '0')}
-                                        </span>
-                                    </div>
+            <h2>Сравните предложения и выберите лучшее</h2>
 
-                                    <div className="problem-copy">
-                                        <span className="card-label">
-                                            Проблема
-                                        </span>
-                                        <h3>{item.problem}</h3>
-                                    </div>
+            <p>
+                Один расчёт покажет цены и условия разных оконных компаний.
+                Сравнивайте предложения спокойно — без навязчивых звонков.
+            </p>
+        </div>
 
-                                    <div className="solution-copy">
-                                        <span className="card-label">
-                                            Решение
-                                        </span>
-                                        <p>{item.solution}</p>
-                                    </div>
-                                </article>
-                            ))}
-                        </div>
+        <div className="benefits-grid">
+            {benefits.map((item) => (
+                <article className="benefit-card" key={item.title}>
+                    <div aria-hidden="true" className="benefit-icon">
+                        {item.icon}
                     </div>
-                </section>
 
-                <section className="trust-section">
+                    <h3>{item.title}</h3>
+                    <p>{item.description}</p>
+                </article>
+            ))}
+        </div>
+    </div>
+</section>
+
+                <section className="">
                     <div className="container">
                         <div className="problems-header">
-                            <h2>Почему сервису можно доверять</h2>
-                            <p>
-                                Важные условия показываются до заявки:
-                                пользователь понимает, что цена предварительная,
-                                контакт получает выбранная компания, а история
-                                обращения сохраняется в кабинете.
-                            </p>
+                            <h2>Почему нам доверяют</h2>
                         </div>
 
                         <div className="trust-grid">
@@ -704,7 +653,7 @@ export default function OknaMarket() {
                                 >
                                     <span>{item.number}</span>
                                     <h3>{item.title}</h3>
-                                    <p>{item.text}</p>
+                                    {/* <p>{item.text}</p> */}
                                 </article>
                             ))}
                         </div>
@@ -1041,9 +990,7 @@ export default function OknaMarket() {
                 <section className="guarantee-section">
                     <div className="guarantee-box container">
                         <div>
-                            <span className="faq-kicker">
-                                Гарантия после выполнения
-                            </span>
+                            
                             <h2>
                                 Гарантия появляется в кабинете, когда заказ
                                 выполнен

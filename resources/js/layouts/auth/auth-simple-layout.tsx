@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { ArrowLeft, Search, ShieldCheck } from 'lucide-react';
+import { OknaMarketLogo } from '@/components/okna-market/okna-market-logo';
 import { home } from '@/routes';
 import type { AuthLayoutProps } from '@/types';
 
@@ -23,19 +24,7 @@ function Brand({ compact = false }: { compact?: boolean }) {
             className="inline-flex w-fit items-center gap-3 rounded-xl focus-visible:ring-4 focus-visible:ring-blue-500/25 focus-visible:outline-none"
             aria-label="ОкнаМаркет — на главную"
         >
-            <span
-                className={`grid place-items-center rounded-xl bg-blue-600 font-bold text-white shadow-lg shadow-blue-900/20 ${compact ? 'size-10 text-base' : 'size-11 text-lg'}`}
-                aria-hidden="true"
-            >
-                О
-            </span>
-            <span
-                className={
-                    compact ? 'text-sm font-bold' : 'text-base font-bold'
-                }
-            >
-                ОКНА<span className="text-blue-400">МАРКЕТ</span>
-            </span>
+            <OknaMarketLogo compact={compact} />
         </Link>
     );
 }

@@ -139,5 +139,22 @@
 
     body {
         @apply bg-background text-foreground;
+        background: linear-gradient(
+            135deg,
+            #eaf2ff 0%,
+            #f7fbff 42%,
+            #fff3e8 100%
+        );
+        background-attachment: fixed;
+    }
+
+    .dark body {
+        background: linear-gradient(
+            135deg,
+            #020617 0%,
+            #0f172a 46%,
+            #1e293b 100%
+        );
+        background-attachment: fixed;
     }
 }
