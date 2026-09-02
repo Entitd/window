@@ -487,7 +487,7 @@ export default function OknaMarket() {
 
                         <form
                             action="#"
-                            className="request-card"
+                            className="request-card hero-request-card"
                             method="get"
                             onSubmit={(event) => {
                                 event.preventDefault();
@@ -611,35 +611,68 @@ export default function OknaMarket() {
                     </div>
                 </section>
 
-<section className="benefits-section">
-    <div className="container">
-        <div className="benefits-header">
-            <span className="section-label">Удобный выбор</span>
-
-            <h2>Сравните предложения и выберите лучшее</h2>
-
-            <p>
-                Один расчёт покажет цены и условия разных оконных компаний.
-                Сравнивайте предложения спокойно — без навязчивых звонков.
-            </p>
-        </div>
-
-        <div className="benefits-grid">
-            {benefits.map((item) => (
-                <article className="benefit-card" key={item.title}>
-                    <div aria-hidden="true" className="benefit-icon">
-                        {item.icon}
-                    </div>
-
-                    <h3>{item.title}</h3>
-                    <p>{item.description}</p>
-                </article>
-            ))}
-        </div>
-    </div>
-</section>
-
                 <section className="">
+                    <div className="container">
+                        <div className="benefits-header">
+                            <div>
+                                {/* <span className="section-label">
+                                    Удобный выбор
+                                </span> */}
+
+                                <h2>Сравните предложения и выберите лучшее</h2>
+
+                                <p>
+                                    Один расчёт покажет цены и условия разных
+                                    оконных компаний. Сравнивайте предложения
+                                    спокойно - без навязчивых звонков.
+                                </p>
+                            </div>
+
+                            <div
+                                aria-label="Преимущества подбора"
+                                className="benefits-kpis"
+                            >
+                                <span>
+                                    <strong>1</strong>
+                                    заявка
+                                </span>
+                                <span>
+                                    <strong>5</strong>
+                                    услуг
+                                </span>
+                                <span>
+                                    <strong>0</strong>
+                                    спама
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="benefits-grid">
+                            {benefits.map((item, index) => (
+                                <article
+                                    className="benefit-card"
+                                    key={item.title}
+                                >
+                                    <span className="benefit-card-number">
+                                        {String(index + 1).padStart(2, '0')}
+                                    </span>
+
+                                    <div
+                                        aria-hidden="true"
+                                        className="benefit-icon"
+                                    >
+                                        {item.icon}
+                                    </div>
+
+                                    <h3>{item.title}</h3>
+                                    <p>{item.description}</p>
+                                </article>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
+                {/* <section className="">
                     <div className="container">
                         <div className="problems-header">
                             <h2>Почему нам доверяют</h2>
@@ -653,17 +686,16 @@ export default function OknaMarket() {
                                 >
                                     <span>{item.number}</span>
                                     <h3>{item.title}</h3>
-                                    {/* <p>{item.text}</p> */}
                                 </article>
                             ))}
                         </div>
                     </div>
-                </section>
+                </section> */}
 
                 <section className="catalog-section" id="companies">
                     <div className="container">
                         <div className="problems-header">
-                            <span className="eyebrow">Как выглядит подбор</span>
+                            {/* <span className="eyebrow">Как выглядит подбор</span> */}
                             <h2>
                                 Компании сравниваются по одинаковым параметрам
                             </h2>
@@ -990,7 +1022,6 @@ export default function OknaMarket() {
                 <section className="guarantee-section">
                     <div className="guarantee-box container">
                         <div>
-                            
                             <h2>
                                 Гарантия появляется в кабинете, когда заказ
                                 выполнен
