@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 import '../../../css/okna-market.css';
 import { MarketFooter } from './market-footer';
 import { MarketHeader } from './market-header';
+import { MarketThemeToggle } from './market-theme-toggle';
 import type { MarketActivePage } from './market-types';
 
 type Props = {
@@ -77,6 +78,7 @@ export function MarketShell({ activePage, children }: Props) {
             <main ref={mainRef}>{children}</main>
 
             <MarketFooter />
+            <MarketThemeToggle />
         </div>
     );
 }

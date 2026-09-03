@@ -12,9 +12,9 @@ export default function AppearanceToggleTab({
     const { appearance, updateAppearance } = useAppearance();
 
     const tabs: { value: Appearance; icon: LucideIcon; label: string }[] = [
-        { value: 'light', icon: Sun, label: 'Light' },
-        { value: 'dark', icon: Moon, label: 'Dark' },
-        { value: 'system', icon: Monitor, label: 'System' },
+        { value: 'light', icon: Sun, label: 'Светлая тема' },
+        { value: 'dark', icon: Moon, label: 'Тёмная тема' },
+        { value: 'system', icon: Monitor, label: 'Системная тема' },
     ];
 
     return (
@@ -27,17 +27,19 @@ export default function AppearanceToggleTab({
         >
             {tabs.map(({ value, icon: Icon, label }) => (
                 <button
+                    aria-label={label}
                     key={value}
                     onClick={() => updateAppearance(value)}
                     className={cn(
-                        'flex items-center rounded-md px-3.5 py-1.5 transition-colors',
+                        'flex flex-1 items-center justify-center rounded-md px-3.5 py-1.5 transition-colors',
                         appearance === value
                             ? 'bg-white shadow-xs dark:bg-neutral-700 dark:text-neutral-100'
                             : 'text-neutral-500 hover:bg-neutral-200/60 hover:text-black dark:text-neutral-400 dark:hover:bg-neutral-700/60',
                     )}
+                    title={label}
+                    type="button"
                 >
-                    <Icon className="-ml-1 h-4 w-4" />
-                    <span className="ml-1.5 text-sm">{label}</span>
+                    <Icon className="h-4 w-4" aria-hidden="true" />
                 </button>
             ))}
         </div>
