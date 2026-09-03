@@ -64,7 +64,7 @@ export function DashboardHero({
             <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
                 <div className="flex min-w-0 items-start gap-4">
                     {Icon && (
-                        <span className="hidden size-12 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-lg shadow-blue-900/15 sm:flex dark:bg-blue-500">
+                        <span className="hidden size-12 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-lg shadow-blue-900/15 sm:flex dark:bg-blue-500">
                             <Icon className="size-6" aria-hidden="true" />
                         </span>
                     )}
@@ -141,11 +141,11 @@ export function DashboardEmptyState({
     return (
         <div
             className={cn(
-                'flex min-h-64 flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-slate-300 bg-slate-50/80 p-6 text-center sm:p-8 dark:border-slate-700 dark:bg-slate-950/35',
+                'flex min-h-64 flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-slate-300 bg-slate-50/80 p-6 text-center sm:p-8 dark:border-slate-700 dark:bg-slate-950/35',
                 className,
             )}
         >
-            <span className="flex size-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/45 dark:text-blue-300">
+            <span className="flex size-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-950/45 dark:text-blue-300">
                 <Icon className="size-6" aria-hidden="true" />
             </span>
             <div className="max-w-md space-y-2">

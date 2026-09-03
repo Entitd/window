@@ -1,5 +1,10 @@
 .okna-market-page {
-    --header-height: 74px;
+    --header-height: 72px;
+    --control-height: 44px;
+    --control-height-sm: 36px;
+    --surface-radius: 16px;
+    --control-radius: 12px;
+    --compact-radius: 10px;
     --bg: #f7fbff;
     --surface: #ffffff;
     --surface-soft: #eaf2ff;
@@ -18,9 +23,9 @@
     --green: #12b76a;
     --shadow-sm: 0 10px 28px rgba(15, 23, 42, 0.05);
     --shadow-md: 0 18px 48px rgba(15, 23, 42, 0.08);
-    --radius-lg: 24px;
-    --radius-md: 16px;
-    --radius-sm: 10px;
+    --radius-lg: var(--surface-radius);
+    --radius-md: var(--control-radius);
+    --radius-sm: var(--compact-radius);
     --glass-border: rgba(255, 255, 255, 0.64);
     --glass-surface:
         linear-gradient(
@@ -49,7 +54,7 @@
     overflow-x: hidden;
     background: linear-gradient(135deg, #eaf2ff 0%, #f7fbff 42%, #fff3e8 100%);
     color: var(--text);
-    font-family: 'Instrument Sans', Inter, Arial, sans-serif;
+    font-family: var(--font-sans);
     scroll-behavior: smooth;
 }
 
@@ -187,6 +192,14 @@
     box-sizing: border-box;
 }
 
+.okna-market-page :is(h1, h2, h3, h4, strong) {
+    font-weight: var(--font-weight-heading);
+}
+
+.okna-market-page p {
+    font-weight: var(--font-weight-body);
+}
+
 .okna-market-page a,
 .okna-market-page button {
     color: inherit;
@@ -206,12 +219,12 @@
 }
 
 .okna-market-page .container {
-    width: min(1120px, calc(100% - 40px));
+    width: min(var(--page-max-width), calc(100% - (var(--page-gutter) * 2)));
     margin: 0 auto;
 }
 
 .okna-market-page .narrow {
-    width: min(760px, calc(100% - 40px));
+    width: min(47.5rem, calc(100% - (var(--page-gutter) * 2)));
 }
 
 .okna-market-page .site-header {
@@ -232,8 +245,8 @@
     bottom: 24px;
     left: 24px;
     z-index: 40;
-    width: 48px;
-    height: 48px;
+    width: var(--icon-button-size);
+    height: var(--icon-button-size);
     border: 1px solid var(--glass-border);
     border-radius: 50%;
     display: grid;
@@ -291,7 +304,7 @@
 
 .okna-market-page .header-inner {
     position: relative;
-    min-height: 74px;
+    min-height: var(--header-height);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -307,15 +320,15 @@
 
 .okna-market-page .brand {
     gap: 14px;
-    font-weight: 800;
+    font-weight: var(--font-weight-heading);
     letter-spacing: 0;
 }
 
 .okna-market-page .nav-toggle {
-    width: 44px;
-    height: 44px;
+    width: var(--control-height);
+    height: var(--control-height);
     border: 1px solid var(--line);
-    border-radius: 12px;
+    border-radius: var(--control-radius);
     display: none;
     flex-direction: column;
     align-items: center;
@@ -353,14 +366,14 @@
 .okna-market-page .main-nav {
     gap: 8px;
     color: var(--muted-strong);
-    font-size: 14px;
-    font-weight: 500;
+    font-size: var(--font-size-label);
+    font-weight: var(--font-weight-medium);
 }
 
 .okna-market-page .main-nav a,
 .okna-market-page .main-nav button {
     padding: 10px 12px;
-    border-radius: 10px;
+    border-radius: var(--compact-radius);
     transition:
         color 0.2s ease,
         background 0.2s ease;
@@ -386,24 +399,24 @@
     border-radius: 999px;
     background: var(--surface-soft);
     color: #124fc4;
-    font-weight: 700;
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .city-pill {
     padding: 8px 18px;
-    font-size: 13px;
+    font-size: var(--font-size-label);
 }
 
 .okna-market-page .btn {
-    min-height: 44px;
+    min-height: var(--control-height);
     padding: 0 24px;
     border: 0;
-    border-radius: 10px;
+    border-radius: var(--compact-radius);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     color: #fff;
-    font-weight: 700;
+    font-weight: var(--font-weight-heading);
     line-height: 1;
     text-align: center;
     transition:
@@ -436,10 +449,10 @@
 }
 
 .okna-market-page .btn-accent {
-    min-height: 50px;
+    min-height: var(--control-height);
     background: var(--accent);
     box-shadow: 0 10px 24px rgba(37, 99, 235, 0.18);
-    font-size: 15px;
+    font-size: var(--font-size-body);
 }
 
 .okna-market-page .full-width {
@@ -478,16 +491,16 @@
     max-width: 760px;
     margin: 0;
     color: var(--muted);
-    font-size: 16px;
+    font-size: var(--font-size-body);
     line-height: 1.65;
-    font-weight: 500;
+    font-weight: var(--font-weight-medium);
 }
 
 .okna-market-page .eyebrow {
     display: inline-flex;
     padding: 8px 18px;
     border: 1px solid var(--surface-soft);
-    font-size: 13px;
+    font-size: var(--font-size-label);
 }
 
 .okna-market-page .hero h1 {
@@ -495,7 +508,7 @@
     margin: 22px 0 34px;
     font-size: clamp(35px, 5vw, 58px);
     line-height: 1.08;
-    font-weight: 800;
+    font-weight: var(--font-weight-heading);
     letter-spacing: 0;
 }
 
@@ -623,7 +636,7 @@
 
 .okna-market-page .compact-card {
     padding: 24px;
-    border-radius: 24px;
+    border-radius: var(--surface-radius);
 }
 
 .okna-market-page .request-heading {
@@ -636,8 +649,8 @@
 .okna-market-page .request-heading p {
     margin: 10px 0 0;
     color: var(--primary-dark);
-    font-size: 18px;
-    font-weight: 800;
+    font-size: var(--font-size-title);
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .request-heading > span {
@@ -646,8 +659,8 @@
     background: var(--warning-bg);
     color: var(--warning-text);
     padding: 10px 14px;
-    font-size: 13px;
-    font-weight: 700;
+    font-size: var(--font-size-label);
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .request-card h2,
@@ -662,7 +675,7 @@
     color: var(--text);
     font-size: clamp(24px, 3vw, 34px);
     line-height: 1.2;
-    font-weight: 800;
+    font-weight: var(--font-weight-heading);
     letter-spacing: 0;
 }
 
@@ -689,8 +702,8 @@
     justify-content: center;
     background: rgba(255, 255, 255, 0.54);
     color: var(--muted-strong);
-    font-size: 13px;
-    font-weight: 700;
+    font-size: var(--font-size-label);
+    font-weight: var(--font-weight-heading);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.76);
     -webkit-backdrop-filter: blur(12px) saturate(150%);
     backdrop-filter: blur(12px) saturate(150%);
@@ -725,7 +738,7 @@
     padding: 9px 14px 9px 58px;
     position: relative;
     border: 1px solid rgba(255, 255, 255, 0.62);
-    border-radius: 12px;
+    border-radius: var(--control-radius);
     background: rgba(255, 255, 255, 0.5);
     box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.72),
@@ -756,19 +769,19 @@
     width: 36px;
     height: 36px;
     transform: translateY(-50%);
-    border-radius: 10px;
+    border-radius: var(--compact-radius);
     display: grid;
     place-items: center;
     background: var(--surface-soft);
     color: var(--primary);
-    font-family: Inter, sans-serif;
-    font-weight: 800;
+    font-family: var(--font-sans);
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .field-label {
     color: var(--muted);
-    font-size: 12px;
-    font-weight: 500;
+    font-size: var(--font-size-caption);
+    font-weight: var(--font-weight-medium);
 }
 
 .okna-market-page .field-card input,
@@ -780,8 +793,8 @@
     outline: 0;
     background: transparent;
     color: var(--text);
-    font-size: 13px;
-    font-weight: 700;
+    font-size: var(--font-size-label);
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .field-card textarea {
@@ -805,8 +818,8 @@
 .okna-market-page .file-field strong {
     margin-top: 3px;
     color: var(--text);
-    font-size: 13px;
-    font-weight: 700;
+    font-size: var(--font-size-label);
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .metrics {
@@ -831,16 +844,16 @@
 
 .okna-market-page .metric-card strong {
     display: block;
-    font-size: 32px;
+    font-size: var(--font-size-display);
     line-height: 1;
-    font-weight: 800;
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .metric-card span {
     margin-top: 10px;
     color: var(--muted);
-    font-size: 13px;
-    font-weight: 500;
+    font-size: var(--font-size-label);
+    font-weight: var(--font-weight-medium);
 }
 
 .okna-market-page .problems-section {
@@ -869,9 +882,9 @@
 .okna-market-page .problems-header p {
     max-width: 760px;
     color: var(--muted);
-    font-size: 16px;
+    font-size: var(--font-size-body);
     line-height: 1.65;
-    font-weight: 500;
+    font-weight: var(--font-weight-medium);
 }
 
 .okna-market-page .problem-grid {
@@ -905,7 +918,7 @@
     position: relative;
     overflow: hidden;
     border: 1px solid var(--line);
-    border-radius: 24px;
+    border-radius: var(--surface-radius);
     background: rgba(255, 255, 255, 0.9);
     box-shadow: var(--shadow-sm);
     display: flex;
@@ -949,15 +962,15 @@
     place-items: center;
     background: var(--surface-soft);
     color: var(--primary);
-    font-family: Inter, sans-serif;
-    font-size: 20px;
-    font-weight: 800;
+    font-family: var(--font-sans);
+    font-size: var(--font-size-heading);
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .problem-number {
     color: #98a2b3;
-    font-size: 14px;
-    font-weight: 800;
+    font-size: var(--font-size-label);
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .card-label {
@@ -967,14 +980,14 @@
     border-radius: 999px;
     background: var(--warning-bg);
     color: var(--warning-text);
-    font-size: 12px;
-    font-weight: 700;
+    font-size: var(--font-size-caption);
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .problem-card h3 {
     margin: 12px 0 0;
     color: var(--text);
-    font-size: 16px;
+    font-size: var(--font-size-body);
     line-height: 1.4;
 }
 
@@ -992,9 +1005,9 @@
 .okna-market-page .problem-card p {
     margin: 12px 0 0;
     color: var(--muted-strong);
-    font-size: 14px;
+    font-size: var(--font-size-label);
     line-height: 1.6;
-    font-weight: 500;
+    font-weight: var(--font-weight-medium);
 }
 
 .okna-market-page .trust-section {
@@ -1016,7 +1029,7 @@
     min-height: 246px;
     padding: 22px;
     border: 1px solid var(--line);
-    border-radius: 16px;
+    border-radius: var(--surface-radius);
     display: flex;
     flex-direction: column;
     background: rgba(255, 255, 255, 0.74);
@@ -1035,24 +1048,24 @@
     place-items: center;
     background: var(--surface-soft);
     color: var(--primary-dark);
-    font-family: Inter, sans-serif;
-    font-size: 13px;
-    font-weight: 800;
+    font-family: var(--font-sans);
+    font-size: var(--font-size-label);
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .trust-card h3 {
     margin: 22px 0 12px;
     color: var(--text);
-    font-size: 17px;
+    font-size: var(--font-size-title);
     line-height: 1.35;
 }
 
 .okna-market-page .trust-card p {
     margin: 0;
     color: var(--muted-strong);
-    font-size: 14px;
+    font-size: var(--font-size-label);
     line-height: 1.6;
-    font-weight: 500;
+    font-weight: var(--font-weight-medium);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1124,9 +1137,9 @@
 .okna-market-page .catalog-heading p {
     max-width: 780px;
     color: var(--muted);
-    font-size: 16px;
+    font-size: var(--font-size-body);
     line-height: 1.65;
-    font-weight: 500;
+    font-weight: var(--font-weight-medium);
 }
 
 .okna-market-page .catalog-demo-strip {
@@ -1140,7 +1153,7 @@
     min-height: 148px;
     padding: 16px;
     border: 1px solid var(--line);
-    border-radius: 12px;
+    border-radius: var(--control-radius);
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -1168,21 +1181,21 @@
 
 .okna-market-page .catalog-demo-step-number {
     color: var(--primary);
-    font-family: Inter, sans-serif;
-    font-size: 13px;
-    font-weight: 800;
+    font-family: var(--font-sans);
+    font-size: var(--font-size-label);
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .catalog-demo-step strong {
     color: var(--text);
-    font-size: 15px;
+    font-size: var(--font-size-body);
 }
 
 .okna-market-page .catalog-demo-step small {
     color: var(--muted);
-    font-size: 12px;
+    font-size: var(--font-size-caption);
     line-height: 1.45;
-    font-weight: 600;
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .catalog-demo-progress {
@@ -1211,12 +1224,12 @@
     margin: 0 0 22px;
     padding: 14px 18px;
     border: 1px solid rgba(36, 124, 255, 0.18);
-    border-radius: 18px;
+    border-radius: var(--surface-radius);
     background: var(--surface-soft);
     color: var(--primary-dark);
-    font-size: 14px;
+    font-size: var(--font-size-label);
     line-height: 1.55;
-    font-weight: 700;
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .catalog-layout {
@@ -1322,8 +1335,8 @@
     transform: rotate(-2deg);
     background: rgba(255, 255, 255, 0.9);
     color: rgba(23, 92, 211, 0.62);
-    font-size: 12px;
-    font-weight: 800;
+    font-size: var(--font-size-caption);
+    font-weight: var(--font-weight-heading);
     letter-spacing: 0.08em;
     text-transform: uppercase;
     box-shadow: var(--shadow-sm);
@@ -1331,7 +1344,7 @@
 
 .okna-market-page .filters-card {
     padding: 26px 22px;
-    border-radius: 16px;
+    border-radius: var(--surface-radius);
 }
 
 .okna-market-page .filters-card h3,
@@ -1340,15 +1353,15 @@
 }
 
 .okna-market-page .filters-card h3 {
-    font-size: 18px;
+    font-size: var(--font-size-title);
 }
 
 .okna-market-page .filters-caption {
     margin: 8px 0 0;
     color: var(--muted);
-    font-size: 13px;
+    font-size: var(--font-size-label);
     line-height: 1.5;
-    font-weight: 600;
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .filter-group {
@@ -1357,22 +1370,22 @@
 
 .okna-market-page .filter-group h4 {
     margin-bottom: 16px;
-    font-size: 15px;
+    font-size: var(--font-size-body);
 }
 
 .okna-market-page .price-range {
     min-height: 46px;
     padding: 0 16px;
     border: 1px solid var(--line);
-    border-radius: 10px;
+    border-radius: var(--compact-radius);
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 10px;
     background: rgba(248, 250, 252, 0.86);
     color: var(--muted-strong);
-    font-size: 13px;
-    font-weight: 700;
+    font-size: var(--font-size-label);
+    font-weight: var(--font-weight-heading);
 }
 
 .dark .okna-market-page .price-range {
@@ -1398,13 +1411,13 @@
 
 .okna-market-page .price-range-value small {
     color: var(--muted);
-    font-size: 11px;
-    font-weight: 700;
+    font-size: var(--font-size-caption);
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .price-range-value strong {
     color: var(--text);
-    font-size: 13px;
+    font-size: var(--font-size-label);
     white-space: nowrap;
 }
 
@@ -1435,9 +1448,9 @@
     align-items: center;
     gap: 12px;
     color: var(--muted-strong);
-    font-family: Inter, sans-serif;
-    font-size: 14px;
-    font-weight: 500;
+    font-family: var(--font-sans);
+    font-size: var(--font-size-label);
+    font-weight: var(--font-weight-medium);
     transition:
         color 0.2s ease,
         transform 0.2s ease;
@@ -1449,7 +1462,7 @@
 
 .okna-market-page .checkbox-row.demo-touched {
     color: var(--primary-dark);
-    font-weight: 800;
+    font-weight: var(--font-weight-heading);
     transform: translateX(3px);
 }
 
@@ -1473,8 +1486,8 @@
 .okna-market-page .checkbox-row input:checked::after {
     content: '✓';
     color: #fff;
-    font-size: 13px;
-    font-weight: 800;
+    font-size: var(--font-size-label);
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .sort-panel {
@@ -1482,7 +1495,7 @@
     margin-bottom: 10px;
     padding: 12px 16px;
     border: 1px solid var(--line);
-    border-radius: 12px;
+    border-radius: var(--control-radius);
     align-items: center;
     gap: 12px;
     background: rgba(255, 255, 255, 0.9);
@@ -1494,8 +1507,8 @@
 
 .okna-market-page .sort-panel > span {
     color: var(--muted);
-    font-size: 13px;
-    font-weight: 500;
+    font-size: var(--font-size-label);
+    font-weight: var(--font-weight-medium);
 }
 
 .okna-market-page .sort-chip {
@@ -1534,7 +1547,7 @@
     grid-template-columns: 70px minmax(0, 1fr) 152px;
     gap: 16px;
     padding: 16px;
-    border-radius: 12px;
+    border-radius: var(--control-radius);
 }
 
 .okna-market-page .company-card.selected {
@@ -1549,13 +1562,13 @@
 .okna-market-page .company-logo {
     width: 58px;
     height: 58px;
-    border-radius: 16px;
+    border-radius: var(--surface-radius);
     display: grid;
     place-items: center;
     color: var(--primary-dark);
-    font-family: Inter, sans-serif;
-    font-size: 21px;
-    font-weight: 800;
+    font-family: var(--font-sans);
+    font-size: var(--font-size-heading);
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .blue {
@@ -1572,15 +1585,15 @@
 
 .okna-market-page .company-info h3 {
     margin: 0 0 6px;
-    font-size: 18px;
+    font-size: var(--font-size-title);
 }
 
 .okna-market-page .company-info > p {
     margin: 0 0 12px;
     color: var(--muted);
-    font-size: 14px;
+    font-size: var(--font-size-label);
     line-height: 1.45;
-    font-weight: 500;
+    font-weight: var(--font-weight-medium);
 }
 
 .okna-market-page .company-tags {
@@ -1592,8 +1605,8 @@
 .okna-market-page .green-tag {
     padding: 7px 10px;
     border-radius: 999px;
-    font-size: 12px;
-    font-weight: 700;
+    font-size: var(--font-size-caption);
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .rating-tag {
@@ -1612,16 +1625,16 @@
     margin: 0;
     border-top: 1px solid var(--line);
     color: var(--muted-strong);
-    font-size: 12px;
-    font-weight: 600;
+    font-size: var(--font-size-caption);
+    font-weight: var(--font-weight-heading);
     list-style: none;
 }
 
 .okna-market-page .details-line {
     margin-top: 14px;
     color: var(--primary-dark);
-    font-size: 13px;
-    font-weight: 700;
+    font-size: var(--font-size-label);
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .company-action {
@@ -1632,34 +1645,34 @@
 
 .okna-market-page .company-action span {
     color: var(--muted);
-    font-size: 12px;
-    font-weight: 500;
+    font-size: var(--font-size-caption);
+    font-weight: var(--font-weight-medium);
 }
 
 .okna-market-page .company-action strong {
     margin: 6px 0 16px;
-    font-size: 20px;
+    font-size: var(--font-size-heading);
     white-space: nowrap;
 }
 
 .okna-market-page .company-action .btn {
     min-height: 40px;
     padding: 0 18px;
-    font-size: 14px;
+    font-size: var(--font-size-label);
 }
 
 .okna-market-page .selection-label {
     min-height: 40px;
     padding: 0 16px;
     border: 1px solid var(--line);
-    border-radius: 10px;
+    border-radius: var(--compact-radius);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     background: rgba(248, 250, 252, 0.86);
     color: var(--muted-strong);
-    font-size: 13px;
-    font-weight: 700;
+    font-size: var(--font-size-label);
+    font-weight: var(--font-weight-heading);
     white-space: nowrap;
 }
 
@@ -1753,7 +1766,7 @@
     margin: 20px 0 18px;
     font-size: clamp(32px, 4.5vw, 50px);
     line-height: 1.08;
-    font-weight: 800;
+    font-weight: var(--font-weight-heading);
     letter-spacing: 0;
 }
 
@@ -1764,7 +1777,7 @@
 .okna-market-page .summary-card {
     padding: 28px;
     border: 1px solid var(--line);
-    border-radius: 24px;
+    border-radius: var(--surface-radius);
     background: rgba(255, 255, 255, 0.9);
     box-shadow: var(--shadow-sm);
 }
@@ -1796,13 +1809,13 @@
 
 .okna-market-page .summary-item span {
     color: var(--muted);
-    font-size: 12px;
-    font-weight: 700;
+    font-size: var(--font-size-caption);
+    font-weight: var(--font-weight-heading);
     text-transform: uppercase;
 }
 
 .okna-market-page .summary-item strong {
-    font-size: 16px;
+    font-size: var(--font-size-body);
     line-height: 1.45;
 }
 
@@ -1819,7 +1832,7 @@
 .okna-market-page .calculator-card {
     padding: 28px;
     border: 1px solid var(--line);
-    border-radius: 24px;
+    border-radius: var(--surface-radius);
     background: rgba(255, 255, 255, 0.9);
     box-shadow: var(--shadow-sm);
 }
@@ -1838,7 +1851,7 @@
 .okna-market-page .calculator-total {
     min-height: 58px;
     padding: 12px 18px;
-    border-radius: 18px;
+    border-radius: var(--surface-radius);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -1849,14 +1862,14 @@
 .okna-market-page .calculator-total span,
 .okna-market-page .calculator-line-actions span {
     color: var(--muted);
-    font-size: 12px;
-    font-weight: 800;
+    font-size: var(--font-size-caption);
+    font-weight: var(--font-weight-heading);
     text-transform: uppercase;
 }
 
 .okna-market-page .calculator-total strong {
     color: var(--primary-dark);
-    font-size: 20px;
+    font-size: var(--font-size-heading);
     line-height: 1.25;
 }
 
@@ -1869,7 +1882,7 @@
 .okna-market-page .calculator-line {
     padding: 20px;
     border: 1px solid var(--line);
-    border-radius: 16px;
+    border-radius: var(--surface-radius);
     background: rgba(248, 250, 252, 0.86);
 }
 
@@ -1889,7 +1902,7 @@
 }
 
 .okna-market-page .calculator-line-header > strong {
-    font-size: 17px;
+    font-size: var(--font-size-title);
 }
 
 .okna-market-page .calculator-line-actions {
@@ -1926,7 +1939,7 @@
     width: 40px;
     height: 40px;
     border: 1px solid var(--line);
-    border-radius: 12px;
+    border-radius: var(--control-radius);
     display: grid;
     place-items: center;
     background: rgba(255, 255, 255, 0.88);
@@ -1940,7 +1953,7 @@
 .okna-market-page .request-created-card {
     padding: 30px;
     border: 1px solid var(--line);
-    border-radius: 24px;
+    border-radius: var(--surface-radius);
     background: rgba(255, 255, 255, 0.9);
     box-shadow: var(--shadow-sm);
 }
@@ -1954,7 +1967,7 @@
     margin: 0;
     font-size: clamp(24px, 3vw, 34px);
     line-height: 1.2;
-    font-weight: 800;
+    font-weight: var(--font-weight-heading);
     letter-spacing: 0;
 }
 
@@ -1963,7 +1976,7 @@
     margin: 12px 0 0;
     color: var(--muted);
     line-height: 1.65;
-    font-weight: 500;
+    font-weight: var(--font-weight-medium);
 }
 
 .okna-market-page .request-created-grid {
@@ -1990,14 +2003,14 @@
 
 .okna-market-page .request-created-item span {
     color: var(--muted);
-    font-size: 12px;
-    font-weight: 800;
+    font-size: var(--font-size-caption);
+    font-weight: var(--font-weight-heading);
     text-transform: uppercase;
 }
 
 .okna-market-page .request-created-item strong {
     color: var(--text);
-    font-size: 16px;
+    font-size: var(--font-size-body);
     line-height: 1.45;
 }
 
@@ -2012,8 +2025,8 @@
 .okna-market-page .results-count {
     margin-bottom: 14px;
     color: var(--muted);
-    font-size: 14px;
-    font-weight: 700;
+    font-size: var(--font-size-label);
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .section-copy {
@@ -2063,17 +2076,17 @@
 .okna-market-page .benefits-header h2 {
     max-width: 680px;
     margin: 14px 0 14px;
-    font-size: clamp(30px, 4vw, 46px);
-    line-height: 1.08;
+    font-size: clamp(24px, 3vw, 34px);
+    line-height: 1.2;
 }
 
 .okna-market-page .benefits-header p {
     max-width: 650px;
     margin: 0;
     color: var(--muted-strong);
-    font-size: 16px;
+    font-size: var(--font-size-body);
     line-height: 1.65;
-    font-weight: 600;
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .benefits-kpis {
@@ -2095,8 +2108,8 @@
         inset 0 1px 0 rgba(255, 255, 255, 0.72),
         0 12px 28px rgba(15, 23, 42, 0.05);
     color: var(--muted);
-    font-size: 12px;
-    font-weight: 800;
+    font-size: var(--font-size-caption);
+    font-weight: var(--font-weight-heading);
     text-transform: uppercase;
     -webkit-backdrop-filter: blur(14px) saturate(150%);
     backdrop-filter: blur(14px) saturate(150%);
@@ -2109,8 +2122,8 @@
 
 .okna-market-page .benefits-kpis strong {
     color: var(--primary-dark);
-    font-family: Inter, sans-serif;
-    font-size: 24px;
+    font-family: var(--font-sans);
+    font-size: var(--font-size-section);
     line-height: 1;
 }
 
@@ -2136,7 +2149,7 @@
     min-height: 236px;
     padding: 24px;
     border: 1px solid rgba(255, 255, 255, 0.62);
-    border-radius: 16px;
+    border-radius: var(--surface-radius);
     display: grid;
     align-content: start;
     gap: 14px;
@@ -2215,10 +2228,10 @@
     top: 18px;
     right: 20px;
     color: rgba(37, 99, 235, 0.22);
-    font-family: Inter, sans-serif;
-    font-size: 34px;
+    font-family: var(--font-sans);
+    font-size: var(--font-size-display);
     line-height: 1;
-    font-weight: 800;
+    font-weight: var(--font-weight-heading);
 }
 
 .dark .okna-market-page .benefit-card-number {
@@ -2240,9 +2253,9 @@
         ),
         var(--surface-soft);
     color: var(--primary-dark);
-    font-family: Inter, sans-serif;
-    font-size: 22px;
-    font-weight: 800;
+    font-family: var(--font-sans);
+    font-size: var(--font-size-section);
+    font-weight: var(--font-weight-heading);
     box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.9),
         0 10px 24px rgba(37, 99, 235, 0.12);
@@ -2260,17 +2273,17 @@
     max-width: 210px;
     margin: 8px 0 0;
     color: var(--text);
-    font-size: 19px;
+    font-size: var(--font-size-heading);
     line-height: 1.25;
-    font-weight: 800;
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .benefit-card p {
     margin: 0;
     color: var(--muted-strong);
-    font-size: 15px;
+    font-size: var(--font-size-body);
     line-height: 1.65;
-    font-weight: 600;
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .vendor-cta-section {
@@ -2280,7 +2293,7 @@
 .okna-market-page .vendor-cta {
     padding: 34px 38px;
     border: 1px solid var(--line);
-    border-radius: 24px;
+    border-radius: var(--surface-radius);
     display: grid;
     grid-template-columns: minmax(0, 1fr) 320px;
     gap: 28px;
@@ -2302,9 +2315,9 @@
 .okna-market-page .vendor-note,
 .okna-market-page .hero-note {
     color: var(--muted);
-    font-size: 13px;
+    font-size: var(--font-size-label);
     line-height: 1.6;
-    font-weight: 600;
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .hero-side-card {
@@ -2323,15 +2336,15 @@
     display: block;
     margin-bottom: 14px;
     color: var(--primary-dark);
-    font-size: 12px;
-    font-weight: 800;
+    font-size: var(--font-size-caption);
+    font-weight: var(--font-weight-heading);
     text-transform: uppercase;
 }
 
 .okna-market-page .hero-side-card strong {
     display: block;
     margin-bottom: 14px;
-    font-size: 24px;
+    font-size: var(--font-size-section);
     line-height: 1.15;
 }
 
@@ -2342,7 +2355,7 @@
     display: grid;
     gap: 10px;
     line-height: 1.6;
-    font-weight: 600;
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .steps-grid-wide {
@@ -2354,11 +2367,11 @@
     min-height: 48px;
     padding: 0 14px;
     border: 1px solid var(--line);
-    border-radius: 10px;
+    border-radius: var(--compact-radius);
     background: rgba(248, 250, 252, 0.86);
     color: var(--muted-strong);
-    font-size: 14px;
-    font-weight: 600;
+    font-size: var(--font-size-label);
+    font-weight: var(--font-weight-heading);
 }
 
 .dark .okna-market-page .select-input {
@@ -2374,7 +2387,7 @@
 .okna-market-page .step-card {
     min-height: 160px;
     padding: 26px;
-    border-radius: 18px;
+    border-radius: var(--surface-radius);
 }
 
 .okna-market-page .step-card span {
@@ -2386,22 +2399,22 @@
     place-items: center;
     background: var(--surface-soft);
     color: var(--primary-dark);
-    font-family: Inter, sans-serif;
-    font-size: 24px;
-    font-weight: 800;
+    font-family: var(--font-sans);
+    font-size: var(--font-size-section);
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .step-card h3 {
     margin: 0 0 12px;
-    font-size: 16px;
+    font-size: var(--font-size-body);
 }
 
 .okna-market-page .step-card p {
     margin: 0;
     color: var(--muted);
-    font-size: 14px;
+    font-size: var(--font-size-label);
     line-height: 1.6;
-    font-weight: 500;
+    font-weight: var(--font-weight-medium);
 }
 
 .okna-market-page .status-section h2,
@@ -2422,14 +2435,14 @@
     min-height: 64px;
     padding: 14px;
     border: 1px solid var(--line);
-    border-radius: 12px;
+    border-radius: var(--control-radius);
     display: flex;
     align-items: center;
     gap: 12px;
     background: rgba(255, 255, 255, 0.9);
     color: var(--muted-strong);
-    font-size: 14px;
-    font-weight: 700;
+    font-size: var(--font-size-label);
+    font-weight: var(--font-weight-heading);
 }
 
 .dark .okna-market-page .status-card {
@@ -2439,13 +2452,13 @@
 .okna-market-page .status-card span {
     width: 32px;
     height: 32px;
-    border-radius: 10px;
+    border-radius: var(--compact-radius);
     display: grid;
     place-items: center;
     background: #f8fafc;
     color: var(--primary-dark);
-    font-family: Inter, sans-serif;
-    font-weight: 800;
+    font-family: var(--font-sans);
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .status-card.active {
@@ -2462,7 +2475,7 @@
     margin-top: 18px;
     padding: 22px;
     border: 1px solid var(--line);
-    border-radius: 16px;
+    border-radius: var(--surface-radius);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -2476,14 +2489,14 @@
 
 .okna-market-page .request-summary strong {
     display: block;
-    font-size: 20px;
+    font-size: var(--font-size-heading);
 }
 
 .okna-market-page .request-summary p {
     margin: 6px 0 0;
     color: var(--muted);
-    font-size: 14px;
-    font-weight: 600;
+    font-size: var(--font-size-label);
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .price-grid {
@@ -2496,7 +2509,7 @@
 .okna-market-page .price-card {
     min-height: 210px;
     padding: 22px;
-    border-radius: 18px;
+    border-radius: var(--surface-radius);
     text-align: center;
 }
 
@@ -2504,33 +2517,33 @@
     width: 72px;
     height: 62px;
     margin: 0 auto 18px;
-    border-radius: 18px;
+    border-radius: var(--surface-radius);
     display: grid;
     place-items: center;
     background: var(--surface-soft);
     color: var(--primary-dark);
-    font-family: Inter, sans-serif;
-    font-size: 24px;
-    font-weight: 800;
+    font-family: var(--font-sans);
+    font-size: var(--font-size-section);
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .price-card h3 {
     margin: 0 0 12px;
-    font-size: 15px;
+    font-size: var(--font-size-body);
 }
 
 .okna-market-page .price-card p {
     margin: 0;
     color: var(--muted);
-    font-size: 13px;
+    font-size: var(--font-size-label);
     line-height: 1.6;
-    font-weight: 500;
+    font-weight: var(--font-weight-medium);
 }
 
 .okna-market-page .guarantee-box {
     padding: 34px 42px 40px;
     border: 1px solid var(--line);
-    border-radius: 24px;
+    border-radius: var(--surface-radius);
     display: grid;
     grid-template-columns: minmax(0, 1fr) 300px;
     gap: 30px;
@@ -2548,23 +2561,23 @@
     margin: 12px 0 0;
     color: var(--muted);
     line-height: 1.6;
-    font-weight: 500;
+    font-weight: var(--font-weight-medium);
 }
 
 .okna-market-page .guarantee-card {
     padding: 22px;
-    border-radius: 24px;
+    border-radius: var(--surface-radius);
     display: grid;
     gap: 12px;
     background: var(--surface-soft);
     color: var(--muted-strong);
-    font-size: 14px;
-    font-weight: 700;
+    font-size: var(--font-size-label);
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .guarantee-card strong {
     color: var(--text);
-    font-size: 20px;
+    font-size: var(--font-size-heading);
 }
 
 .okna-market-page .faq-section {
@@ -2585,7 +2598,7 @@
 .okna-market-page .contacts-card {
     padding: 28px;
     border: 1px solid var(--line);
-    border-radius: 24px;
+    border-radius: var(--surface-radius);
     background: rgba(255, 255, 255, 0.9);
     box-shadow: var(--shadow-sm);
     backdrop-filter: blur(18px);
@@ -2599,9 +2612,9 @@
 .okna-market-page .faq-group-card h2,
 .okna-market-page .contacts-card h2 {
     margin: 0 0 18px;
-    font-size: 24px;
+    font-size: var(--font-size-section);
     line-height: 1.2;
-    font-weight: 800;
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .contacts-layout {
@@ -2632,13 +2645,13 @@
 
 .okna-market-page .contacts-item span {
     color: var(--muted);
-    font-size: 12px;
-    font-weight: 700;
+    font-size: var(--font-size-caption);
+    font-weight: var(--font-weight-heading);
     text-transform: uppercase;
 }
 
 .okna-market-page .contacts-item strong {
-    font-size: 18px;
+    font-size: var(--font-size-title);
     line-height: 1.45;
 }
 
@@ -2664,12 +2677,12 @@
 .okna-market-page .map-placeholder span,
 .okna-market-page .contacts-note {
     color: var(--muted);
-    font-size: 13px;
-    font-weight: 700;
+    font-size: var(--font-size-label);
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .map-placeholder strong {
-    font-size: 22px;
+    font-size: var(--font-size-section);
     line-height: 1.2;
 }
 
@@ -2678,7 +2691,7 @@
     margin: 0;
     color: var(--muted-strong);
     line-height: 1.6;
-    font-weight: 600;
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .contacts-form {
@@ -2705,7 +2718,7 @@
     display: block;
     margin-bottom: 8px;
     color: var(--text);
-    font-weight: 800;
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .faq-section h2 {
@@ -2729,8 +2742,8 @@
     display: flex;
     align-items: center;
     color: var(--text);
-    font-size: 15px;
-    font-weight: 600;
+    font-size: var(--font-size-body);
+    font-weight: var(--font-weight-heading);
     cursor: pointer;
     list-style: none;
 }
@@ -2744,8 +2757,8 @@
     position: absolute;
     right: 24px;
     color: var(--primary-dark);
-    font-size: 22px;
-    font-weight: 600;
+    font-size: var(--font-size-section);
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .faq-list details[open] summary::after {
@@ -2756,9 +2769,9 @@
     margin: 0;
     padding: 0 26px 24px;
     color: var(--muted);
-    font-size: 14px;
+    font-size: var(--font-size-label);
     line-height: 1.7;
-    font-weight: 500;
+    font-weight: var(--font-weight-medium);
 }
 
 .okna-market-page .metric-card,
@@ -2892,9 +2905,9 @@
     max-width: 340px;
     margin: 0;
     color: var(--muted);
-    font-size: 13px;
+    font-size: var(--font-size-label);
     line-height: 1.65;
-    font-weight: 500;
+    font-weight: var(--font-weight-medium);
 }
 
 .okna-market-page .footer-column {
@@ -2902,14 +2915,14 @@
     align-content: start;
     gap: 12px;
     color: var(--muted);
-    font-size: 13px;
-    font-weight: 600;
+    font-size: var(--font-size-label);
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .footer-column strong {
     margin-bottom: 4px;
     color: var(--text);
-    font-size: 13px;
+    font-size: var(--font-size-label);
 }
 
 .okna-market-page .footer-column a:hover {
@@ -2925,8 +2938,8 @@
     align-items: center;
     gap: 18px;
     color: var(--muted);
-    font-size: 12px;
-    font-weight: 600;
+    font-size: var(--font-size-caption);
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .footer-copyright {
@@ -2937,8 +2950,8 @@
     grid-column: 3;
     justify-self: end;
     opacity: 0.35;
-    font-size: 10px;
-    font-weight: 500;
+    font-size: var(--font-size-caption);
+    font-weight: var(--font-weight-medium);
 }
 
 .okna-market-page .footer-inner {
@@ -2948,8 +2961,8 @@
     justify-content: space-between;
     gap: 18px;
     color: var(--muted);
-    font-size: 13px;
-    font-weight: 700;
+    font-size: var(--font-size-label);
+    font-weight: var(--font-weight-heading);
 }
 
 .okna-market-page .footer-inner div {
@@ -2960,6 +2973,26 @@
 
 .okna-market-page .footer-inner a:hover {
     color: var(--primary-dark);
+}
+
+/* Supporting copy has one weight regardless of the section it belongs to. */
+.okna-market-page .section-copy p,
+.okna-market-page .vendor-cta p,
+.okna-market-page .problems-header p,
+.okna-market-page .problem-card p,
+.okna-market-page .trust-card p,
+.okna-market-page .catalog-heading p,
+.okna-market-page .company-info > p,
+.okna-market-page .request-created-card p,
+.okna-market-page .benefits-header p,
+.okna-market-page .benefit-card p,
+.okna-market-page .step-card p,
+.okna-market-page .price-card p,
+.okna-market-page .guarantee-box p,
+.okna-market-page .map-placeholder p,
+.okna-market-page .faq-list details p,
+.okna-market-page .footer-brand-block p {
+    font-weight: var(--font-weight-body);
 }
 
 @media (max-width: 1060px) {
@@ -2977,7 +3010,7 @@
         width: min(360px, calc(100vw - 40px));
         padding: 12px;
         border: 1px solid var(--line);
-        border-radius: 16px;
+        border-radius: var(--surface-radius);
         flex-direction: column;
         align-items: stretch;
         gap: 4px;
@@ -2995,7 +3028,7 @@
 
     .okna-market-page .main-nav a {
         padding: 12px 14px;
-        border-radius: 12px;
+        border-radius: var(--control-radius);
     }
 
     .okna-market-page .main-nav a:hover,
@@ -3137,14 +3170,14 @@
         width: 100%;
         min-height: 38px;
         padding: 0 12px;
-        font-size: 12px;
+        font-size: var(--font-size-caption);
         line-height: 1.2;
         white-space: nowrap;
     }
 
     .okna-market-page .city-pill {
         padding: 7px 12px;
-        font-size: 12px;
+        font-size: var(--font-size-caption);
     }
 
     .okna-market-page .hero {
@@ -3154,7 +3187,7 @@
     .okna-market-page .hero h1 {
         margin-bottom: 24px;
         max-width: 100%;
-        font-size: 28px;
+        font-size: var(--font-size-display-sm);
         line-height: 1.18;
         letter-spacing: 0;
         overflow-wrap: break-word;
@@ -3163,7 +3196,7 @@
     .okna-market-page .page-title {
         width: 100%;
         max-width: 100%;
-        font-size: 24px;
+        font-size: var(--font-size-section);
         line-height: 1.18;
         letter-spacing: 0;
         overflow-wrap: break-word;
@@ -3189,11 +3222,11 @@
 
     .okna-market-page .request-card {
         padding: 22px;
-        border-radius: 24px;
+        border-radius: var(--surface-radius);
     }
 
     .okna-market-page .request-heading p {
-        font-size: 16px;
+        font-size: var(--font-size-body);
         line-height: 1.35;
         overflow-wrap: break-word;
     }
@@ -3242,8 +3275,8 @@
     }
 
     .okna-market-page .benefits-header h2 {
-        font-size: 28px;
-        line-height: 1.14;
+        font-size: clamp(24px, 3vw, 34px);
+        line-height: 1.2;
     }
 
     .okna-market-page .benefits-kpis {
@@ -3283,7 +3316,7 @@
 
     .okna-market-page .guarantee-box {
         padding: 26px 20px;
-        border-radius: 24px;
+        border-radius: var(--surface-radius);
     }
 
     .okna-market-page .summary-card,
@@ -3295,11 +3328,11 @@
     .okna-market-page .faq-group-card,
     .okna-market-page .contacts-card {
         padding: 22px;
-        border-radius: 24px;
+        border-radius: var(--surface-radius);
     }
 
     .okna-market-page .calculator-total strong {
-        font-size: 17px;
+        font-size: var(--font-size-title);
     }
 
     .okna-market-page .summary-actions {

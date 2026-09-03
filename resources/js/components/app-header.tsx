@@ -71,7 +71,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
     return (
         <>
             <div className="sticky top-0 z-30 border-b border-white/65 bg-white/60 shadow-[0_8px_30px_rgba(15,23,42,0.05)] backdrop-blur-xl backdrop-saturate-150 dark:border-white/10 dark:bg-slate-900/60 dark:shadow-black/20">
-                <div className="mx-auto flex h-16 items-center px-4 md:max-w-7xl">
+                <div className="mx-auto flex h-16 items-center px-4 md:max-w-[1120px]">
                     {/* Mobile Menu */}
                     <div className="lg:hidden">
                         <Sheet>
@@ -79,7 +79,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="mr-2 h-[34px] w-[34px]"
+                                    className="mr-2 size-9"
                                 >
                                     <Menu className="h-5 w-5" />
                                 </Button>
@@ -243,7 +243,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
             </div>
             {breadcrumbs.length > 1 && (
                 <div className="flex w-full border-b border-sidebar-border/70">
-                    <div className="mx-auto flex h-12 w-full items-center justify-start px-4 text-neutral-500 md:max-w-7xl">
+                    <div className="mx-auto flex h-12 w-full items-center justify-start px-4 text-neutral-500 md:max-w-[1120px]">
                         <Breadcrumbs breadcrumbs={breadcrumbs} />
                     </div>
                 </div>

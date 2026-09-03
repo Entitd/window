@@ -438,7 +438,7 @@ export default function VendorRequestsPage({
 
                                     return (
                                         <div
-                                            className="rounded-xl border border-border/70 bg-muted/15 p-4"
+                                            className="rounded-2xl border border-border/70 bg-muted/15 p-4"
                                             key={item.status}
                                         >
                                             <div className="flex items-center justify-between gap-3">
@@ -504,7 +504,7 @@ export default function VendorRequestsPage({
                                         </div>
 
                                         <div className="space-y-3 text-sm">
-                                            <div className="flex items-start gap-3 rounded-xl bg-muted/50 p-4">
+                                            <div className="flex items-start gap-3 rounded-2xl bg-muted/50 p-4">
                                                 <MapPinned
                                                     className="mt-0.5 size-4 text-muted-foreground"
                                                     aria-hidden="true"
@@ -520,7 +520,7 @@ export default function VendorRequestsPage({
                                                     </p>
                                                 </div>
                                             </div>
-                                            <div className="flex items-start gap-3 rounded-xl bg-muted/50 p-4">
+                                            <div className="flex items-start gap-3 rounded-2xl bg-muted/50 p-4">
                                                 <CalendarDays
                                                     className="mt-0.5 size-4 text-muted-foreground"
                                                     aria-hidden="true"
@@ -536,7 +536,7 @@ export default function VendorRequestsPage({
                                                     </p>
                                                 </div>
                                             </div>
-                                            <div className="flex items-start gap-3 rounded-xl bg-muted/50 p-4">
+                                            <div className="flex items-start gap-3 rounded-2xl bg-muted/50 p-4">
                                                 <Ruler
                                                     className="mt-0.5 size-4 text-muted-foreground"
                                                     aria-hidden="true"
@@ -551,7 +551,7 @@ export default function VendorRequestsPage({
                                                     </p>
                                                 </div>
                                             </div>
-                                            <div className="flex items-start gap-3 rounded-xl bg-muted/50 p-4">
+                                            <div className="flex items-start gap-3 rounded-2xl bg-muted/50 p-4">
                                                 <BadgeDollarSign
                                                     className="mt-0.5 size-4 text-muted-foreground"
                                                     aria-hidden="true"
@@ -567,7 +567,7 @@ export default function VendorRequestsPage({
                                                     </p>
                                                 </div>
                                             </div>
-                                            <div className="flex items-start gap-3 rounded-xl bg-muted/50 p-4">
+                                            <div className="flex items-start gap-3 rounded-2xl bg-muted/50 p-4">
                                                 <MessageSquareText
                                                     className="mt-0.5 size-4 text-muted-foreground"
                                                     aria-hidden="true"
@@ -586,7 +586,7 @@ export default function VendorRequestsPage({
                                                     </p>
                                                 </div>
                                             </div>
-                                            <div className="flex items-start gap-3 rounded-xl bg-muted/50 p-4">
+                                            <div className="flex items-start gap-3 rounded-2xl bg-muted/50 p-4">
                                                 <ClipboardList
                                                     className="mt-0.5 size-4 text-muted-foreground"
                                                     aria-hidden="true"
@@ -704,7 +704,7 @@ export default function VendorRequestsPage({
                                         )}
                                     </>
                                 ) : (
-                                    <div className="rounded-xl border border-dashed border-sidebar-border/70 p-6 text-sm text-muted-foreground dark:border-sidebar-border">
+                                    <div className="rounded-2xl border border-dashed border-sidebar-border/70 p-6 text-sm text-muted-foreground dark:border-sidebar-border">
                                         Выберите заявку слева, чтобы увидеть
                                         детали.
                                     </div>

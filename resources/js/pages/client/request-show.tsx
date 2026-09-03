@@ -226,7 +226,7 @@ export default function ClientRequestShow() {
                     description={`Создана ${request.createdAt} · ${auth.user.name}. Статус, параметры и история заказа собраны на одной странице.`}
                     actions={
                         <>
-                            <div className="min-w-48 rounded-xl border border-border/70 bg-background/80 px-4 py-3 shadow-xs">
+                            <div className="min-w-48 rounded-2xl border border-border/70 bg-background/80 px-4 py-3 shadow-xs">
                                 <p className="text-xs font-medium text-muted-foreground">
                                     Предварительная цена
                                 </p>
@@ -295,7 +295,7 @@ export default function ClientRequestShow() {
 
                                         return (
                                             <div
-                                                className="rounded-xl bg-muted/50 p-4"
+                                                className="rounded-2xl bg-muted/50 p-4"
                                                 key={step.key}
                                             >
                                                 <div className="flex items-center justify-between gap-3">
@@ -330,7 +330,7 @@ export default function ClientRequestShow() {
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="grid gap-4 md:grid-cols-2">
-                                <div className="rounded-xl bg-muted/50 p-4">
+                                <div className="rounded-2xl bg-muted/50 p-4">
                                     <p className="text-sm text-muted-foreground">
                                         Город
                                     </p>
@@ -338,7 +338,7 @@ export default function ClientRequestShow() {
                                         {request.city}
                                     </p>
                                 </div>
-                                <div className="rounded-xl bg-muted/50 p-4">
+                                <div className="rounded-2xl bg-muted/50 p-4">
                                     <p className="text-sm text-muted-foreground">
                                         Район / адрес
                                     </p>
@@ -347,7 +347,7 @@ export default function ClientRequestShow() {
                                         {request.address}
                                     </p>
                                 </div>
-                                <div className="rounded-xl bg-muted/50 p-4">
+                                <div className="rounded-2xl bg-muted/50 p-4">
                                     <p className="text-sm text-muted-foreground">
                                         Услуга
                                     </p>
@@ -355,7 +355,7 @@ export default function ClientRequestShow() {
                                         {request.service}
                                     </p>
                                 </div>
-                                <div className="rounded-xl bg-muted/50 p-4">
+                                <div className="rounded-2xl bg-muted/50 p-4">
                                     <p className="text-sm text-muted-foreground">
                                         Выбранная компания
                                     </p>
@@ -363,7 +363,7 @@ export default function ClientRequestShow() {
                                         {request.company ?? 'Не назначена'}
                                     </p>
                                 </div>
-                                <div className="rounded-xl bg-muted/50 p-4 md:col-span-2">
+                                <div className="rounded-2xl bg-muted/50 p-4 md:col-span-2">
                                     <p className="text-sm text-muted-foreground">
                                         Дополнительные работы
                                     </p>
@@ -372,7 +372,7 @@ export default function ClientRequestShow() {
                                             'Не указаны'}
                                     </p>
                                 </div>
-                                <div className="rounded-xl bg-muted/50 p-4 md:col-span-2">
+                                <div className="rounded-2xl bg-muted/50 p-4 md:col-span-2">
                                     <p className="text-sm text-muted-foreground">
                                         Комментарий клиента
                                     </p>
@@ -637,7 +637,7 @@ export default function ClientRequestShow() {
                             <CardContent className="space-y-4">
                                 {request.history.map((item) => (
                                     <div
-                                        className="rounded-xl border border-border/70 bg-muted/15 p-4"
+                                        className="rounded-2xl border border-border/70 bg-muted/15 p-4"
                                         key={`${item.label}-${item.timestamp}`}
                                     >
                                         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -724,7 +724,7 @@ export default function ClientRequestShow() {
                                 <CardTitle>Что происходит сейчас</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4 text-sm">
-                                <div className="flex items-start gap-3 rounded-xl bg-muted/50 p-4">
+                                <div className="flex items-start gap-3 rounded-2xl bg-muted/50 p-4">
                                     <Clock3
                                         className="mt-0.5 size-4 text-muted-foreground"
                                         aria-hidden="true"
@@ -740,7 +740,7 @@ export default function ClientRequestShow() {
                                         </p>
                                     </div>
                                 </div>
-                                <div className="flex items-start gap-3 rounded-xl bg-muted/50 p-4">
+                                <div className="flex items-start gap-3 rounded-2xl bg-muted/50 p-4">
                                     <MessageSquareText
                                         className="mt-0.5 size-4 text-muted-foreground"
                                         aria-hidden="true"
@@ -755,7 +755,7 @@ export default function ClientRequestShow() {
                                         </p>
                                     </div>
                                 </div>
-                                <div className="flex items-start gap-3 rounded-xl bg-muted/50 p-4">
+                                <div className="flex items-start gap-3 rounded-2xl bg-muted/50 p-4">
                                     <CircleAlert
                                         className="mt-0.5 size-4 text-muted-foreground"
                                         aria-hidden="true"

@@ -359,7 +359,7 @@ export default function VendorProfilePage() {
 
                                 {profileChecklist.map((item) => (
                                     <div
-                                        className="rounded-xl bg-muted/50 p-3"
+                                        className="rounded-2xl bg-muted/50 p-3"
                                         key={item.title}
                                     >
                                         <div className="flex items-center justify-between gap-3">
@@ -391,7 +391,7 @@ export default function VendorProfilePage() {
                                 <CardTitle>Модерация</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                <div className="flex items-start gap-3 rounded-xl bg-muted/50 p-4">
+                                <div className="flex items-start gap-3 rounded-2xl bg-muted/50 p-4">
                                     <ShieldCheck
                                         className="mt-0.5 size-4 text-muted-foreground"
                                         aria-hidden="true"
@@ -408,7 +408,7 @@ export default function VendorProfilePage() {
                                     </div>
                                 </div>
 
-                                <div className="flex items-start gap-3 rounded-xl bg-muted/50 p-4">
+                                <div className="flex items-start gap-3 rounded-2xl bg-muted/50 p-4">
                                     <Phone
                                         className="mt-0.5 size-4 text-muted-foreground"
                                         aria-hidden="true"
@@ -423,7 +423,7 @@ export default function VendorProfilePage() {
                                     </div>
                                 </div>
 
-                                <div className="flex items-start gap-3 rounded-xl bg-muted/50 p-4">
+                                <div className="flex items-start gap-3 rounded-2xl bg-muted/50 p-4">
                                     <CircleAlert
                                         className="mt-0.5 size-4 text-muted-foreground"
                                         aria-hidden="true"
@@ -465,7 +465,7 @@ export default function VendorProfilePage() {
                                         </p>
                                     </div>
                                 </div>
-                                <div className="rounded-xl border border-border/70 bg-background/70 p-3 text-sm text-muted-foreground">
+                                <div className="rounded-2xl border border-border/70 bg-background/70 p-3 text-sm text-muted-foreground">
                                     {districts.length > 0
                                         ? `Работает в районах: ${districts.join(', ')}`
                                         : 'Районы работы не указаны'}

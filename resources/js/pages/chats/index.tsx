@@ -39,7 +39,7 @@ type ChatsIndexProps = {
 
 function EmptyChatsState() {
     return (
-        <div className="flex min-h-[360px] flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-sidebar-border/70 p-8 text-center dark:border-sidebar-border">
+        <div className="flex min-h-[360px] flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-sidebar-border/70 p-8 text-center dark:border-sidebar-border">
             <div className="rounded-full bg-muted p-3">
                 <Inbox className="size-6" aria-hidden="true" />
             </div>
@@ -69,7 +69,7 @@ export default function ChatsIndex({ chats = [] }: ChatsIndexProps) {
         <>
             <Head title="Чаты" />
 
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-2xl p-4">
                 <div className="grid auto-rows-min gap-4 md:grid-cols-3">
                     <Card className="border-sidebar-border/70 py-0 shadow-none dark:border-sidebar-border">
                         <CardContent className="flex min-h-32 flex-col justify-between gap-5 p-5">
@@ -146,7 +146,7 @@ export default function ChatsIndex({ chats = [] }: ChatsIndexProps) {
                             <div className="grid gap-3">
                                 {chats.map((chat) => (
                                     <article
-                                        className="rounded-xl border border-sidebar-border/70 bg-background p-4 dark:border-sidebar-border"
+                                        className="rounded-2xl border border-sidebar-border/70 bg-background p-4 dark:border-sidebar-border"
                                         key={chat.id}
                                     >
                                         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">

@@ -18,7 +18,7 @@ export const authFormClassName = 'grid gap-4';
 export const authFieldsGridClassName = 'grid gap-3 sm:grid-cols-2';
 
 export const authRoleSwitchClassName =
-    'flex items-center justify-between gap-2 rounded-xl border border-blue-100 bg-blue-50/75 p-1.5 dark:border-blue-900/60 dark:bg-blue-950/30';
+    'flex items-center justify-between gap-2 rounded-2xl border border-blue-100 bg-blue-50/75 p-1.5 dark:border-blue-900/60 dark:bg-blue-950/30';
 
 export const authRoleSwitchLabelClassName =
     'flex items-center gap-2 px-1 text-xs font-semibold text-blue-800 dark:text-blue-200';
@@ -75,7 +75,7 @@ export function AuthSection({
     children: ReactNode;
 }) {
     return (
-        <fieldset className="grid gap-3 rounded-xl border border-slate-200/80 bg-slate-50/70 p-3.5 sm:p-4 dark:border-slate-800 dark:bg-slate-950/35">
+        <fieldset className="grid gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/70 p-3.5 sm:p-4 dark:border-slate-800 dark:bg-slate-950/35">
             <legend className="sr-only">{title}</legend>
             <div className="grid gap-1">
                 <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
@@ -121,7 +121,7 @@ export function AuthNotice({
     return (
         <div
             className={cn(
-                'flex items-start gap-3 rounded-xl border px-3.5 py-2.5 text-sm leading-5',
+                'flex items-start gap-3 rounded-2xl border px-3.5 py-2.5 text-sm leading-5',
                 styles[tone].className,
             )}
             role={tone === 'error' ? 'alert' : 'status'}

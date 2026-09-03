@@ -134,7 +134,7 @@ function VendorModerationCard({ vendor }: { vendor: ModerationVendor }) {
 
             <CardContent className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
                 <div className="space-y-4">
-                    <div className="rounded-xl bg-muted/50 p-4">
+                    <div className="rounded-2xl bg-muted/50 p-4">
                         <p className="text-sm text-muted-foreground">
                             Описание
                         </p>
@@ -144,7 +144,7 @@ function VendorModerationCard({ vendor }: { vendor: ModerationVendor }) {
                         </p>
                     </div>
 
-                    <div className="rounded-xl bg-muted/50 p-4">
+                    <div className="rounded-2xl bg-muted/50 p-4">
                         <p className="text-sm text-muted-foreground">
                             Районы работы
                         </p>
@@ -163,7 +163,7 @@ function VendorModerationCard({ vendor }: { vendor: ModerationVendor }) {
                         </div>
                     </div>
 
-                    <div className="rounded-xl bg-muted/50 p-4">
+                    <div className="rounded-2xl bg-muted/50 p-4">
                         <div className="flex flex-wrap items-center justify-between gap-3">
                             <div>
                                 <p className="text-sm text-muted-foreground">
@@ -231,7 +231,7 @@ function VendorModerationCard({ vendor }: { vendor: ModerationVendor }) {
                     </div>
 
                     {vendor.moderationNote && (
-                        <div className="rounded-xl border border-dashed border-sidebar-border/70 p-4 text-sm dark:border-sidebar-border">
+                        <div className="rounded-2xl border border-dashed border-sidebar-border/70 p-4 text-sm dark:border-sidebar-border">
                             <p className="font-medium">Комментарий модерации</p>
                             <p className="mt-2 text-muted-foreground">
                                 {vendor.moderationNote}
@@ -325,7 +325,7 @@ export default function AdminVendorModeration({ vendors, stats }: PageProps) {
         <>
             <Head title="Модерация компаний" />
 
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-2xl p-4">
                 <Card className="border-sidebar-border/70 shadow-none dark:border-sidebar-border">
                     <CardHeader>
                         <CardTitle className="text-2xl">

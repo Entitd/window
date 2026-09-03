@@ -22,7 +22,7 @@ function Brand({ compact = false }: { compact?: boolean }) {
     return (
         <Link
             href={home()}
-            className="inline-flex w-fit items-center gap-3 rounded-xl focus-visible:ring-4 focus-visible:ring-blue-500/25 focus-visible:outline-none"
+            className="inline-flex w-fit items-center gap-3 rounded-2xl focus-visible:ring-4 focus-visible:ring-blue-500/25 focus-visible:outline-none"
             aria-label="ОкнаМаркет — на главную"
         >
             <OknaMarketLogo compact={compact} />
@@ -38,8 +38,8 @@ export default function AuthSimpleLayout({
     return (
         <div className="relative min-h-svh overflow-x-hidden bg-[linear-gradient(135deg,#eaf2ff_0%,#f7fbff_42%,#fff3e8_100%)] font-sans text-slate-950 dark:bg-[linear-gradient(135deg,#020617_0%,#0f172a_46%,#1e293b_100%)] dark:text-slate-50">
             <main className="relative mx-auto flex min-h-svh w-full max-w-[1280px] items-center justify-center p-2 sm:p-4 lg:p-5">
-                <section className="grid w-full max-w-[1120px] overflow-hidden rounded-[24px] border border-white/65 bg-white/30 shadow-[0_30px_90px_rgba(15,23,42,0.12)] backdrop-blur-xl lg:max-h-[calc(100svh-40px)] lg:grid-cols-[0.88fr_1.12fr] dark:border-white/10 dark:bg-slate-950/35 dark:shadow-black/30">
-                    <aside className="relative hidden min-h-[calc(100svh-40px)] overflow-hidden rounded-l-[24px] border-r border-white/30 bg-white/10 p-8 text-slate-950 shadow-[inset_0_1px_1px_rgba(255,255,255,0.6)] backdrop-blur-2xl backdrop-saturate-150 lg:flex lg:flex-col xl:p-10 dark:border-white/10 dark:bg-slate-900/20 dark:text-white dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
+                <section className="grid w-full max-w-[1120px] overflow-hidden rounded-2xl border border-white/65 bg-white/30 shadow-[0_30px_90px_rgba(15,23,42,0.12)] backdrop-blur-xl lg:max-h-[calc(100svh-40px)] lg:grid-cols-[0.88fr_1.12fr] dark:border-white/10 dark:bg-slate-950/35 dark:shadow-black/30">
+                    <aside className="relative hidden min-h-[calc(100svh-40px)] overflow-hidden rounded-l-2xl border-r border-white/30 bg-white/10 p-8 text-slate-950 shadow-[inset_0_1px_1px_rgba(255,255,255,0.6)] backdrop-blur-2xl backdrop-saturate-150 lg:flex lg:flex-col xl:p-10 dark:border-white/10 dark:bg-slate-900/20 dark:text-white dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
                         <div
                             className="pointer-events-none absolute -inset-10 opacity-60 blur-3xl dark:opacity-40"
                             aria-hidden="true"
@@ -92,7 +92,7 @@ export default function AuthSimpleLayout({
                                     return (
                                         <div
                                             key={benefit.title}
-                                            className="flex gap-3 rounded-xl border border-white/80 bg-white/60 p-3.5 shadow-[0_8px_20px_rgba(15,23,42,0.03),inset_0_1px_1px_#ffffff] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.06] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
+                                            className="flex gap-3 rounded-2xl border border-white/80 bg-white/60 p-3.5 shadow-[0_8px_20px_rgba(15,23,42,0.03),inset_0_1px_1px_#ffffff] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.06] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
                                         >
                                             <span className="grid size-9 shrink-0 place-items-center rounded-lg border border-white bg-white/80 text-blue-600 shadow-sm backdrop-blur-md dark:border-white/15 dark:bg-blue-400/10 dark:text-blue-300">
                                                 <Icon
@@ -124,7 +124,7 @@ export default function AuthSimpleLayout({
                             <Brand compact />
                             <Link
                                 href={home()}
-                                className="inline-flex size-10 items-center justify-center rounded-xl border border-slate-200 text-slate-500 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 focus-visible:ring-4 focus-visible:ring-blue-500/20 focus-visible:outline-none dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+                                className="inline-flex size-10 items-center justify-center rounded-2xl border border-slate-200 text-slate-500 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 focus-visible:ring-4 focus-visible:ring-blue-500/20 focus-visible:outline-none dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
                                 aria-label="Вернуться на главную"
                             >
                                 <ArrowLeft

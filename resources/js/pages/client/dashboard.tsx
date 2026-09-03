@@ -173,23 +173,23 @@ function RequestSummaryCard({
             </div>
 
             <dl className="mt-5 grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-4">
-                <div className="rounded-xl bg-muted/60 p-3">
+                <div className="rounded-2xl bg-muted/60 p-3">
                     <dt className="text-muted-foreground">Создана</dt>
                     <dd className="mt-1 font-medium">{request.createdAt}</dd>
                 </div>
-                <div className="rounded-xl bg-muted/60 p-3">
+                <div className="rounded-2xl bg-muted/60 p-3">
                     <dt className="text-muted-foreground">Дата работ</dt>
                     <dd className="mt-1 font-medium">
                         {request.installationDate}
                     </dd>
                 </div>
-                <div className="rounded-xl bg-muted/60 p-3">
+                <div className="rounded-2xl bg-muted/60 p-3">
                     <dt className="text-muted-foreground">Размер</dt>
                     <dd className="mt-1 font-medium">
                         {formatWindowSize(request)}
                     </dd>
                 </div>
-                <div className="rounded-xl bg-muted/60 p-3">
+                <div className="rounded-2xl bg-muted/60 p-3">
                     <dt className="text-muted-foreground">Компания</dt>
                     <dd className="mt-1 font-medium">
                         {request.company ?? 'Компания не выбрана'}
@@ -198,7 +198,7 @@ function RequestSummaryCard({
             </dl>
 
             {isFeatured && (
-                <div className="mt-5 rounded-xl border border-border/70 bg-muted/20 p-3 text-sm text-muted-foreground">
+                <div className="mt-5 rounded-2xl border border-border/70 bg-muted/20 p-3 text-sm text-muted-foreground">
                     <span className="font-medium text-foreground">
                         Комментарий:
                     </span>{' '}

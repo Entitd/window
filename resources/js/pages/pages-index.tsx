@@ -73,7 +73,7 @@ export default function PagesIndex({ pages }: Props) {
                             <div className="mt-8 grid gap-4">
                                 {publicPages.map((page) => (
                                     <article
-                                        className="rounded-[28px] border border-black/12 bg-black/6 p-6"
+                                        className="rounded-2xl border border-black/12 bg-black/6 p-6"
                                         key={page.href}
                                     >
                                         <div className="flex flex-wrap items-start justify-between gap-4">
@@ -159,7 +159,7 @@ export default function PagesIndex({ pages }: Props) {
                             <div className="mt-8 grid gap-4">
                                 {authPages.map((page) => (
                                     <article
-                                        className="rounded-[28px] border border-black/12 bg-black/6 p-6"
+                                        className="rounded-2xl border border-black/12 bg-black/6 p-6"
                                         key={page.href}
                                     >
                                         <div className="flex flex-wrap items-start justify-between gap-4">

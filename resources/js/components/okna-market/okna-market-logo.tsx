@@ -10,7 +10,7 @@ export function OknaMarketLogo({ className, compact = false }: Props) {
         <span className={cn('inline-flex items-center gap-3', className)}>
             <span
                 className={cn(
-                    'grid place-items-center rounded-xl bg-blue-600 font-bold text-white shadow-lg shadow-blue-900/20',
+                    'grid place-items-center rounded-2xl bg-blue-600 font-semibold text-white shadow-lg shadow-blue-900/20',
                     compact ? 'size-10 text-base' : 'size-11 text-lg',
                 )}
                 aria-hidden="true"
@@ -19,7 +19,7 @@ export function OknaMarketLogo({ className, compact = false }: Props) {
             </span>
             <span
                 className={cn(
-                    'font-bold text-slate-950 dark:text-white',
+                    'font-semibold text-slate-950 dark:text-white',
                     compact ? 'text-sm' : 'text-base',
                 )}
             >

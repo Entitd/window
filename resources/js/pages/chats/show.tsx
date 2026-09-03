@@ -80,7 +80,7 @@ export default function ChatShow({ chat }: ChatShowProps) {
         <>
             <Head title={`Чат по заявке ${chat.requestId}`} />
 
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-2xl p-4">
                 <Card className="border-sidebar-border/70 shadow-none dark:border-sidebar-border">
                     <CardHeader className="gap-4 sm:flex-row sm:items-start sm:justify-between">
                         <div className="space-y-3">
@@ -130,7 +130,7 @@ export default function ChatShow({ chat }: ChatShowProps) {
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="flex min-h-[500px] flex-col gap-4">
-                            <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto rounded-xl border border-sidebar-border/70 bg-muted/20 p-4 dark:border-sidebar-border">
+                            <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto rounded-2xl border border-sidebar-border/70 bg-muted/20 p-4 dark:border-sidebar-border">
                                 {chat.messages.length > 0 ? (
                                     chat.messages.map((message) => (
                                         <div
@@ -144,8 +144,8 @@ export default function ChatShow({ chat }: ChatShowProps) {
                                             <article
                                                 className={
                                                     message.isMine
-                                                        ? 'max-w-[min(34rem,85%)] rounded-xl bg-primary px-4 py-3 text-primary-foreground'
-                                                        : 'max-w-[min(34rem,85%)] rounded-xl border border-sidebar-border/70 bg-background px-4 py-3 dark:border-sidebar-border'
+                                                        ? 'max-w-[min(34rem,85%)] rounded-2xl bg-primary px-4 py-3 text-primary-foreground'
+                                                        : 'max-w-[min(34rem,85%)] rounded-2xl border border-sidebar-border/70 bg-background px-4 py-3 dark:border-sidebar-border'
                                                 }
                                             >
                                                 <div className="flex flex-wrap items-center gap-2 text-xs">

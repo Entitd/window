@@ -25,8 +25,8 @@ export default function VerifyEmail({ status }: { status?: string }) {
                     </AuthNotice>
                 )}
 
-                <div className="grid place-items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/70 px-5 py-6 text-center dark:border-slate-800 dark:bg-slate-950/35">
-                    <span className="grid size-12 place-items-center rounded-xl bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300">
+                <div className="grid place-items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 px-5 py-6 text-center dark:border-slate-800 dark:bg-slate-950/35">
+                    <span className="grid size-12 place-items-center rounded-2xl bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300">
                         <MailCheck className="size-5" aria-hidden="true" />
                     </span>
                     <p className="max-w-sm text-sm leading-6 text-slate-600 dark:text-slate-400">
