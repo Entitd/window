@@ -91,7 +91,7 @@ export default function TwoFactorChallenge() {
                                 />
                             </AuthField>
                         ) : (
-                            <div className="grid gap-3 rounded-xl border border-slate-200 bg-slate-50/70 p-4 text-center dark:border-slate-800 dark:bg-slate-950/35">
+                            <div className="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 text-center dark:border-slate-800 dark:bg-slate-950/35">
                                 <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
                                     Код подтверждения
                                 </p>

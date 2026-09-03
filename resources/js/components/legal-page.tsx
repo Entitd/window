@@ -90,7 +90,7 @@ export function LegalPage({
                                 <div className="grid flex-1 gap-4">
                                     {section.items.map((item) => (
                                         <div
-                                            className="rounded-[20px] bg-[var(--bg)] px-5 py-4 text-[15px] leading-7 font-medium text-[var(--muted-strong)]"
+                                            className="rounded-2xl bg-[var(--bg)] px-5 py-4 text-[15px] leading-7 font-medium text-[var(--muted-strong)]"
                                             key={item}
                                         >
                                             {item}

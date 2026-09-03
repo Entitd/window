@@ -13,7 +13,7 @@ export function AppShell({ children, variant = 'sidebar' }: Props) {
 
     if (variant === 'header') {
         return (
-            <div className="flex min-h-screen w-full flex-col bg-[linear-gradient(135deg,#eaf2ff_0%,#f7fbff_48%,#fff7ed_100%)] text-slate-950 dark:bg-[linear-gradient(135deg,#020617_0%,#0f172a_52%,#1e293b_100%)] dark:text-slate-50">
+            <div className="flex min-h-screen w-full flex-col bg-[linear-gradient(135deg,#eaf2ff_0%,#f7fbff_42%,#fff3e8_100%)] text-slate-950 dark:bg-[linear-gradient(135deg,#020617_0%,#0f172a_46%,#1e293b_100%)] dark:text-slate-50">
                 {children}
             </div>
         );
@@ -22,7 +22,7 @@ export function AppShell({ children, variant = 'sidebar' }: Props) {
     return (
         <SidebarProvider
             defaultOpen={isOpen}
-            className="bg-[linear-gradient(135deg,#eaf2ff_0%,#f7fbff_48%,#fff7ed_100%)] text-slate-950 dark:bg-[linear-gradient(135deg,#020617_0%,#0f172a_52%,#1e293b_100%)] dark:text-slate-50"
+            className="bg-[linear-gradient(135deg,#eaf2ff_0%,#f7fbff_42%,#fff3e8_100%)] text-slate-950 dark:bg-[linear-gradient(135deg,#020617_0%,#0f172a_46%,#1e293b_100%)] dark:text-slate-50"
         >
             {children}
         </SidebarProvider>

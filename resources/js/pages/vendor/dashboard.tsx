@@ -324,7 +324,7 @@ export default function VendorDashboard() {
                                                 </div>
                                             </div>
 
-                                            <div className="mt-4 rounded-xl border border-dashed border-sidebar-border/70 p-3 text-sm text-muted-foreground dark:border-sidebar-border">
+                                            <div className="mt-4 rounded-2xl border border-dashed border-sidebar-border/70 p-3 text-sm text-muted-foreground dark:border-sidebar-border">
                                                 {lead.comment}
                                             </div>
 
@@ -375,7 +375,7 @@ export default function VendorDashboard() {
                             <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
                                 {statusBoard.map((column) => (
                                     <div
-                                        className="rounded-xl border border-border/70 bg-muted/15 p-4"
+                                        className="rounded-2xl border border-border/70 bg-muted/15 p-4"
                                         key={column.status}
                                     >
                                         <div className="flex items-center justify-between gap-3">
@@ -449,7 +449,7 @@ export default function VendorDashboard() {
                                 <div className="space-y-3">
                                     {profileChecklist.map((item) => (
                                         <div
-                                            className="flex items-center justify-between gap-3 rounded-xl bg-muted/50 p-3"
+                                            className="flex items-center justify-between gap-3 rounded-2xl bg-muted/50 p-3"
                                             key={item.label}
                                         >
                                             <span className="text-sm">
@@ -480,7 +480,7 @@ export default function VendorDashboard() {
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                <div className="flex items-start gap-3 rounded-xl bg-muted/50 p-4">
+                                <div className="flex items-start gap-3 rounded-2xl bg-muted/50 p-4">
                                     <ShieldCheck
                                         className="mt-0.5 size-4 text-muted-foreground"
                                         aria-hidden="true"
@@ -497,7 +497,7 @@ export default function VendorDashboard() {
                                     </div>
                                 </div>
 
-                                <div className="flex items-start gap-3 rounded-xl bg-muted/50 p-4">
+                                <div className="flex items-start gap-3 rounded-2xl bg-muted/50 p-4">
                                     <CalendarDays
                                         className="mt-0.5 size-4 text-muted-foreground"
                                         aria-hidden="true"

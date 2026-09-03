@@ -35,8 +35,7 @@ export function MarketFooter() {
                 <div className="footer-brand-block">
                     <MarketBrand />
                     <p>
-                        Помогаем подобрать компанию по услуге, району и
-                        предварительной цене в одной заявке.
+                        Выберите компанию по услуге, району и предварительной цене в один клик.
                     </p>
                 </div>
 
@@ -58,8 +57,8 @@ export function MarketFooter() {
             </div>
 
             <div className="footer-bottom container">
-                <span>© 2026 ОкнаМаркет</span>
-                <span>Сервис работает в Волгограде</span>
+                <span className="footer-copyright">© 2026 ОкнаМаркет</span>
+                <span className="footer-credit">Created by Entitd</span>
             </div>
         </footer>
     );

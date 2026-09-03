@@ -26,7 +26,7 @@ export function AppContent({ variant = 'sidebar', children, ...props }: Props) {
         <main
             {...props}
             className={cn(
-                'mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-4 rounded-xl bg-white/90 shadow-[0_24px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:bg-slate-900/92 dark:shadow-black/25',
+                'mx-auto flex h-full w-full max-w-[1120px] flex-1 flex-col gap-4 rounded-2xl bg-white/90 shadow-[0_24px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:bg-slate-900/92 dark:shadow-black/25',
                 props.className,
             )}
         >

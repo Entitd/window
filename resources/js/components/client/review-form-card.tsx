@@ -135,7 +135,7 @@ export function ReviewFormCard({
                             </Badge>
                         )}
                     </div>
-                    <p className="rounded-xl bg-background/70 p-4 leading-6 font-medium">
+                    <p className="rounded-2xl bg-background/70 p-4 leading-6 font-medium">
                         {visibleReview.comment}
                     </p>
                     {visibleReview.tags.length > 0 && (
@@ -163,7 +163,7 @@ export function ReviewFormCard({
                         другим клиентам выбрать исполнителя.
                     </CardDescription>
                 </div>
-                <div className="flex items-center gap-2 rounded-xl border border-border/70 bg-muted/40 px-3 py-2 text-sm font-medium">
+                <div className="flex items-center gap-2 rounded-2xl border border-border/70 bg-muted/40 px-3 py-2 text-sm font-medium">
                     <ShieldCheck
                         className="size-4 text-muted-foreground"
                         aria-hidden="true"
@@ -264,7 +264,7 @@ export function ReviewFormCard({
                         </p>
                     </div>
 
-                    <label className="flex items-start gap-3 rounded-xl border border-border/70 bg-muted/20 p-4 text-sm">
+                    <label className="flex items-start gap-3 rounded-2xl border border-border/70 bg-muted/20 p-4 text-sm">
                         <Checkbox
                             checked={form.data.is_public}
                             onCheckedChange={(value) =>

@@ -12,32 +12,34 @@ export default function AppearanceToggleTab({
     const { appearance, updateAppearance } = useAppearance();
 
     const tabs: { value: Appearance; icon: LucideIcon; label: string }[] = [
-        { value: 'light', icon: Sun, label: 'Light' },
-        { value: 'dark', icon: Moon, label: 'Dark' },
-        { value: 'system', icon: Monitor, label: 'System' },
+        { value: 'light', icon: Sun, label: 'Светлая тема' },
+        { value: 'dark', icon: Moon, label: 'Тёмная тема' },
+        { value: 'system', icon: Monitor, label: 'Системная тема' },
     ];
 
     return (
         <div
             className={cn(
-                'inline-flex gap-1 rounded-lg bg-neutral-100 p-1 dark:bg-neutral-800',
+                'inline-flex h-11 gap-1 rounded-lg bg-neutral-100 p-1 dark:bg-neutral-800',
                 className,
             )}
             {...props}
         >
             {tabs.map(({ value, icon: Icon, label }) => (
                 <button
+                    aria-label={label}
                     key={value}
                     onClick={() => updateAppearance(value)}
                     className={cn(
-                        'flex items-center rounded-md px-3.5 py-1.5 transition-colors',
+                        'flex h-9 flex-1 items-center justify-center rounded-md px-3 transition-colors',
                         appearance === value
                             ? 'bg-white shadow-xs dark:bg-neutral-700 dark:text-neutral-100'
                             : 'text-neutral-500 hover:bg-neutral-200/60 hover:text-black dark:text-neutral-400 dark:hover:bg-neutral-700/60',
                     )}
+                    title={label}
+                    type="button"
                 >
-                    <Icon className="-ml-1 h-4 w-4" />
-                    <span className="ml-1.5 text-sm">{label}</span>
+                    <Icon className="h-4 w-4" aria-hidden="true" />
                 </button>
             ))}
         </div>

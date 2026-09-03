@@ -152,7 +152,7 @@ function ServiceEditor({ service }: { service: VendorService }) {
                             Тип цены
                         </Label>
                         <select
-                            className="h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-xs transition outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                            className="h-11 rounded-lg border border-input bg-transparent px-3 text-sm shadow-xs transition outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                             id={`service-price-type-${service.id}`}
                             onChange={(event) =>
                                 form.setData(
@@ -178,7 +178,7 @@ function ServiceEditor({ service }: { service: VendorService }) {
                         Описание
                     </Label>
                     <textarea
-                        className="min-h-24 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                        className="min-h-28 rounded-lg border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                         id={`service-description-${service.id}`}
                         onChange={(event) =>
                             form.setData('description', event.target.value)
@@ -290,7 +290,7 @@ function CreateServiceForm() {
             <div className="grid gap-2">
                 <Label htmlFor="price_type">Тип цены</Label>
                 <select
-                    className="h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-xs transition outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                    className="h-11 rounded-lg border border-input bg-transparent px-3 text-sm shadow-xs transition outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                     id="price_type"
                     onChange={(event) =>
                         form.setData(
@@ -313,7 +313,7 @@ function CreateServiceForm() {
             <div className="grid gap-2">
                 <Label htmlFor="description">Описание</Label>
                 <textarea
-                    className="min-h-28 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                    className="min-h-28 rounded-lg border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                     id="description"
                     onChange={(event) =>
                         form.setData('description', event.target.value)
@@ -481,7 +481,7 @@ export default function VendorServicesPage({ services }: PageProps) {
                             <CardContent className="space-y-3">
                                 {serviceChecklist.map((item) => (
                                     <div
-                                        className="rounded-xl bg-muted/50 p-3"
+                                        className="rounded-2xl bg-muted/50 p-3"
                                         key={item.title}
                                     >
                                         <div className="flex items-center justify-between gap-3">
@@ -513,7 +513,7 @@ export default function VendorServicesPage({ services }: PageProps) {
                                 <CardTitle>Быстрые заметки</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4 text-sm text-muted-foreground">
-                                <div className="flex items-start gap-3 rounded-xl bg-muted/50 p-4">
+                                <div className="flex items-start gap-3 rounded-2xl bg-muted/50 p-4">
                                     <ListFilter
                                         className="mt-0.5 size-4"
                                         aria-hidden="true"
@@ -525,7 +525,7 @@ export default function VendorServicesPage({ services }: PageProps) {
                                         попасть в подбор.
                                     </div>
                                 </div>
-                                <div className="flex items-start gap-3 rounded-xl bg-muted/50 p-4">
+                                <div className="flex items-start gap-3 rounded-2xl bg-muted/50 p-4">
                                     <BadgeDollarSign
                                         className="mt-0.5 size-4"
                                         aria-hidden="true"
