@@ -112,7 +112,7 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                {/* <NavMain items={mainNavItems} /> */}
                 {roleItems.length > 0 && <NavMain items={roleItems} />}
             </SidebarContent>
 

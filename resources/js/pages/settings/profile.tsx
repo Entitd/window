@@ -26,15 +26,15 @@ export default function Profile({
 
     return (
         <>
-            <Head title="Profile settings" />
+            <Head title="Настройки профиля" />
 
-            <h1 className="sr-only">Profile settings</h1>
+            <h1 className="sr-only">Настройки профиля</h1>
 
             <div className="space-y-6">
                 <Heading
                     variant="small"
-                    title="Profile"
-                    description="Update your name and email address"
+                    title="Профиль"
+                    description="Редактирование имени и email"
                 />
 
                 <Form
@@ -47,7 +47,7 @@ export default function Profile({
                     {({ processing, errors }) => (
                         <>
                             <div className="grid gap-2">
-                                <Label htmlFor="name">Name</Label>
+                                <Label htmlFor="name">Имя</Label>
 
                                 <Input
                                     id="name"
@@ -66,7 +66,7 @@ export default function Profile({
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
+                                <Label htmlFor="email">Email</Label>
 
                                 <Input
                                     id="email"
@@ -115,7 +115,7 @@ export default function Profile({
                                     disabled={processing}
                                     data-test="update-profile-button"
                                 >
-                                    Save
+                                    Сохранить
                                 </Button>
                             </div>
                         </>
@@ -123,7 +123,7 @@ export default function Profile({
                 </Form>
             </div>
 
-            <DeleteUser />
+            {/* <DeleteUser /> */}
         </>
     );
 }
@@ -131,7 +131,7 @@ export default function Profile({
 Profile.layout = {
     breadcrumbs: [
         {
-            title: 'Profile settings',
+            title: 'Настройки профиля',
             href: edit(),
         },
     ],

@@ -8,6 +8,7 @@ use App\Models\ServiceRequest;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -17,34 +18,9 @@ class ChatController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
-        $vendorId = $user->role === 'vendor'
-            ? $user->vendor()->value('id')
-            : null;
-
-        $chats = Chat::query()
-            ->with([
-                'client:id,name,email',
-                'vendor:id,user_id,company_name',
-                'vendor.user:id,name,email',
-                'serviceRequest:id,service_id,city,district,installation_date,estimated_price,status',
-                'serviceRequest.service:id,name',
-                'messages.sender:id,name,email',
-            ])
-            ->when(
-                $user->role === 'client',
-                fn ($query) => $query->where('client_id', $user->id),
-            )
-            ->when(
-                $user->role === 'vendor',
-                fn ($query) => $query->where('vendor_id', $vendorId),
-            )
-            ->latest('updated_at')
-            ->get()
-            ->map(fn (Chat $chat) => $this->serializeChatListItem($chat, $user))
-            ->values();
 
         return Inertia::render('chats/index', [
-            'chats' => $chats,
+            'chats' => $this->chatListFor($user),
         ]);
     }
 
@@ -78,6 +54,7 @@ class ChatController extends Controller
 
         return Inertia::render('chats/show', [
             'chat' => $this->serializeChat($chat, $request->user()),
+            'chats' => $this->chatListFor($request->user()),
         ]);
     }
 
@@ -172,11 +149,55 @@ class ChatController extends Controller
     }
 
     /**
+     * @return Collection<int, array<string, mixed>>
+     */
+    private function chatListFor(User $user): Collection
+    {
+        $vendorId = $user->role === 'vendor'
+            ? $user->vendor()->value('id')
+            : null;
+        $message = new ChatMessage;
+
+        return Chat::query()
+            ->select(['id', 'request_id', 'client_id', 'vendor_id', 'updated_at'])
+            ->with([
+                'client:id,name,email',
+                'vendor:id,user_id,company_name',
+                'vendor.user:id,name,email',
+                'serviceRequest:id,service_id,city,district,installation_date,estimated_price,status',
+                'serviceRequest.service:id,name',
+                'latestMessage' => fn ($query) => $query->select([
+                    $message->qualifyColumn('id'),
+                    $message->qualifyColumn('chat_id'),
+                    $message->qualifyColumn('content'),
+                    $message->qualifyColumn('created_at'),
+                ]),
+            ])
+            ->withCount([
+                'messages as unread_messages_count' => fn ($query) => $query
+                    ->where('sender_id', '!=', $user->id)
+                    ->where('is_read', false),
+            ])
+            ->when(
+                $user->role === 'client',
+                fn ($query) => $query->where('client_id', $user->id),
+            )
+            ->when(
+                $user->role === 'vendor',
+                fn ($query) => $query->where('vendor_id', $vendorId),
+            )
+            ->latest('updated_at')
+            ->get()
+            ->map(fn (Chat $chat) => $this->serializeChatListItem($chat, $user))
+            ->values();
+    }
+
+    /**
      * @return array<string, mixed>
      */
     private function serializeChatListItem(Chat $chat, User $viewer): array
     {
-        $latestMessage = $chat->messages->last();
+        $latestMessage = $chat->latestMessage;
 
         return [
             'id' => (string) $chat->id,
@@ -188,10 +209,7 @@ class ChatController extends Controller
             'location' => $this->formatLocation($chat),
             'lastMessage' => $latestMessage?->content ?? 'Сообщений пока нет',
             'lastMessageAt' => $latestMessage?->created_at?->format('d.m.Y H:i') ?? '',
-            'unreadCount' => $chat->messages
-                ->where('sender_id', '!=', $viewer->id)
-                ->where('is_read', false)
-                ->count(),
+            'unreadCount' => $chat->unread_messages_count,
             'updatedAt' => $chat->updated_at?->format('d.m.Y H:i') ?? '',
         ];
     }

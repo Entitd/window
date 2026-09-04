@@ -495,10 +495,10 @@ export default function ClientDashboard() {
 
 ClientDashboard.layout = {
     breadcrumbs: [
-        {
-            title: 'Dashboard',
-            href: appDashboard(),
-        },
+        // {
+        //     title: 'Dashboard',
+        //     href: appDashboard(),
+        // },
         {
             title: 'Кабинет клиента',
             href: clientDashboard(),

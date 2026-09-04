@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Service;
 use App\Models\ServiceRequest;
-use App\Models\Chat;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -71,12 +70,12 @@ class ClientRequestController extends Controller
             'estimated_price' => $estimatedPrice,
         ]);
 
-        $serviceRequest->chat()->create([
-            'client_id' => $serviceRequest->client_id,
-            'vendor_id' => $serviceRequest->vendor_id
-        ]);
-
-        // dd($serviceRequest);
+        if ($serviceRequest->vendor_id !== null) {
+            $serviceRequest->chat()->create([
+                'client_id' => $serviceRequest->client_id,
+                'vendor_id' => $serviceRequest->vendor_id,
+            ]);
+        }
 
         $this->recordStatusHistory(
             serviceRequest: $serviceRequest,

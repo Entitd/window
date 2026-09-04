@@ -42,7 +42,7 @@ export function UserMenuContent({ user }: Props) {
                         onClick={cleanup}
                     >
                         <Settings className="mr-2" />
-                        Settings
+                        Настройки
                     </Link>
                 </DropdownMenuItem>
                 <div className="px-1 py-1.5">
@@ -59,7 +59,7 @@ export function UserMenuContent({ user }: Props) {
                     data-test="logout-button"
                 >
                     <LogOut className="mr-2" />
-                    Log out
+                    Выйти
                 </Link>
             </DropdownMenuItem>
         </>
