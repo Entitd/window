@@ -1,6 +1,10 @@
 import { Link } from '@inertiajs/react';
 import { ArrowLeft, Search, ShieldCheck } from 'lucide-react';
 import { AuthThemeToggle } from '@/components/auth/auth-theme-toggle';
+import { MarketThemeToggle } from '@/components/okna-market/market-theme-toggle';
+import { ThemeToggle } from '@/components/theme-toggle';
+
+
 import { OknaMarketLogo } from '@/components/okna-market/okna-market-logo';
 import { home } from '@/routes';
 import type { AuthLayoutProps } from '@/types';
@@ -167,7 +171,8 @@ export default function AuthSimpleLayout({
                     </div>
                 </section>
             </main>
-            <AuthThemeToggle />
+            <ThemeToggle />
+            {/* <MarketThemeToggle /> */}
         </div>
     );
 }

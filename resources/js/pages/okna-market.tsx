@@ -601,7 +601,7 @@ export default function OknaMarket() {
                                 </label>
 
                                 <button
-                                    className="btn btn-accent"
+                                    className="btn btn-accent btn-find-companies"
                                     type="submit"
                                 >
                                     Найти компании
