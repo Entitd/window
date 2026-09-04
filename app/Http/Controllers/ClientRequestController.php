@@ -72,9 +72,11 @@ class ClientRequestController extends Controller
         ]);
 
         $serviceRequest->chat()->create([
-            'client_id' => $serviceRequest->id,
+            'client_id' => $serviceRequest->client_id,
             'vendor_id' => $serviceRequest->vendor_id
         ]);
+
+        // dd($serviceRequest);
 
         $this->recordStatusHistory(
             serviceRequest: $serviceRequest,
