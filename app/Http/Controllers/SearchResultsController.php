@@ -12,17 +12,12 @@ use Inertia\Response;
 
 class SearchResultsController extends Controller
 {
-    public function calculate(Request $request): Response
-    {
-        return $this->renderResults($request, 'calculate');
-    }
-
     public function index(Request $request): Response
     {
-        return $this->renderResults($request, 'search-results');
+        return $this->renderResults($request);
     }
 
-    private function renderResults(Request $request, string $component): Response
+    private function renderResults(Request $request): Response
     {
         $serviceKey = $request->string('serviceKey')->toString();
         $serviceName = $this->serviceNamesByKey()[$serviceKey] ?? null;
@@ -46,7 +41,7 @@ class SearchResultsController extends Controller
             ->latest()
             ->get();
 
-        return Inertia::render($component, [
+        return Inertia::render('search-results', [
             'companies' => $vendors
                 ->map(fn (Vendor $vendor) => $this->serializeVendor(
                     $vendor,

@@ -1,37 +1,14 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import {
-    CalendarDays,
-    CheckCircle2,
-    ClipboardList,
-    Clock3,
-    Plus,
-    RefreshCw,
-    XCircle,
-} from 'lucide-react';
-import {
-    DashboardEmptyState,
-    DashboardHero,
-    DashboardMetric,
-    DashboardPage,
-} from '@/components/dashboard/dashboard-ui';
+import { CalendarDays, CheckCircle2, ClipboardList, Clock3, Plus, RefreshCw, XCircle } from 'lucide-react';
+import { DashboardEmptyState, DashboardHero, DashboardMetric, DashboardPage } from '@/components/dashboard/dashboard-ui';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { getStatusLabel, getStatusVariant } from '@/lib/dashboard-format';
 import type { ClientRequest } from '@/lib/dashboard-format';
 import { dashboard as appDashboard, home } from '@/routes';
 import { dashboard as clientDashboard } from '@/routes/client';
-import {
-    cancel as cancelRequest,
-    repeat as repeatRequest,
-    show as showRequest,
-} from '@/routes/client/requests';
+import { cancel as cancelRequest, repeat as repeatRequest, show as showRequest } from '@/routes/client/requests';
 import type { Auth } from '@/types';
 
 type PageProps = {
@@ -131,11 +108,13 @@ function RequestSummaryCard({
     request,
     isFeatured = false,
     canCancel = false,
+    canReview = false,
     canRepeat = false,
 }: {
     request: ClientRequest;
     isFeatured?: boolean;
     canCancel?: boolean;
+    canReview?: boolean;
     canRepeat?: boolean;
 }) {
     return (
@@ -239,6 +218,17 @@ function RequestSummaryCard({
                         Отменить заявку
                     </Button>
                 )}
+
+                {request.status === 'completed' &&
+                    request.company &&
+                    !request.review && (
+                        <Button asChild variant="outline" size="sm">
+                            <Link href={showRequest(request.id)} prefetch>
+                                Оставить отзыв
+                            </Link>
+                        </Button>
+                    )}
+
             </div>
         </article>
     );
@@ -281,21 +271,21 @@ export default function ClientDashboard() {
 
             <DashboardPage>
                 <DashboardHero
-                    icon={ClipboardList}
-                    badge={
-                        <>
-                            <Badge variant="secondary">Личный кабинет</Badge>
-                            {selectedRequest && (
-                                <Badge
-                                    variant={getStatusVariant(
-                                        selectedRequest.status,
-                                    )}
-                                >
-                                    {getStatusLabel(selectedRequest.status)}
-                                </Badge>
-                            )}
-                        </>
-                    }
+                    // icon={ClipboardList}
+                    // badge={
+                    //     <>
+                    //         <Badge variant="secondary">Личный кабинет</Badge>
+                    //         {selectedRequest && (
+                    //             <Badge
+                    //                 variant={getStatusVariant(
+                    //                     selectedRequest.status,
+                    //                 )}
+                    //             >
+                    //                 {getStatusLabel(selectedRequest.status)}
+                    //             </Badge>
+                    //         )}
+                    //     </>
+                    // }
                     title={`Здравствуйте, ${auth.user.name}`}
                     description="Здесь собраны ваши заявки, сроки работ и история общения с выбранными компаниями."
                     actions={
@@ -308,7 +298,7 @@ export default function ClientDashboard() {
                     }
                 />
 
-                <div className="grid auto-rows-min gap-4 md:grid-cols-3">
+                {/* <div className="grid auto-rows-min gap-4 md:grid-cols-3">
                     <DashboardMetric
                         icon={Clock3}
                         label="Активные заявки"
@@ -329,7 +319,7 @@ export default function ClientDashboard() {
                         value={completedRequests.length}
                         description="История выполненных заказов."
                     />
-                </div>
+                </div> */}
 
                 <div className="grid flex-1 gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
                     <div className="flex flex-col gap-4">
@@ -382,10 +372,10 @@ export default function ClientDashboard() {
                     <aside className="flex flex-col gap-4">
                         <Card className="border-border/70 shadow-sm">
                             <CardHeader>
-                                <CardTitle>Статус заказа</CardTitle>
-                                <CardDescription>
-                                    История изменений по выбранной заявке.
-                                </CardDescription>
+                                <CardTitle>История изменений по текущей заявке</CardTitle>
+                                {/* <CardDescription>
+                                    История изменений по текущей заявке.
+                                </CardDescription> */}
                             </CardHeader>
                             <CardContent>
                                 {selectedRequest ? (
@@ -460,7 +450,7 @@ export default function ClientDashboard() {
                             </Card>
                         )}
 
-                        <Card className="border-border/70 shadow-sm">
+                        {/* <Card className="border-border/70 shadow-sm">
                             <CardHeader>
                                 <CardTitle>Профиль клиента</CardTitle>
                                 <CardDescription>
@@ -485,7 +475,7 @@ export default function ClientDashboard() {
                                     </span>
                                 </div>
                             </CardContent>
-                        </Card>
+                        </Card> */}
                     </aside>
                 </div>
             </DashboardPage>

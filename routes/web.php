@@ -11,12 +11,16 @@ use App\Http\Controllers\VendorDashboardController;
 use App\Http\Controllers\VendorProfileController;
 use App\Http\Controllers\VendorRequestController;
 use App\Http\Controllers\VendorServiceController;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 Route::inertia('/', 'okna-market')->name('home');
-Route::get('calculate', [SearchResultsController::class, 'calculate'])->name('calculate');
+Route::get('calculate', function (Request $request): RedirectResponse {
+    return redirect()->route('search-results', $request->query());
+});
 Route::get('pages', function () {
     abort_unless(app()->environment(['local', 'testing']), 404);
 

@@ -50,8 +50,8 @@ export default function PrivacyPolicy() {
         <>
             <Head title="Политика конфиденциальности" />
             <LegalPage
-                eyebrow="Документы сервиса"
-                intro="Временная MVP-версия политики: она описывает, какие данные нужны ОкнаМаркету для заявок, подбора компаний, личных кабинетов и модерации."
+                eyebrow=""
+                intro=""
                 sections={sections}
                 title="Политика конфиденциальности"
                 updatedAt="30 июня 2026 г."

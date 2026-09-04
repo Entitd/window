@@ -1,39 +1,17 @@
-import { Head, router } from '@inertiajs/react';
-import { useMemo, useState } from 'react';
+import { Head } from '@inertiajs/react';
+import { useMemo } from 'react';
 import {
     FaqAccordion,
     homepageFaqItems,
 } from '@/components/okna-market/faq-accordion';
+import { FindCompanyForm } from '@/components/okna-market/find-company-form';
 import { MarketShell } from '@/components/okna-market/market-shell';
-import { searchResults } from '@/routes';
 import '../../css/okna-market.css';
 
-type ServiceKey =
-    | 'glass_replacement'
-    | 'window_installation'
-    | 'balcony_block'
-    | 'measurement'
-    | 'repair';
-
-type WindowTypeKey = 'single' | 'double' | 'triple' | 'balcony';
 type UrgencyKey = 'flexible' | 'week' | 'urgent';
 type SortKey = 'price' | 'rating' | 'date';
 type FilterKey = 'highRating' | 'manyReviews' | 'hasPhotos' | 'fastDate';
 type CatalogDemoFocus = 'price' | 'rating' | 'deadline' | 'sort' | 'company';
-
-type Service = {
-    key: ServiceKey;
-    title: string;
-    description: string;
-    baseMin: number;
-    baseMax: number;
-};
-
-type WindowType = {
-    key: WindowTypeKey;
-    title: string;
-    factor: number;
-};
 
 type Company = {
     initials: string;
@@ -65,51 +43,6 @@ type CatalogDemoStep = {
     touchedFilter?: FilterKey | 'urgent' | 'week';
     urgencyKey: UrgencyKey;
 };
-
-const services: Service[] = [
-    {
-        key: 'glass_replacement',
-        title: 'Замена стеклопакета',
-        description: 'Трещины, запотевание или потеря тепла без замены рамы.',
-        baseMin: 6500,
-        baseMax: 14500,
-    },
-    {
-        key: 'window_installation',
-        title: 'Установка окна',
-        description: 'Новое окно, демонтаж старого блока и монтаж.',
-        baseMin: 18000,
-        baseMax: 36000,
-    },
-    {
-        key: 'balcony_block',
-        title: 'Балконный блок',
-        description: 'Окно и дверь на балкон с подготовкой проема.',
-        baseMin: 38000,
-        baseMax: 76000,
-    },
-    {
-        key: 'measurement',
-        title: 'Замер',
-        description: 'Выезд замерщика и уточнение точной сметы.',
-        baseMin: 0,
-        baseMax: 1500,
-    },
-    {
-        key: 'repair',
-        title: 'Ремонт/регулировка',
-        description: 'Настройка фурнитуры, продувания и закрывания.',
-        baseMin: 2500,
-        baseMax: 8500,
-    },
-];
-
-const windowTypes: WindowType[] = [
-    { key: 'single', title: 'Одностворчатое', factor: 0.9 },
-    { key: 'double', title: 'Двухстворчатое', factor: 1 },
-    { key: 'triple', title: 'Трехстворчатое', factor: 1.18 },
-    { key: 'balcony', title: 'Балконный блок', factor: 1.42 },
-];
 
 const companies: Company[] = [
     {
@@ -189,25 +122,6 @@ const benefits = [
         title: 'Без лишних звонков',
         description:
             'Ваш номер получит только та компания, которую вы выберете сами.',
-    },
-];
-
-const trustItems = [
-    {
-        number: '01',
-        title: 'Профиль компании проходит модерацию',
-    },
-    {
-        number: '02',
-        title: 'Сервис не скрывает что цена предварительная',
-    },
-    {
-        number: '03',
-        title: 'Контакт получает только выбранная компания после отправления заявки',
-    },
-    {
-        number: '04',
-        title: 'Дополнительно продлеваем гарантию',
     },
 ];
 
@@ -400,11 +314,6 @@ function formatRoubles(value: number): string {
 }
 
 export default function OknaMarket() {
-    const [serviceKey, setServiceKey] =
-        useState<ServiceKey>('glass_replacement');
-    const [windowTypeKey, setWindowTypeKey] = useState<WindowTypeKey>('double');
-    const [width, setWidth] = useState(130);
-    const [height, setHeight] = useState(140);
     const activeDemoStep = catalogDemoSteps[0];
     const filters = activeDemoStep.filters;
     const sortKey = activeDemoStep.sortKey;
@@ -452,16 +361,6 @@ export default function OknaMarket() {
 
     const catalogEstimatedRange: [number, number] = [6500, 14500];
 
-    const submitSearchRequest = () => {
-        router.get(searchResults.url(), {
-            city: 'Волгоград',
-            width: String(width),
-            height: String(height),
-            serviceKey,
-            extraWorks: 'dismantling',
-        });
-    };
-
     return (
         <>
             <Head>
@@ -485,129 +384,7 @@ export default function OknaMarket() {
                             </h1>
                         </div>
 
-                        <form
-                            action="#"
-                            className="request-card hero-request-card"
-                            method="get"
-                            onSubmit={(event) => {
-                                event.preventDefault();
-                                submitSearchRequest();
-                            }}
-                        >
-                            <div className="request-heading">
-                                <div>
-                                    <h2>Что нужно установить?</h2>
-                                </div>
-                                <span>Точная цена после замера.</span>
-                            </div>
-
-                            <div
-                                aria-label="Тип услуги"
-                                className="service-chips"
-                                role="list"
-                            >
-                                {services.map((service) => {
-                                    const isActive = service.key === serviceKey;
-
-                                    return (
-                                        <button
-                                            aria-pressed={isActive}
-                                            className={`chip ${isActive ? 'active' : ''}`}
-                                            key={service.key}
-                                            onClick={() => {
-                                                setServiceKey(service.key);
-                                            }}
-                                            type="button"
-                                        >
-                                            {service.title}
-                                        </button>
-                                    );
-                                })}
-                            </div>
-
-                            <div className="form-grid form-grid-mvp">
-                                <label className="field-card">
-                                    <span className="field-icon">⌖</span>
-                                    <span className="field-label">Город</span>
-                                    <input
-                                        name="city"
-                                        readOnly
-                                        value="Волгоград"
-                                    />
-                                </label>
-
-                                <label className="field-card">
-                                    <span className="field-icon">▣</span>
-                                    <span className="field-label">
-                                        Тип окна
-                                    </span>
-                                    <select
-                                        name="window_type"
-                                        onChange={(event) => {
-                                            setWindowTypeKey(
-                                                event.target
-                                                    .value as WindowTypeKey,
-                                            );
-                                        }}
-                                        value={windowTypeKey}
-                                    >
-                                        {windowTypes.map((windowType) => (
-                                            <option
-                                                key={windowType.key}
-                                                value={windowType.key}
-                                            >
-                                                {windowType.title}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </label>
-
-                                <label className="field-card">
-                                    <span className="field-icon">↔</span>
-                                    <span className="field-label">
-                                        Ширина, см
-                                    </span>
-                                    <input
-                                        max={320}
-                                        min={40}
-                                        name="width"
-                                        onChange={(event) => {
-                                            setWidth(
-                                                Number(event.target.value),
-                                            );
-                                        }}
-                                        type="number"
-                                        value={width}
-                                    />
-                                </label>
-
-                                <label className="field-card">
-                                    <span className="field-icon">↕</span>
-                                    <span className="field-label">
-                                        Высота, см
-                                    </span>
-                                    <input
-                                        max={260}
-                                        min={40}
-                                        name="height"
-                                        onChange={(event) => {
-                                            setHeight(
-                                                Number(event.target.value),
-                                            );
-                                        }}
-                                        type="number"
-                                        value={height}
-                                    />
-                                </label>
-
-                                <button
-                                    className="btn btn-accent btn-find-companies"
-                                    type="submit"
-                                >
-                                    Найти компании
-                                </button>
-                            </div>
-                        </form>
+                        <FindCompanyForm />
                     </div>
                 </section>
 

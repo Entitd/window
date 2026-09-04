@@ -64,10 +64,8 @@ export default function Vendors() {
 
                 <section className="benefits-section">
                     <div className="section-copy container">
-                        <span className="faq-kicker">Преимущества</span>
                         <h2>
-                            Страница объясняет выгоду без лишнего маркетингового
-                            шума
+                            Преимущества
                         </h2>
                     </div>
 
@@ -83,10 +81,8 @@ export default function Vendors() {
 
                 <section className="steps-section">
                     <div className="section-copy container">
-                        <span className="faq-kicker">Как подключиться</span>
                         <h2>
-                            Подключение вендора раскладывается на четыре
-                            понятных шага
+                            Как подключиться
                         </h2>
                     </div>
 
@@ -104,7 +100,6 @@ export default function Vendors() {
                 <section className="vendor-cta-section">
                     <div className="vendor-cta container">
                         <div>
-                            <span className="faq-kicker">Подключение</span>
                             <h2>
                                 Зарегистрируйте компанию и пройдите модерацию
                             </h2>

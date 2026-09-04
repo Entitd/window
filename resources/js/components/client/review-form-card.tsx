@@ -283,7 +283,7 @@ export function ReviewFormCard({
                     </label>
 
                     <div className="flex flex-col gap-3 border-t pt-5 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                        {/* <div className="flex items-start gap-2 text-sm text-muted-foreground">
                             <MessageSquareText
                                 className="mt-0.5 size-4"
                                 aria-hidden="true"
@@ -292,7 +292,7 @@ export function ReviewFormCard({
                                 Отзыв относится только к заявке №{requestId} и
                                 выбранной услуге.
                             </span>
-                        </div>
+                        </div> */}
                         <Button type="submit" disabled={!canSubmit}>
                             {form.processing
                                 ? 'Отправляем...'

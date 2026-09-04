@@ -1,12 +1,12 @@
 import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import {
-    calculate,
     dashboard,
     faq,
     home,
     login,
     register,
+    searchResults,
     vendors,
 } from '@/routes';
 import { MarketBrand } from './market-brand';
@@ -31,9 +31,9 @@ type HeaderActionsProps = {
 const navItems = [
     { key: 'home', label: 'Главная', href: home() },
     {
-        key: 'calculate',
-        label: 'Рассчитать',
-        href: calculate(),
+        key: 'search-results',
+        label: 'Подобрать компанию',
+        href: searchResults(),
     },
     { key: 'vendors', label: 'Для компаний', href: vendors() },
     { key: 'faq', label: 'Вопросы', href: faq() },

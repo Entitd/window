@@ -58,8 +58,8 @@ export default function UserAgreement() {
         <>
             <Head title="Пользовательское соглашение" />
             <LegalPage
-                eyebrow="Документы сервиса"
-                intro="Временная MVP-версия соглашения: она описывает текущие правила работы ОкнаМаркета для клиентов, компаний и администраторов."
+                eyebrow=""
+                intro=""
                 sections={sections}
                 title="Пользовательское соглашение"
                 updatedAt="30 июня 2026 г."

@@ -1,7 +1,6 @@
 import { Link } from '@inertiajs/react';
 import {
     agreement,
-    calculate,
     contacts,
     faq,
     home,
@@ -13,14 +12,13 @@ import { MarketBrand } from './market-brand';
 
 const serviceLinks = [
     { label: 'Главная', href: home(), prefetch: true },
-    { label: 'Рассчитать', href: calculate(), prefetch: true },
+    { label: 'Подобрать компанию', href: searchResults(), prefetch: true },
     { label: 'Для компаний', href: vendors(), prefetch: true },
 ];
 
 const helpLinks = [
     { label: 'Частые вопросы', href: faq(), prefetch: true },
     { label: 'Контакты', href: contacts(), prefetch: true },
-    { label: 'Результаты подбора', href: searchResults(), prefetch: true },
 ];
 
 const documentLinks = [

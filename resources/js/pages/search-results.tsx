@@ -1,5 +1,6 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
+import { FindCompanyForm } from '@/components/okna-market/find-company-form';
 import { MarketShell } from '@/components/okna-market/market-shell';
 import type {
     MarketplaceCompany,
@@ -7,9 +8,6 @@ import type {
     SortKey,
 } from '@/lib/okna-market';
 import {
-    buildEstimate,
-    formatCurrency,
-    getExtraWorkLabels,
     getServiceLabel,
     MARKETPLACE_PATHS,
     parseSearchState,
@@ -27,12 +25,10 @@ type CreatedRequest = {
 type PageProps = {
     companies: MarketplaceCompany[];
 };
-
 export default function SearchResults() {
     const { url, props } = usePage<PageProps>();
     const companies = props.companies;
     const request = useMemo(() => parseSearchState(url), [url]);
-    const estimate = useMemo(() => buildEstimate(request), [request]);
     const [sortKey, setSortKey] = useState<SortKey>('price');
     const [priceFilter, setPriceFilter] = useState<PriceFilterKey>('all');
     const [districtFilter, setDistrictFilter] = useState('all');
@@ -81,7 +77,6 @@ export default function SearchResults() {
             });
     }, [companies, districtFilter, priceFilter, sortKey]);
 
-    const selectedExtras = getExtraWorkLabels(request.extraWorks);
     const requestDistrict = useMemo(
         () => extractDistrictFromLocation(request.city),
         [request.city],
@@ -134,10 +129,10 @@ export default function SearchResults() {
 
             <MarketShell
                 activePage="search-results"
-                ctaHref={MARKETPLACE_PATHS.calculate}
+                ctaHref={MARKETPLACE_PATHS.searchResults}
                 ctaLabel="Новая заявка"
             >
-                <section className="page-hero">
+                {/* <section className="page-hero">
                     <div className="container">
                         <span className="eyebrow">Результаты подбора</span>
                         <h1 className="page-title">
@@ -213,11 +208,17 @@ export default function SearchResults() {
                         <div className="summary-actions">
                             <Link
                                 className="btn btn-primary"
-                                href={MARKETPLACE_PATHS.calculate}
+                                href={MARKETPLACE_PATHS.searchResults}
                             >
                                 Изменить заявку
                             </Link>
                         </div>
+                    </div>
+                </section> */}
+
+                <section className="summary-section">
+                    <div className="container">
+                        <FindCompanyForm />
                     </div>
                 </section>
 
@@ -272,7 +273,7 @@ export default function SearchResults() {
                                 </Link>
                                 <Link
                                     className="btn btn-secondary"
-                                    href={MARKETPLACE_PATHS.calculate}
+                                    href={MARKETPLACE_PATHS.searchResults}
                                 >
                                     Изменить заявку
                                 </Link>
