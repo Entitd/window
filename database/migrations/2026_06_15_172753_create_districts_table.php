@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('name');
             $table->boolean('is_active')->default(true)->index();
             $table->timestamps();
-
+            $table->softDeletes();
             $table->unique(['city_id', 'name']);
         });
     }

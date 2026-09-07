@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('logo')->nullable();
             $table->string('status')->default('pending')->index();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

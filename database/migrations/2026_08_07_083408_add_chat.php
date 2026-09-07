@@ -17,10 +17,10 @@ return new class extends Migration
             $table->foreignId('client_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('vendor_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
-        
+            $table->softDeletes();
             $table->unique('request_id');
         });
-        
+
         Schema::create('chat_messages', function (Blueprint $table) {
             $table->id();
             $table->foreignId('chat_id')->constrained()->cascadeOnDelete();
@@ -29,6 +29,8 @@ return new class extends Migration
             $table->string('content_type')->default('text')->index();
             $table->boolean('is_read')->default(false)->index();
             $table->timestamps();
+            $table->softDeletes();
+
         });
     }
 

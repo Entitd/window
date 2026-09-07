@@ -27,6 +27,8 @@ return new class extends Migration
             $table->decimal('estimated_price', 10, 2)->nullable();
             $table->string('status')->default('new')->index();
             $table->timestamps();
+            $table->softDeletes();
+
         });
     }
 

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('vendor_id')->constrained()->cascadeOnDelete();
             $table->foreignId('district_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
-
+            $table->softDeletes();
             $table->unique(['vendor_id', 'district_id']);
         });
     }

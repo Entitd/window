@@ -24,6 +24,7 @@ return new class extends Migration
             $table->text('comment')->nullable();
             $table->decimal('estimated_price', 10, 2)->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

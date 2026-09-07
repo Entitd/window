@@ -1,30 +1,51 @@
 import { cn } from '@/lib/utils';
+import fullLogo from '../../../images/logo.svg';
+import shortLogo from '../../../images/logo_short.svg';
 
 type Props = {
     className?: string;
     compact?: boolean;
+    responsiveCompact?: boolean;
 };
 
-export function OknaMarketLogo({ className, compact = false }: Props) {
+export function OknaMarketLogo({
+    className,
+    compact = false,
+    responsiveCompact = false,
+}: Props) {
+    const imageClassName = cn(
+        'block h-9 w-auto object-contain',
+        compact && 'h-9',
+    );
+
+    if (responsiveCompact) {
+        return (
+            <span className={cn('inline-flex items-center', className)}>
+                <img
+                    alt="ОкнаМаркет"
+                    className={cn(
+                        imageClassName,
+                        'group-data-[collapsible=icon]:hidden',
+                    )}
+                    src={fullLogo}
+                />
+                <img
+                    alt="ОкнаМаркет"
+                    className={cn(
+                        imageClassName,
+                        'hidden group-data-[collapsible=icon]:block',
+                    )}
+                    src={shortLogo}
+                />
+            </span>
+        );
+    }
+
     return (
-        <span className={cn('inline-flex items-center gap-3', className)}>
-            <span
-                className={cn(
-                    'grid place-items-center rounded-2xl bg-blue-600 font-semibold text-white shadow-lg shadow-blue-900/20',
-                    compact ? 'size-10 text-base' : 'size-11 text-lg',
-                )}
-                aria-hidden="true"
-            >
-                О
-            </span>
-            <span
-                className={cn(
-                    'font-semibold text-slate-950 dark:text-white',
-                    compact ? 'text-sm' : 'text-base',
-                )}
-            >
-                ОКНА<span className="text-blue-400">МАРКЕТ</span>
-            </span>
-        </span>
+        <img
+            alt="ОкнаМаркет"
+            className={cn(imageClassName, className)}
+            src={compact ? shortLogo : fullLogo}
+        />
     );
 }

@@ -1,11 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { ArrowLeft, Search, ShieldCheck } from 'lucide-react';
-import { AuthThemeToggle } from '@/components/auth/auth-theme-toggle';
-import { MarketThemeToggle } from '@/components/okna-market/market-theme-toggle';
-import { ThemeToggle } from '@/components/theme-toggle';
-
-
 import { OknaMarketLogo } from '@/components/okna-market/okna-market-logo';
+import { ThemeToggle } from '@/components/theme-toggle';
 import { home } from '@/routes';
 import type { AuthLayoutProps } from '@/types';
 
@@ -22,14 +18,14 @@ const benefits = [
     },
 ] as const;
 
-function Brand({ compact = false }: { compact?: boolean }) {
+function Brand() {
     return (
         <Link
             href={home()}
             className="inline-flex w-fit items-center gap-3 rounded-2xl focus-visible:ring-4 focus-visible:ring-blue-500/25 focus-visible:outline-none"
             aria-label="ОкнаМаркет — на главную"
         >
-            <OknaMarketLogo compact={compact} />
+            <OknaMarketLogo />
         </Link>
     );
 }
@@ -125,7 +121,7 @@ export default function AuthSimpleLayout({
 
                     <div className="flex min-h-[calc(100svh-16px)] flex-col bg-white/95 px-5 py-5 sm:min-h-[calc(100svh-32px)] sm:px-8 sm:py-7 lg:max-h-[calc(100svh-40px)] lg:min-h-0 lg:overflow-y-auto lg:px-10 lg:py-8 xl:px-12 dark:bg-slate-900/95">
                         <div className="mb-6 flex items-center justify-between gap-4 lg:hidden">
-                            <Brand compact />
+                            <Brand />
                             <Link
                                 href={home()}
                                 className="inline-flex size-10 items-center justify-center rounded-2xl border border-slate-200 text-slate-500 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 focus-visible:ring-4 focus-visible:ring-blue-500/20 focus-visible:outline-none dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
