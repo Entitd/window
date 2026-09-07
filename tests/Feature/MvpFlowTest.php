@@ -1,9 +1,10 @@
 <?php
 
 use App\Models\Service;
+use App\Models\ServiceCategory;
+use App\Models\ServiceOption;
 use App\Models\ServiceRequest;
 use App\Models\User;
-use App\Models\Vendor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -13,6 +14,8 @@ test('client vendor and admin can complete the main mvp request flow', function 
     $this->seed();
 
     $service = Service::query()->firstOrFail();
+    $service->update(['category_id' => ServiceCategory::factory()->create()->id]);
+    $option = ServiceOption::factory()->create(['service_id' => $service->id, 'input_type' => 'selection', 'pricing_type' => 'fixed']);
 
     $this->post(route('register.vendor.store'), [
         'company_name' => 'Flow Test Windows',
@@ -45,10 +48,10 @@ test('client vendor and admin can complete the main mvp request flow', function 
 
     $this->actingAs($vendorUser)
         ->post(route('vendor.services.store'), [
-            'service_name' => $service->name,
+            'service_id' => $service->id,
             'description' => 'Flow test service.',
-            'min_price' => 12345,
-            'price_type' => 'fixed',
+            'is_active' => true,
+            'rates' => [['service_option_id' => $option->id, 'price' => 12345, 'is_default' => true]],
         ])
         ->assertRedirect();
 
@@ -67,14 +70,16 @@ test('client vendor and admin can complete the main mvp request flow', function 
     $client = User::query()->where('email', 'client.flow@example.com')->firstOrFail();
 
     $this->actingAs($client)
-        ->post(route('client.requests.store'), [
+        ->post(route('catalog.store'), [
+            'rate_id' => $vendor->services()->firstOrFail()->rates()->firstOrFail()->id,
+            'quantity' => 1,
+            'parameters' => [],
             'vendor_id' => $vendor->id,
             'service_id' => $service->id,
             'city' => 'Flow City',
             'district' => 'Flow District',
             'installation_date' => now()->addDays(5)->toDateString(),
-            'window_width' => 140,
-            'window_height' => 150,
+
             'additional_services' => ['Delivery'],
             'comment' => 'Created during the MVP flow test.',
         ])

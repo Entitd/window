@@ -50,6 +50,8 @@ export type ExtraWorkOption = {
 };
 
 export type MarketplaceCompany = {
+    catalogServiceId?: number | null;
+    catalogRateId?: number | null;
     id?: number;
     initials: string;
     tone: 'blue' | 'green' | 'violet';

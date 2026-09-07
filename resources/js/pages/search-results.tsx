@@ -1,5 +1,6 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
+import { index as catalogIndex } from '@/actions/App/Http/Controllers/CatalogController';
 import { FindCompanyForm } from '@/components/okna-market/find-company-form';
 import { MarketShell } from '@/components/okna-market/market-shell';
 import type {
@@ -83,6 +84,19 @@ export default function SearchResults() {
     );
 
     const createRequest = (company: MarketplaceCompany) => {
+        if (company.catalogServiceId) {
+            router.get(
+                catalogIndex.url({
+                    query: {
+                        service_id: company.catalogServiceId,
+                        rate_id: company.catalogRateId,
+                    },
+                }),
+            );
+
+            return;
+        }
+
         if (!company.id) {
             setSubmitError('Не удалось определить компанию для заявки.');
 

@@ -16,7 +16,7 @@ class ClientRequestController extends Controller
 {
     public function index(Request $request): Response
     {
-        $requests = ServiceRequest::with(['service', 'vendor', 'statusHistories', 'review'])
+        $requests = ServiceRequest::with(['service', 'vendor', 'statusHistories', 'review', 'items.values'])
             ->where('client_id', $request->user()->id)
             ->latest()
             ->get()
@@ -51,6 +51,9 @@ class ClientRequestController extends Controller
         ]);
 
         $service = $this->resolveService($validated);
+        if ($service->category_id !== null) {
+            return redirect()->route('catalog.index', ['service_id' => $service->id]);
+        }
         $this->ensureSelectedVendorMatchesRequest(
             $validated['vendor_id'] ?? null,
             $service->name,
@@ -92,7 +95,7 @@ class ClientRequestController extends Controller
 
     public function show(Request $request, string $requestId): Response
     {
-        $serviceRequest = ServiceRequest::with(['service', 'vendor', 'statusHistories', 'review'])
+        $serviceRequest = ServiceRequest::with(['service', 'vendor', 'statusHistories', 'review', 'items.values'])
             ->where('client_id', $request->user()->id)
             ->findOrFail($requestId);
 
@@ -105,6 +108,10 @@ class ClientRequestController extends Controller
     public function update(Request $request, ServiceRequest $serviceRequest): RedirectResponse
     {
         abort_unless($serviceRequest->client_id === $request->user()->id, 403);
+
+        if ($serviceRequest->items()->exists()) {
+            return back()->withErrors(['request' => 'Параметры и тариф этой заявки зафиксированы. Для другого расчёта создайте новую заявку из каталога.']);
+        }
 
         if (! in_array($serviceRequest->status, ['new', 'awaiting_confirmation'], true)) {
             return back()->withErrors([
@@ -154,6 +161,10 @@ class ClientRequestController extends Controller
     public function repeat(Request $request, ServiceRequest $serviceRequest): RedirectResponse
     {
         abort_unless($serviceRequest->client_id === $request->user()->id, 403);
+
+        if ($serviceRequest->items()->exists()) {
+            return redirect()->route('catalog.index', ['service_id' => $serviceRequest->service_id]);
+        }
 
         $serviceRequest->loadMissing(['service', 'vendor']);
 
@@ -225,7 +236,9 @@ class ClientRequestController extends Controller
         return [
             'id' => (string) $serviceRequest->id,
             'status' => $serviceRequest->status,
-            'service' => $serviceRequest->service?->name ?? 'Услуга',
+            'service' => $serviceRequest->items->first()?->service_name ?? $serviceRequest->service?->name ?? 'Услуга',
+            'items' => $serviceRequest->items,
+            'dimensionUnit' => $serviceRequest->items->isNotEmpty() ? 'мм' : 'см',
             'city' => $serviceRequest->city,
             'district' => $serviceRequest->district ?? 'Не указан',
             'address' => $serviceRequest->district ?? 'Адрес уточняется',

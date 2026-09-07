@@ -20,7 +20,7 @@ class VendorDashboardController extends Controller
             ->firstOrFail();
 
         $vendorRequests = ServiceRequest::query()
-            ->with(['client:id,name,phone,email', 'service:id,name'])
+            ->with(['client:id,name,phone,email', 'service:id,name', 'items.values'])
             ->where('vendor_id', $vendor->id)
             ->latest()
             ->get()
@@ -51,7 +51,7 @@ class VendorDashboardController extends Controller
                 ->map(fn ($service) => [
                     'id' => (string) $service->id,
                     'name' => $service->service_name,
-                    'basePrice' => 'от '.number_format((float) $service->min_price, 0, ',', ' ').' ₽',
+                    'basePrice' => $service->price_type === 'quote' ? 'После замера' : 'от '.number_format((float) $service->min_price, 0, ',', ' ').' ₽',
                     'pricingType' => $service->price_type,
                     'description' => $service->description ?? '',
                     'isActive' => $service->is_active,
@@ -76,7 +76,9 @@ class VendorDashboardController extends Controller
                 : 'Не выбрана',
             'width' => $serviceRequest->window_width,
             'height' => $serviceRequest->window_height,
-            'service' => $serviceRequest->service?->name ?? 'Услуга',
+            'service' => $serviceRequest->items->first()?->service_name ?? $serviceRequest->service?->name ?? 'Услуга',
+            'dimensionUnit' => $serviceRequest->items->isNotEmpty() ? 'мм' : 'см',
+            'items' => $serviceRequest->items,
             'extras' => $serviceRequest->additional_services ?? [],
             'comment' => $serviceRequest->comment ?? 'Комментарий не указан',
             'estimatedPrice' => $serviceRequest->estimated_price

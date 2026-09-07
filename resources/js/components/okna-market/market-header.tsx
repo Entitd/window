@@ -1,5 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
+import { index as catalogIndex } from '@/actions/App/Http/Controllers/CatalogController';
 import {
     dashboard,
     faq,
@@ -29,6 +30,7 @@ type HeaderActionsProps = {
 };
 
 const navItems = [
+    { key: 'catalog', label: 'Услуги', href: catalogIndex() },
     { key: 'home', label: 'Главная', href: home() },
     {
         key: 'search-results',

@@ -20,6 +20,7 @@ class VendorRequestController extends Controller
             ->with([
                 'client:id,name,phone,email',
                 'service:id,name',
+                'items.values',
                 'chat.messages.sender:id,name,email',
             ])
             ->where('vendor_id', $vendor->id)
@@ -104,7 +105,7 @@ class VendorRequestController extends Controller
     }
 
     /**
-     * @param array<int, string> $allowedStatuses
+     * @param  array<int, string>  $allowedStatuses
      */
     private function transition(
         Request $request,
@@ -149,7 +150,9 @@ class VendorRequestController extends Controller
                 : 'Не выбрана',
             'width' => $serviceRequest->window_width,
             'height' => $serviceRequest->window_height,
-            'service' => $serviceRequest->service?->name ?? 'Услуга',
+            'service' => $serviceRequest->items->first()?->service_name ?? $serviceRequest->service?->name ?? 'Услуга',
+            'items' => $serviceRequest->items,
+            'dimensionUnit' => $serviceRequest->items->isNotEmpty() ? 'мм' : 'см',
             'extras' => $serviceRequest->additional_services ?? [],
             'comment' => $serviceRequest->comment ?? 'Комментарий не указан',
             'estimatedPrice' => $serviceRequest->estimated_price

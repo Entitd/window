@@ -306,8 +306,9 @@ export default function VendorDashboard() {
                                                         Размер
                                                     </p>
                                                     <p className="mt-1 font-medium">
-                                                        {lead.width} x{' '}
-                                                        {lead.height} см
+                                                        {lead.width
+                                                            ? `${lead.width} × ${lead.height} ${lead.dimensionUnit ?? 'см'}`
+                                                            : 'Без размеров'}
                                                     </p>
                                                 </div>
                                                 <div className="rounded-lg bg-muted/50 p-3">

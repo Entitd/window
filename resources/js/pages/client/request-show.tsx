@@ -19,6 +19,7 @@ import {
     DashboardMetric,
     DashboardPage,
 } from '@/components/dashboard/dashboard-ui';
+import { RequestCatalogItems } from '@/components/request-catalog-items';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -182,6 +183,7 @@ export default function ClientRequestShow() {
     }
 
     const requestProgress = getRequestProgress(request.status);
+    const canEdit = canEditRequest(request.status) && !request.items?.length;
     const statusDetails = [
         {
             label: 'Статус',
@@ -195,7 +197,9 @@ export default function ClientRequestShow() {
         },
         {
             label: 'Размер окна',
-            value: `${request.width} x ${request.height} см`,
+            value: request.width
+                ? `${request.width} x ${request.height} ${request.dimensionUnit ?? 'см'}`
+                : 'Не требуются',
             icon: Ruler,
         },
         {
@@ -383,7 +387,8 @@ export default function ClientRequestShow() {
                             </CardContent>
                         </Card>
 
-                        {canEditRequest(request.status) && (
+                        <RequestCatalogItems items={request.items} />
+                        {canEdit && (
                             <Card
                                 id="edit-request"
                                 className="border-border/70 shadow-sm"
@@ -666,7 +671,7 @@ export default function ClientRequestShow() {
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-3">
-                                {canEditRequest(request.status) && (
+                                {canEdit && (
                                     <Button
                                         className="w-full justify-start"
                                         variant="outline"

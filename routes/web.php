@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\AdminServiceCatalogController;
 use App\Http\Controllers\AdminVendorModerationController;
 use App\Http\Controllers\Auth\RegisterClientController;
 use App\Http\Controllers\Auth\RegisterVendorController;
+use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ClientRequestController;
 use App\Http\Controllers\ReviewController;
@@ -18,6 +20,7 @@ use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 Route::inertia('/', 'okna-market')->name('home');
+Route::get('services', [CatalogController::class, 'index'])->name('catalog.index');
 Route::get('calculate', function (Request $request): RedirectResponse {
     return redirect()->route('search-results', $request->query());
 });
@@ -100,6 +103,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     Route::middleware('role:admin')->group(function () {
+        Route::get('admin/services', [AdminServiceCatalogController::class, 'index'])->name('admin.services.index');
+        Route::post('admin/services', [AdminServiceCatalogController::class, 'store'])->name('admin.services.store');
+        Route::patch('admin/services/{service}', [AdminServiceCatalogController::class, 'update'])->name('admin.services.update');
+        Route::post('admin/service-categories', [AdminServiceCatalogController::class, 'storeCategory'])->name('admin.categories.store');
+        Route::patch('admin/service-categories/{category}', [AdminServiceCatalogController::class, 'updateCategory'])->name('admin.categories.update');
         Route::get('admin/vendors/moderation', [AdminVendorModerationController::class, 'index'])
             ->name('admin.vendors.moderation');
         Route::patch('admin/vendors/{vendor}/approve', [AdminVendorModerationController::class, 'approve'])
@@ -109,6 +117,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     Route::middleware('role:client')->group(function () {
+        Route::post('client/catalog-requests', [CatalogController::class, 'store'])->name('catalog.store');
         Route::get('client/dashboard', [ClientRequestController::class, 'index'])->name('client.dashboard');
         Route::post('client/requests', [ClientRequestController::class, 'store'])->name('client.requests.store');
         Route::get('client/requests/{requestId}', [ClientRequestController::class, 'show'])->name('client.requests.show');

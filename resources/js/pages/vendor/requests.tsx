@@ -15,6 +15,8 @@ import {
     DashboardMetric,
     DashboardPage,
 } from '@/components/dashboard/dashboard-ui';
+import { RequestCatalogItems } from '@/components/request-catalog-items';
+import type { CatalogRequestItem } from '@/components/request-catalog-items';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -40,6 +42,8 @@ import {
 } from '@/routes/vendor/requests';
 
 type VendorLead = RequestClientChatLead & {
+    items?: CatalogRequestItem[];
+    dimensionUnit?: string;
     createdAt: string;
     extras: string[];
 };
@@ -354,8 +358,9 @@ export default function VendorRequestsPage({
                                                             Размер
                                                         </p>
                                                         <p className="mt-1 font-medium">
-                                                            {lead.width} x{' '}
-                                                            {lead.height} см
+                                                            {lead.width
+                                                                ? `${lead.width} × ${lead.height} ${lead.dimensionUnit ?? 'см'}`
+                                                                : 'Не требуются'}
                                                         </p>
                                                     </div>
                                                     <div className="rounded-lg bg-muted/50 p-3">
@@ -536,6 +541,9 @@ export default function VendorRequestsPage({
                                                     </p>
                                                 </div>
                                             </div>
+                                            <RequestCatalogItems
+                                                items={selectedLead.items}
+                                            />
                                             <div className="flex items-start gap-3 rounded-2xl bg-muted/50 p-4">
                                                 <Ruler
                                                     className="mt-0.5 size-4 text-muted-foreground"
@@ -546,8 +554,9 @@ export default function VendorRequestsPage({
                                                         Размер
                                                     </p>
                                                     <p className="text-muted-foreground">
-                                                        {selectedLead.width} x{' '}
-                                                        {selectedLead.height} см
+                                                        {selectedLead.width
+                                                            ? `${selectedLead.width} × ${selectedLead.height} ${selectedLead.dimensionUnit ?? 'см'}`
+                                                            : 'Не требуются'}
                                                     </p>
                                                 </div>
                                             </div>

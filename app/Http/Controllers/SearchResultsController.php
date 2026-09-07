@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Vendor;
 use App\Models\VendorService;
+use App\Services\ServiceCatalog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -12,6 +13,8 @@ use Inertia\Response;
 
 class SearchResultsController extends Controller
 {
+    public function __construct(private ServiceCatalog $catalog) {}
+
     public function index(Request $request): Response
     {
         return $this->renderResults($request);
@@ -23,18 +26,19 @@ class SearchResultsController extends Controller
         $serviceName = $this->serviceNamesByKey()[$serviceKey] ?? null;
         [$cityQuery, $districtQuery] = $this->locationParts($request->string('city')->toString());
 
+        $availableIds = $this->catalog->availableServiceIds();
+        $availableOffering = fn ($query) => $query->where('is_active', true)
+            ->where(fn ($q) => $q->whereNull('service_id')->orWhere(fn ($linked) => $linked
+                ->whereIn('service_id', $availableIds)
+                ->whereHas('rates', fn ($rates) => $rates->where('is_default', true)->whereHas('option', fn ($option) => $option->where('is_active', true)))))
+            ->when($serviceName, fn ($q) => $q->where('service_name', $serviceName));
         $vendors = Vendor::query()
             ->with([
                 'districts:id,name',
-                'services' => fn ($query) => $query
-                    ->where('is_active', true)
-                    ->when($serviceName, fn ($query) => $query->where('service_name', $serviceName))
-                    ->orderBy('min_price'),
+                'services' => fn ($query) => $availableOffering($query)->with(['rates' => fn ($rates) => $rates->whereHas('option', fn ($o) => $o->where('is_active', true))->orderByDesc('is_default')])->orderBy('min_price'),
             ])
             ->where('status', 'approved')
-            ->whereHas('services', fn ($query) => $query
-                ->where('is_active', true)
-                ->when($serviceName, fn ($query) => $query->where('service_name', $serviceName)))
+            ->whereHas('services', $availableOffering)
             ->when($cityQuery, fn ($query) => $query->where('city', 'like', "%{$cityQuery}%"))
             ->when($districtQuery, fn ($query) => $query->whereHas('districts', fn ($districts) => $districts
                 ->where('name', 'like', "%{$districtQuery}%")))
@@ -77,8 +81,10 @@ class SearchResultsController extends Controller
             'name' => $vendor->company_name,
             'description' => $vendor->description ?: 'Проверенная компания в каталоге ОкнаМаркет.',
             'matchedServiceName' => $matchedService?->service_name,
-            'priceLabel' => $this->priceLabel($minPrice),
-            'sortPrice' => $minPrice && $minPrice > 0 ? $minPrice : null,
+            'catalogServiceId' => $matchedService?->service_id,
+            'catalogRateId' => $matchedService?->rates->first()?->id,
+            'priceLabel' => $matchedService?->service_id ? 'Выберите способ расчёта' : $this->priceLabel($minPrice),
+            'sortPrice' => ! $matchedService?->service_id && $minPrice && $minPrice > 0 ? $minPrice : null,
             'availabilityLabel' => 'После согласования',
             'reviewsLabel' => 'Отзывы пока не подключены',
             'districts' => $vendor->districts->pluck('name')->values(),

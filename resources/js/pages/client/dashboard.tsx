@@ -54,7 +54,9 @@ function repeatClientRequest(requestId: string) {
 }
 
 function formatWindowSize(request: ClientRequest) {
-    return `${request.width} x ${request.height} см`;
+    return request.width
+        ? `${request.width} x ${request.height} ${request.dimensionUnit ?? 'см'}`
+        : 'Без размеров';
 }
 
 function getNextStep(request: ClientRequest) {

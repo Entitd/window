@@ -49,6 +49,7 @@ class ChatController extends Controller
             'vendor.user:id,name,email',
             'serviceRequest:id,service_id,city,district,installation_date,estimated_price,status',
             'serviceRequest.service:id,name',
+            'serviceRequest.items',
             'messages.sender:id,name,email',
         ]);
 
@@ -166,6 +167,7 @@ class ChatController extends Controller
                 'vendor.user:id,name,email',
                 'serviceRequest:id,service_id,city,district,installation_date,estimated_price,status',
                 'serviceRequest.service:id,name',
+                'serviceRequest.items',
                 'latestMessage' => fn ($query) => $query->select([
                     $message->qualifyColumn('id'),
                     $message->qualifyColumn('chat_id'),
@@ -204,7 +206,7 @@ class ChatController extends Controller
             'requestId' => (string) $chat->request_id,
             'participantName' => $this->participantName($chat, $viewer),
             'participantSubtitle' => $this->participantSubtitle($chat, $viewer),
-            'service' => $chat->serviceRequest?->service?->name ?? 'Заявка',
+            'service' => $chat->serviceRequest?->items->first()?->service_name ?? $chat->serviceRequest?->service?->name ?? 'Заявка',
             'status' => $chat->serviceRequest?->status ?? 'new',
             'location' => $this->formatLocation($chat),
             'lastMessage' => $latestMessage?->content ?? 'Сообщений пока нет',
@@ -223,7 +225,7 @@ class ChatController extends Controller
             ...$this->serializeChatListItem($chat, $viewer),
             'request' => [
                 'id' => (string) $chat->request_id,
-                'service' => $chat->serviceRequest?->service?->name ?? 'Заявка',
+                'service' => $chat->serviceRequest?->items->first()?->service_name ?? $chat->serviceRequest?->service?->name ?? 'Заявка',
                 'status' => $chat->serviceRequest?->status ?? 'new',
                 'city' => $chat->serviceRequest?->city ?? '',
                 'district' => $chat->serviceRequest?->district ?? 'Не указан',

@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Vendor extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'user_id',
         'company_name',
@@ -23,7 +25,7 @@ class Vendor extends Model
         'moderated_at',
         'moderated_by',
     ];
-    
+
     protected function casts(): array
     {
         return [
@@ -60,5 +62,4 @@ class Vendor extends Model
     {
         return $this->hasMany(Review::class, 'vendor_id');
     }
-
 }

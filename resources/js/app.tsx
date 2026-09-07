@@ -19,6 +19,7 @@ createInertiaApp({
             case name === 'vendors':
             case name === 'faq':
             case name === 'contacts':
+            case name === 'catalog':
             case name === 'privacy-policy':
             case name === 'user-agreement':
                 return null;

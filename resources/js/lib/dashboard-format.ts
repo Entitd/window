@@ -1,3 +1,4 @@
+import type { CatalogRequestItem } from '@/components/request-catalog-items';
 export type RequestStatus =
     | 'new'
     | 'awaiting_confirmation'
@@ -16,6 +17,8 @@ export type ClientRequest = {
     address: string;
     installationDate: string;
     installationDateValue?: string | null;
+    items?: CatalogRequestItem[];
+    dimensionUnit?: string;
     width: number;
     height: number;
     service: string;
@@ -47,6 +50,8 @@ export type VendorLead = {
     district: string;
     city: string;
     installationDate: string;
+    items?: CatalogRequestItem[];
+    dimensionUnit?: string;
     width: number;
     height: number;
     service: string;
@@ -60,7 +65,7 @@ export type VendorService = {
     id: string;
     name: string;
     basePrice: string;
-    pricingType: 'fixed' | 'sqm';
+    pricingType: 'fixed' | 'sqm' | 'unit' | 'quote';
     description: string;
     isActive: boolean;
 };

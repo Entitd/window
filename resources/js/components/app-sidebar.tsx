@@ -2,12 +2,13 @@ import { Link, usePage } from '@inertiajs/react';
 import {
     Building2,
     ClipboardList,
-    LayoutGrid,
     MessageSquareText,
     ShieldCheck,
     UserRound,
     Wrench,
 } from 'lucide-react';
+import { index as adminServices } from '@/actions/App/Http/Controllers/AdminServiceCatalogController';
+import { index as catalogIndex } from '@/actions/App/Http/Controllers/CatalogController';
 import { index as chatsIndex } from '@/actions/App/Http/Controllers/ChatController';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
@@ -24,15 +25,8 @@ import {
 import { dashboard } from '@/routes';
 import type { Auth, NavItem } from '@/types';
 
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Панель',
-        href: dashboard(),
-        icon: LayoutGrid,
-    },
-];
-
 const adminNavItems: NavItem[] = [
+    { title: 'Каталог услуг', href: adminServices(), icon: Wrench },
     {
         title: 'Модерация компаний',
         href: '/admin/vendors/moderation',
@@ -41,6 +35,7 @@ const adminNavItems: NavItem[] = [
 ];
 
 const clientNavItems: NavItem[] = [
+    { title: 'Выбрать услугу', href: catalogIndex(), icon: Wrench },
     {
         title: 'Мои заявки',
         href: '/client/dashboard',
