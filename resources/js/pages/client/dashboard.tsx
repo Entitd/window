@@ -1,14 +1,29 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { CalendarDays, CheckCircle2, ClipboardList, Clock3, Plus, RefreshCw, XCircle } from 'lucide-react';
-import { DashboardEmptyState, DashboardHero, DashboardMetric, DashboardPage } from '@/components/dashboard/dashboard-ui';
+import { ClipboardList, Plus, RefreshCw, XCircle } from 'lucide-react';
+import { useState } from 'react';
+import {
+    DashboardEmptyState,
+    DashboardHero,
+    DashboardPage,
+} from '@/components/dashboard/dashboard-ui';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import { getStatusLabel, getStatusVariant } from '@/lib/dashboard-format';
 import type { ClientRequest } from '@/lib/dashboard-format';
-import { dashboard as appDashboard, home } from '@/routes';
+import { home } from '@/routes';
 import { dashboard as clientDashboard } from '@/routes/client';
-import { cancel as cancelRequest, repeat as repeatRequest, show as showRequest } from '@/routes/client/requests';
+import {
+    cancel as cancelRequest,
+    repeat as repeatRequest,
+    show as showRequest,
+} from '@/routes/client/requests';
 import type { Auth } from '@/types';
 
 type PageProps = {
@@ -110,13 +125,11 @@ function RequestSummaryCard({
     request,
     isFeatured = false,
     canCancel = false,
-    canReview = false,
     canRepeat = false,
 }: {
     request: ClientRequest;
     isFeatured?: boolean;
     canCancel?: boolean;
-    canReview?: boolean;
     canRepeat?: boolean;
 }) {
     return (
@@ -230,18 +243,25 @@ function RequestSummaryCard({
                             </Link>
                         </Button>
                     )}
-
             </div>
         </article>
     );
 }
 
-function EmptyRequestsState() {
+function EmptyRequestsState({ filter }: { filter: 'active' | 'completed' }) {
     return (
         <DashboardEmptyState
             icon={ClipboardList}
-            title="Заявок ещё нет"
-            description="Создайте заявку, сравните подходящие компании и следите за заказом в одном месте."
+            title={
+                filter === 'active'
+                    ? 'Активных заявок нет'
+                    : 'Завершённых заявок нет'
+            }
+            description={
+                filter === 'active'
+                    ? 'Создайте заявку, сравните подходящие компании и следите за заказом в одном месте.'
+                    : 'Здесь появятся заявки после завершения, отмены или отклонения.'
+            }
             action={
                 <Button asChild>
                     <Link href={home()} prefetch>
@@ -256,15 +276,16 @@ function EmptyRequestsState() {
 
 export default function ClientDashboard() {
     const { auth, requests = [] } = usePage<PageProps>().props;
+    const [filter, setFilter] = useState<'active' | 'completed'>('active');
 
     const activeRequests = requests.filter(isActiveRequest);
     const completedRequests = requests.filter(
-        (request) => request.status === 'completed',
+        (request) => !isActiveRequest(request),
     );
-    const selectedRequest = activeRequests[0] ?? requests[0] ?? null;
-    const otherRequests = selectedRequest
-        ? requests.filter((request) => request.id !== selectedRequest.id)
-        : [];
+    const filteredRequests =
+        filter === 'active' ? activeRequests : completedRequests;
+    const selectedRequest = filteredRequests[0] ?? null;
+    const otherRequests = filteredRequests.slice(1);
     const nextStep = selectedRequest ? getNextStep(selectedRequest) : null;
 
     return (
@@ -325,12 +346,45 @@ export default function ClientDashboard() {
 
                 <div className="grid flex-1 gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
                     <div className="flex flex-col gap-4">
+                        <div
+                            aria-label="Фильтр заявок"
+                            className="flex flex-wrap gap-2"
+                            role="group"
+                        >
+                            <Button
+                                aria-pressed={filter === 'active'}
+                                onClick={() => setFilter('active')}
+                                type="button"
+                                variant={
+                                    filter === 'active' ? 'default' : 'outline'
+                                }
+                            >
+                                Активные заявки ({activeRequests.length})
+                            </Button>
+                            <Button
+                                aria-pressed={filter === 'completed'}
+                                onClick={() => setFilter('completed')}
+                                type="button"
+                                variant={
+                                    filter === 'completed'
+                                        ? 'default'
+                                        : 'outline'
+                                }
+                            >
+                                Завершенные ({completedRequests.length})
+                            </Button>
+                        </div>
                         <Card className="border-border/70 shadow-sm">
                             <CardHeader>
-                                <CardTitle>Текущая заявка</CardTitle>
+                                <CardTitle>
+                                    {filter === 'active'
+                                        ? 'Текущая заявка'
+                                        : 'Завершённые заявки'}
+                                </CardTitle>
                                 <CardDescription>
-                                    Статус, исполнитель, дата и основные
-                                    параметры заказа.
+                                    {filter === 'active'
+                                        ? 'Статус, исполнитель, дата и основные параметры заказа.'
+                                        : 'История выполненных, отменённых и отклонённых заявок.'}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
@@ -342,7 +396,7 @@ export default function ClientDashboard() {
                                         canRepeat
                                     />
                                 ) : (
-                                    <EmptyRequestsState />
+                                    <EmptyRequestsState filter={filter} />
                                 )}
                             </CardContent>
                         </Card>
@@ -374,7 +428,9 @@ export default function ClientDashboard() {
                     <aside className="flex flex-col gap-4">
                         <Card className="border-border/70 shadow-sm">
                             <CardHeader>
-                                <CardTitle>История изменений по текущей заявке</CardTitle>
+                                <CardTitle>
+                                    История изменений по текущей заявке
+                                </CardTitle>
                                 {/* <CardDescription>
                                     История изменений по текущей заявке.
                                 </CardDescription> */}
