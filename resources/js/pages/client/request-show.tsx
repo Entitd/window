@@ -71,7 +71,7 @@ const requestSteps = [
     },
     {
         key: 'company_selected',
-        title: 'Компания выбрана',
+        title: 'Ждем ответ от компании',
         statuses: [
             'awaiting_confirmation',
             'confirmed',

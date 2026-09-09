@@ -400,7 +400,14 @@ export default function SearchResults() {
                                     <div
                                         className={`company-logo ${company.tone}`}
                                     >
-                                        {company.initials}
+                                        {company.logoUrl ? (
+                                            <img
+                                                src={company.logoUrl}
+                                                alt={`Логотип ${company.name}`}
+                                            />
+                                        ) : (
+                                            company.initials
+                                        )}
                                     </div>
                                     <div className="company-info">
                                         <h3>{company.name}</h3>

@@ -1575,10 +1575,17 @@
     border-radius: var(--surface-radius);
     display: grid;
     place-items: center;
+    overflow: hidden;
     color: var(--primary-dark);
     font-family: var(--font-sans);
     font-size: var(--font-size-heading);
     font-weight: var(--font-weight-heading);
+}
+
+.okna-market-page .company-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .okna-market-page .blue {

@@ -42,7 +42,12 @@ class VendorDashboardController extends Controller
                         'rejected' => 'Профиль отклонен. Проверьте комментарий администратора.',
                         default => 'Профиль отправлен на модерацию и пока не показывается клиентам.',
                     },
-                'logo' => $vendor->logo ?? Str::substr($vendor->company_name, 0, 2),
+                'logoUrl' => Str::startsWith($vendor->logo ?? '', 'vendor-logos/')
+                    ? '/storage/'.$vendor->logo
+                    : null,
+                'logoInitials' => Str::startsWith($vendor->logo ?? '', 'vendor-logos/')
+                    ? Str::substr($vendor->company_name, 0, 2)
+                    : ($vendor->logo ?? Str::substr($vendor->company_name, 0, 2)),
                 'gallery' => [],
             ],
             'vendorServices' => $vendor->services()

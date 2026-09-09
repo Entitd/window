@@ -2,14 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UpdateVendorLogoRequest;
+use App\Http\Requests\UpdateVendorProfileRequest;
 use App\Models\City;
 use App\Models\District;
 use App\Models\Vendor;
+use App\Services\VendorLogoManager;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -36,32 +38,11 @@ class VendorProfileController extends Controller
         ]);
     }
 
-    public function update(Request $request): RedirectResponse
+    public function update(UpdateVendorProfileRequest $request): RedirectResponse
     {
         $vendor = $this->vendorFor($request);
 
-        $validated = $request->validate([
-            'company_name' => ['required', 'string', 'max:255'],
-            'city' => ['required', 'string', 'max:255'],
-            'phone' => [
-                'required',
-                'string',
-                'max:50',
-                Rule::unique('users', 'phone')->ignore($request->user()->id),
-                Rule::unique('vendors', 'phone')->ignore($vendor->id),
-            ],
-            'email' => [
-                'required',
-                'string',
-                'email',
-                'max:255',
-                Rule::unique('users', 'email')->ignore($request->user()->id),
-                Rule::unique('vendors', 'email')->ignore($vendor->id),
-            ],
-            'districts' => ['required', 'string', 'max:500'],
-            'description' => ['required', 'string', 'max:2000'],
-            'logo' => ['nullable', 'string', 'max:255'],
-        ]);
+        $validated = $request->validated();
 
         DB::transaction(function () use ($request, $vendor, $validated) {
             $cityName = trim($validated['city']);
@@ -89,7 +70,6 @@ class VendorProfileController extends Controller
                 'city' => $cityName,
                 'phone' => $validated['phone'],
                 'email' => Str::lower($validated['email']),
-                'logo' => $validated['logo'] ?: null,
             ];
 
             $vendor->fill($profileData);
@@ -109,6 +89,13 @@ class VendorProfileController extends Controller
                 'email' => Str::lower($validated['email']),
             ]);
         });
+
+        return back();
+    }
+
+    public function updateLogo(UpdateVendorLogoRequest $request, VendorLogoManager $logoManager): RedirectResponse
+    {
+        $logoManager->update($this->vendorFor($request), $request->validated('logo'));
 
         return back();
     }
@@ -139,7 +126,12 @@ class VendorProfileController extends Controller
                     'rejected' => 'Профиль отклонен. Проверьте комментарий администратора.',
                     default => 'Профиль отправлен на модерацию и пока не показывается клиентам.',
                 },
-            'logo' => $vendor->logo ?? Str::substr($vendor->company_name, 0, 2),
+            'logoUrl' => Str::startsWith($vendor->logo ?? '', 'vendor-logos/')
+                ? '/storage/'.$vendor->logo
+                : null,
+            'logoInitials' => Str::startsWith($vendor->logo ?? '', 'vendor-logos/')
+                ? Str::substr($vendor->company_name, 0, 2)
+                : ($vendor->logo ?? Str::substr($vendor->company_name, 0, 2)),
             'gallery' => [],
         ];
     }

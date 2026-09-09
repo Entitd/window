@@ -54,6 +54,7 @@ export type MarketplaceCompany = {
     catalogRateId?: number | null;
     id?: number;
     initials: string;
+    logoUrl?: string | null;
     tone: 'blue' | 'green' | 'violet';
     name: string;
     description: string;

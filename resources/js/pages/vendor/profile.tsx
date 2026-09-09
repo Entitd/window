@@ -8,7 +8,8 @@ import {
     Phone,
     ShieldCheck,
 } from 'lucide-react';
-import type { FormEvent } from 'react';
+import { useState } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
 import {
     DashboardHero,
     DashboardMetric,
@@ -36,6 +37,7 @@ import {
     services as vendorServicesPage,
 } from '@/routes/vendor';
 import { update as updateProfile } from '@/routes/vendor/profile';
+import { update as updateLogo } from '@/routes/vendor/profile/logo';
 
 type PageProps = {
     vendorProfile: VendorProfile;
@@ -61,8 +63,17 @@ export default function VendorProfilePage() {
             email: vendorProfile.email,
             districts: vendorProfile.districts.join(', '),
             description: vendorProfile.description,
-            logo: vendorProfile.logo,
         });
+    const {
+        data: logoData,
+        setData: setLogoData,
+        post: postLogo,
+        processing: logoProcessing,
+        errors: logoErrors,
+        progress: logoProgress,
+        reset: resetLogo,
+    } = useForm<{ logo: File | null }>({ logo: null });
+    const [logoPreview, setLogoPreview] = useState(vendorProfile.logoUrl);
 
     const districts = data.districts
         .split(',')
@@ -92,9 +103,9 @@ export default function VendorProfilePage() {
             note: 'Хотя бы одна услуга уже опубликована.',
         },
         {
-            title: 'Обозначение компании',
-            done: data.logo.trim().length > 0,
-            note: 'Указаны инициалы для аватара компании.',
+            title: 'Логотип компании',
+            done: Boolean(logoPreview),
+            note: 'Загружен логотип компании.',
         },
     ];
 
@@ -122,8 +133,8 @@ export default function VendorProfilePage() {
             icon: BriefcaseBusiness,
         },
         {
-            label: 'Обозначение',
-            value: data.logo || 'Не указан',
+            label: 'Логотип',
+            value: logoPreview ? 'Загружен' : 'Не указан',
             icon: Building2,
         },
     ];
@@ -134,6 +145,24 @@ export default function VendorProfilePage() {
         patch(updateProfile.url(), {
             preserveScroll: true,
         });
+    }
+
+    function submitLogo() {
+        postLogo(updateLogo.url(), {
+            preserveScroll: true,
+            onSuccess: () => resetLogo('logo'),
+        });
+    }
+
+    function selectLogo(event: ChangeEvent<HTMLInputElement>) {
+        const logo = event.target.files?.[0] ?? null;
+
+        if (logoPreview?.startsWith('blob:')) {
+            URL.revokeObjectURL(logoPreview);
+        }
+
+        setLogoData('logo', logo);
+        setLogoPreview(logo ? URL.createObjectURL(logo) : vendorProfile.logoUrl);
     }
 
     return (
@@ -305,19 +334,51 @@ export default function VendorProfilePage() {
                                     <ErrorText message={errors.description} />
                                 </div>
 
-                                <div className="grid gap-2">
-                                    <Label htmlFor="logo">
-                                        Инициалы компании
-                                    </Label>
-                                    <Input
-                                        id="logo"
-                                        value={data.logo}
-                                        onChange={(event) =>
-                                            setData('logo', event.target.value)
-                                        }
-                                        placeholder="ОК"
-                                    />
-                                    <ErrorText message={errors.logo} />
+                                <div className="grid gap-3">
+                                    <Label htmlFor="logo">Логотип компании</Label>
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-primary text-lg font-semibold text-primary-foreground shadow-sm">
+                                            {logoPreview ? (
+                                                <img
+                                                    src={logoPreview}
+                                                    alt="Логотип компании"
+                                                    className="size-full object-cover"
+                                                />
+                                            ) : (
+                                                vendorProfile.logoInitials
+                                            )}
+                                        </div>
+                                        <div className="grid min-w-0 flex-1 gap-2">
+                                            <Input
+                                                id="logo"
+                                                type="file"
+                                                accept="image/jpeg,image/png,image/webp"
+                                                onChange={selectLogo}
+                                                disabled={logoProcessing}
+                                                className="file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-primary-foreground hover:file:bg-primary/90"
+                                            />
+                                            <p className="text-sm text-muted-foreground">
+                                                JPG, PNG или WebP, до 2 МБ.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <ErrorText message={logoErrors.logo} />
+                                    {logoProgress && (
+                                        <p className="text-sm text-muted-foreground">
+                                            Загрузка: {logoProgress.percentage}%
+                                        </p>
+                                    )}
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={submitLogo}
+                                        disabled={!logoData.logo || logoProcessing}
+                                        className="w-fit"
+                                    >
+                                        {logoProcessing
+                                            ? 'Загружаем...'
+                                            : 'Сохранить логотип'}
+                                    </Button>
                                 </div>
 
                                 <Button type="submit" disabled={processing}>
@@ -451,9 +512,17 @@ export default function VendorProfilePage() {
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-primary text-lg font-semibold text-primary-foreground shadow-sm">
-                                        {data.logo ||
-                                            data.company_name.slice(0, 2)}
+                                    <div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-primary text-lg font-semibold text-primary-foreground shadow-sm">
+                                        {logoPreview ? (
+                                            <img
+                                                src={logoPreview}
+                                                alt="Логотип компании"
+                                                className="size-full object-cover"
+                                            />
+                                        ) : (
+                                            vendorProfile.logoInitials ||
+                                            data.company_name.slice(0, 2)
+                                        )}
                                     </div>
                                     <div className="min-w-0">
                                         <p className="truncate font-semibold">

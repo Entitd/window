@@ -79,7 +79,8 @@ export type VendorProfile = {
     districts: string[];
     moderationStatus: 'pending' | 'approved' | 'rejected';
     moderationNote: string;
-    logo: string;
+    logoUrl: string | null;
+    logoInitials: string;
     gallery: string[];
 };
 

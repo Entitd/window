@@ -77,6 +77,9 @@ class SearchResultsController extends Controller
         return [
             'id' => $vendor->id,
             'initials' => $this->initials($vendor->company_name),
+            'logoUrl' => Str::startsWith($vendor->logo ?? '', 'vendor-logos/')
+                ? '/storage/'.$vendor->logo
+                : null,
             'tone' => $this->tone($vendor->id),
             'name' => $vendor->company_name,
             'description' => $vendor->description ?: 'Проверенная компания в каталоге ОкнаМаркет.',

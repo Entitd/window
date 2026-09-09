@@ -136,6 +136,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('vendor/profile', [VendorProfileController::class, 'edit'])->name('vendor.profile');
         Route::patch('vendor/profile', [VendorProfileController::class, 'update'])
             ->name('vendor.profile.update');
+        Route::post('vendor/profile/logo', [VendorProfileController::class, 'updateLogo'])
+            ->name('vendor.profile.logo.update');
         Route::get('vendor/services', [VendorServiceController::class, 'index'])->name('vendor.services');
         Route::post('vendor/services', [VendorServiceController::class, 'store'])->name('vendor.services.store');
         Route::patch('vendor/services/{service}', [VendorServiceController::class, 'update'])->name('vendor.services.update');
