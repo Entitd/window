@@ -9,7 +9,6 @@ use App\Models\ServiceRequest;
 use App\Models\ServiceRequestStatusHistory;
 use App\Models\User;
 use App\Models\Vendor;
-use App\Models\VendorService;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -23,36 +22,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $services = collect([
-            [
-                'name' => 'Замена стеклопакета',
-                'description' => 'Замена поврежденного или потерявшего герметичность стеклопакета.',
-            ],
-            [
-                'name' => 'Установка окна',
-                'description' => 'Монтаж нового окна с базовой подготовкой проема.',
-            ],
-            [
-                'name' => 'Балконный блок',
-                'description' => 'Установка окна и двери на балкон с подготовкой проема.',
-            ],
-            [
-                'name' => 'Замер',
-                'description' => 'Выезд специалиста и уточнение параметров будущей работы.',
-            ],
-            [
-                'name' => 'Ремонт и регулировка',
-                'description' => 'Регулировка, замена фурнитуры и устранение продувания.',
-            ],
-        ])->mapWithKeys(fn (array $service) => [
-            $service['name'] => Service::updateOrCreate(
-                ['name' => $service['name']],
-                [
-                    'description' => $service['description'],
-                    'is_active' => true,
-                ],
-            ),
-        ]);
+        $this->call(ServiceCatalogSeeder::class);
 
         $city = City::updateOrCreate(
             ['name' => 'Волгоград'],
@@ -95,7 +65,7 @@ class DatabaseSeeder extends Seeder
         );
 
         $approvedVendorUser = User::updateOrCreate(
-                ['email' => 'vendor.approved@example.com'],
+            ['email' => 'vendor.approved@example.com'],
             [
                 'name' => 'ОкнаПрофи Волгоград',
                 'phone' => '+79990000003',
@@ -156,45 +126,15 @@ class DatabaseSeeder extends Seeder
             $districts['Краснооктябрьский']->id,
         ]);
 
-        $this->seedVendorServices($approvedVendor, [
-            [
-                'service_name' => 'Замена стеклопакета',
-                'description' => 'Замена стеклопакета с выездом и базовой диагностикой.',
-                'min_price' => 6500,
-                'price_type' => 'fixed',
-                'is_active' => true,
-            ],
-            [
-                'service_name' => 'Установка окна',
-                'description' => 'Монтаж нового оконного блока после замера.',
-                'min_price' => 12500,
-                'price_type' => 'sqm',
-                'is_active' => true,
-            ],
-            [
-                'service_name' => 'Ремонт и регулировка',
-                'description' => 'Регулировка створок и замена фурнитуры.',
-                'min_price' => 2500,
-                'price_type' => 'fixed',
-                'is_active' => false,
-            ],
-        ]);
+        $this->call(VendorServiceSeeder::class);
 
-        $this->seedVendorServices($pendingVendor, [
-            [
-                'service_name' => 'Балконный блок',
-                'description' => 'Черновая услуга для проверки модерации.',
-                'min_price' => 18000,
-                'price_type' => 'fixed',
-                'is_active' => true,
-            ],
-        ]);
+        $glassReplacement = Service::where('name', 'Замена стеклопакета')->firstOrFail();
 
         $request = ServiceRequest::updateOrCreate(
             [
                 'client_id' => $client->id,
                 'vendor_id' => $approvedVendor->id,
-                'service_id' => $services['Замена стеклопакета']->id,
+                'service_id' => $glassReplacement->id,
             ],
             [
                 'calculation_id' => null,
@@ -240,34 +180,5 @@ class DatabaseSeeder extends Seeder
                 'note' => 'Компания приняла тестовую заявку.',
             ],
         );
-    }
-
-    /**
-     * @param  array<int, array<string, mixed>>  $services
-     */
-    private function seedVendorServices(Vendor $vendor, array $services): void
-    {
-        $seenServiceNames = [];
-
-        foreach ($services as $service) {
-            $seenServiceNames[] = $service['service_name'];
-
-            VendorService::updateOrCreate(
-                [
-                    'vendor_id' => $vendor->id,
-                    'service_name' => $service['service_name'],
-                ],
-                [
-                    'description' => $service['description'],
-                    'min_price' => $service['min_price'],
-                    'price_type' => $service['price_type'],
-                    'is_active' => $service['is_active'],
-                ],
-            );
-        }
-
-        $vendor->services()
-            ->whereNotIn('service_name', $seenServiceNames)
-            ->delete();
     }
 }
