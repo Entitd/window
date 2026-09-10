@@ -5,6 +5,7 @@ import {
     homepageFaqItems,
 } from '@/components/okna-market/faq-accordion';
 import { FindCompanyForm } from '@/components/okna-market/find-company-form';
+import type { SearchService } from '@/components/okna-market/find-company-form';
 import { MarketShell } from '@/components/okna-market/market-shell';
 import '../../css/okna-market.css';
 
@@ -313,7 +314,9 @@ function formatRoubles(value: number): string {
     return new Intl.NumberFormat('ru-RU').format(Math.round(value / 100) * 100);
 }
 
-export default function OknaMarket() {
+type Props = { services: SearchService[] };
+
+export default function OknaMarket({ services }: Props) {
     const activeDemoStep = catalogDemoSteps[0];
     const filters = activeDemoStep.filters;
     const sortKey = activeDemoStep.sortKey;
@@ -384,7 +387,7 @@ export default function OknaMarket() {
                             </h1>
                         </div>
 
-                        <FindCompanyForm />
+                        <FindCompanyForm services={services} />
                     </div>
                 </section>
 

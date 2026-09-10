@@ -2,6 +2,7 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
 import { index as catalogIndex } from '@/actions/App/Http/Controllers/CatalogController';
 import { FindCompanyForm } from '@/components/okna-market/find-company-form';
+import type { SearchService } from '@/components/okna-market/find-company-form';
 import { MarketShell } from '@/components/okna-market/market-shell';
 import type {
     MarketplaceCompany,
@@ -25,10 +26,12 @@ type CreatedRequest = {
 
 type PageProps = {
     companies: MarketplaceCompany[];
+    services: SearchService[];
 };
 export default function SearchResults() {
     const { url, props } = usePage<PageProps>();
     const companies = props.companies;
+    const services = props.services;
     const request = useMemo(() => parseSearchState(url), [url]);
     const [sortKey, setSortKey] = useState<SortKey>('price');
     const [priceFilter, setPriceFilter] = useState<PriceFilterKey>('all');
@@ -232,7 +235,7 @@ export default function SearchResults() {
 
                 <section className="summary-section">
                     <div className="container">
-                        <FindCompanyForm />
+                        <FindCompanyForm services={services} />
                     </div>
                 </section>
 

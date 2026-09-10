@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Service;
 use App\Models\Vendor;
 use App\Models\VendorService;
 use App\Services\ServiceCatalog;
@@ -22,16 +23,17 @@ class SearchResultsController extends Controller
 
     private function renderResults(Request $request): Response
     {
-        $serviceKey = $request->string('serviceKey')->toString();
-        $serviceName = $this->serviceNamesByKey()[$serviceKey] ?? null;
+        $catalogServices = $this->catalog->searchServices();
+        $requestedServiceId = $request->integer('service_id');
+        $serviceId = $catalogServices->contains('id', $requestedServiceId) ? $requestedServiceId : null;
         [$cityQuery, $districtQuery] = $this->locationParts($request->string('city')->toString());
 
-        $availableIds = $this->catalog->availableServiceIds();
+        $availableIds = $catalogServices->modelKeys();
         $availableOffering = fn ($query) => $query->where('is_active', true)
             ->where(fn ($q) => $q->whereNull('service_id')->orWhere(fn ($linked) => $linked
                 ->whereIn('service_id', $availableIds)
                 ->whereHas('rates', fn ($rates) => $rates->where('is_default', true)->whereHas('option', fn ($option) => $option->where('is_active', true)))))
-            ->when($serviceName, fn ($q) => $q->where('service_name', $serviceName));
+            ->when($request->has('service_id'), fn ($q) => $q->where('service_id', $serviceId ?? 0));
         $vendors = Vendor::query()
             ->with([
                 'districts:id,name',
@@ -50,9 +52,12 @@ class SearchResultsController extends Controller
                 ->map(fn (Vendor $vendor) => $this->serializeVendor(
                     $vendor,
                     $vendor->services,
-                    $serviceName,
+                    $serviceId,
                 ))
                 ->sortBy(fn (array $company) => $company['sortPrice'] ?? PHP_INT_MAX)
+                ->values(),
+            'services' => $catalogServices
+                ->map(fn (Service $service) => ['id' => $service->id, 'name' => $service->name])
                 ->values(),
         ]);
     }
@@ -61,7 +66,7 @@ class SearchResultsController extends Controller
      * @param  Collection<int, VendorService>  $services
      * @return array<string, mixed>
      */
-    private function serializeVendor(Vendor $vendor, Collection $services, ?string $serviceName): array
+    private function serializeVendor(Vendor $vendor, Collection $services, ?int $serviceId): array
     {
         $serviceKeys = $services
             ->pluck('service_name')
@@ -69,8 +74,8 @@ class SearchResultsController extends Controller
             ->filter()
             ->unique()
             ->values();
-        $matchedService = $serviceName
-            ? $services->firstWhere('service_name', $serviceName)
+        $matchedService = $serviceId
+            ? $services->firstWhere('service_id', $serviceId)
             : $services->sortBy('min_price')->first();
         $minPrice = $matchedService ? (float) $matchedService->min_price : null;
 

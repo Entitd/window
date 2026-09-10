@@ -2,22 +2,9 @@ import { router } from '@inertiajs/react';
 import { useState } from 'react';
 import { searchResults } from '@/routes';
 
-type ServiceKey =
-    | 'glass_replacement'
-    | 'window_installation'
-    | 'balcony_block'
-    | 'measurement'
-    | 'repair';
-
 type WindowTypeKey = 'single' | 'double' | 'triple' | 'balcony';
 
-const services: Array<{ key: ServiceKey; title: string }> = [
-    { key: 'glass_replacement', title: 'Замена стеклопакета' },
-    { key: 'window_installation', title: 'Установка окна' },
-    { key: 'balcony_block', title: 'Балконный блок' },
-    { key: 'measurement', title: 'Замер' },
-    { key: 'repair', title: 'Ремонт/регулировка' },
-];
+export type SearchService = { id: number; name: string };
 
 const windowTypes: Array<{ key: WindowTypeKey; title: string }> = [
     { key: 'single', title: 'Одностворчатое' },
@@ -26,19 +13,27 @@ const windowTypes: Array<{ key: WindowTypeKey; title: string }> = [
     { key: 'balcony', title: 'Балконный блок' },
 ];
 
-export function FindCompanyForm() {
-    const [serviceKey, setServiceKey] =
-        useState<ServiceKey>('glass_replacement');
+type Props = { services: SearchService[] };
+
+export function FindCompanyForm({ services }: Props) {
+    const [selectedServiceId, setSelectedServiceId] = useState<number | null>(
+        services[0]?.id ?? null,
+    );
     const [windowTypeKey, setWindowTypeKey] = useState<WindowTypeKey>('double');
     const [width, setWidth] = useState(130);
     const [height, setHeight] = useState(140);
+    const serviceId = services.some(
+        (service) => service.id === selectedServiceId,
+    )
+        ? selectedServiceId
+        : (services[0]?.id ?? null);
 
     function submitSearchRequest() {
         router.get(searchResults.url(), {
             city: 'Волгоград',
             width: String(width),
             height: String(height),
-            serviceKey,
+            service_id: serviceId ?? undefined,
             extraWorks: 'dismantling',
         });
     }
@@ -62,17 +57,17 @@ export function FindCompanyForm() {
 
             <div aria-label="Тип услуги" className="service-chips" role="list">
                 {services.map((service) => {
-                    const isActive = service.key === serviceKey;
+                    const isActive = service.id === serviceId;
 
                     return (
                         <button
                             aria-pressed={isActive}
                             className={`chip ${isActive ? 'active' : ''}`}
-                            key={service.key}
-                            onClick={() => setServiceKey(service.key)}
+                            key={service.id}
+                            onClick={() => setSelectedServiceId(service.id)}
                             type="button"
                         >
-                            {service.title}
+                            {service.name}
                         </button>
                     );
                 })}
@@ -137,6 +132,7 @@ export function FindCompanyForm() {
 
                 <button
                     className="btn btn-accent btn-find-companies"
+                    disabled={serviceId === null}
                     type="submit"
                 >
                     Найти компании

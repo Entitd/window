@@ -48,6 +48,14 @@ class ServiceCatalog
         return $this->availableQuery()->pluck('id')->all();
     }
 
+    public function searchServices(): Collection
+    {
+        return $this->availableQuery()
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get(['id', 'name']);
+    }
+
     private function availableQuery(): Builder
     {
         return Service::where('is_active', true)

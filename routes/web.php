@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\RegisterVendorController;
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ClientRequestController;
+use App\Http\Controllers\MarketplaceController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SearchResultsController;
 use App\Http\Controllers\VendorDashboardController;
@@ -19,7 +20,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
-Route::inertia('/', 'okna-market')->name('home');
+Route::get('/', [MarketplaceController::class, 'home'])->name('home');
 Route::get('services', [CatalogController::class, 'index'])->name('catalog.index');
 Route::get('calculate', function (Request $request): RedirectResponse {
     return redirect()->route('search-results', $request->query());
