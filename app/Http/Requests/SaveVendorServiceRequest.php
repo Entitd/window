@@ -23,6 +23,7 @@ class SaveVendorServiceRequest extends FormRequest
         return [
             'service_id' => ['required', 'integer', Rule::exists('services', 'id')->where('is_active', true)->whereIn('category_id', $catalog->activeCategoryIds()), Rule::unique('vendor_services')->where('vendor_id', $this->user()->vendor?->id)->ignore($this->route('service')?->id)],
             'description' => ['nullable', 'string', 'max:2000'],
+            'warranty_months' => ['required', 'integer', 'between:1,120'],
             'is_active' => ['required', 'boolean'],
             'rates' => ['required', 'array', 'min:1', 'max:20'],
             'rates.*' => ['array:service_option_id,price,is_default'],

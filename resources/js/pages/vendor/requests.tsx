@@ -1,14 +1,16 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import {
     BadgeDollarSign,
     CalendarDays,
     ClipboardList,
     MapPinned,
     MessageSquareText,
+    Pencil,
     Ruler,
     ShieldCheck,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type { FormEvent } from 'react';
 import {
     DashboardEmptyState,
     DashboardHero,
@@ -26,6 +28,8 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { RequestClientChatDialog } from '@/components/vendor/request-client-chat-dialog';
 import type { RequestClientChatLead } from '@/components/vendor/request-client-chat-dialog';
 import { getStatusLabel, getStatusVariant } from '@/lib/dashboard-format';
@@ -39,22 +43,50 @@ import {
     complete as completeRequest,
     reject as rejectRequest,
     start as startRequest,
+    update as updateRequest,
 } from '@/routes/vendor/requests';
+import {
+    accept as acceptAmendment,
+    reject as rejectAmendment,
+} from '@/routes/vendor/requests/amendments';
 
 type VendorLead = RequestClientChatLead & {
     items?: CatalogRequestItem[];
     dimensionUnit?: string;
     createdAt: string;
     extras: string[];
+    districtValue?: string | null;
+    installationDateValue?: string | null;
+    commentValue?: string | null;
+    pendingAmendment: {
+        id: string;
+        proposedByRole: 'client' | 'vendor' | 'admin';
+        proposedByName: string;
+        clientAccepted: boolean | null;
+        vendorAccepted: boolean | null;
+        changes: Array<{ label: string; value: string }>;
+    } | null;
+};
+
+type VendorRequestEditForm = {
+    city: string;
+    district: string;
+    installation_date: string;
+    window_width: number;
+    window_height: number;
+    additional_services: string;
+    comment: string;
 };
 
 type VendorRequestsPageProps = {
     requests: VendorLead[];
+    selectedStatus: RequestStatus | null;
 };
 
 const filters: Array<{ key: 'all' | RequestStatus; label: string }> = [
     { key: 'all', label: 'Все' },
     { key: 'new', label: 'Новые' },
+    { key: 'awaiting_confirmation', label: 'Ждут подтверждения' },
     { key: 'confirmed', label: 'Принятые' },
     { key: 'in_progress', label: 'В работе' },
     { key: 'completed', label: 'Завершенные' },
@@ -123,6 +155,13 @@ function canCompleteRequest(status: RequestStatus) {
     return status === 'in_progress';
 }
 
+function canProposeAmendment(lead: VendorLead) {
+    return (
+        ['new', 'awaiting_confirmation', 'confirmed'].includes(lead.status) &&
+        !lead.pendingAmendment
+    );
+}
+
 function patchRequestStatus(
     requestId: string,
     action: 'accept' | 'reject' | 'start' | 'complete',
@@ -143,29 +182,39 @@ function patchRequestStatus(
     );
 }
 
+function decideVendorAmendment(
+    requestId: string,
+    amendmentId: string,
+    decision: 'accept' | 'reject',
+) {
+    const action = {
+        accept: acceptAmendment,
+        reject: rejectAmendment,
+    }[decision];
+
+    router.patch(
+        action.url([Number(requestId), Number(amendmentId)]),
+        {},
+        {
+            preserveScroll: true,
+        },
+    );
+}
+
 export default function VendorRequestsPage({
     requests,
+    selectedStatus,
 }: VendorRequestsPageProps) {
-    const [activeFilter, setActiveFilter] = useState<'all' | RequestStatus>(
-        'all',
-    );
-
-    const visibleLeads = useMemo(
-        () =>
-            activeFilter === 'all'
-                ? requests
-                : requests.filter((lead) => lead.status === activeFilter),
-        [activeFilter, requests],
-    );
+    const activeFilter = selectedStatus ?? 'all';
 
     const sortedLeads = useMemo(
         () =>
-            [...visibleLeads].sort(
+            [...requests].sort(
                 (firstLead, secondLead) =>
                     getLeadPriority(secondLead.status) -
                     getLeadPriority(firstLead.status),
             ),
-        [visibleLeads],
+        [requests],
     );
 
     const [selectedLeadId, setSelectedLeadId] = useState<string>(
@@ -180,6 +229,35 @@ export default function VendorRequestsPage({
     const chatLead = chatLeadId
         ? (requests.find((lead) => lead.id === chatLeadId) ?? null)
         : null;
+    const editForm = useForm<VendorRequestEditForm>({
+        city: '',
+        district: '',
+        installation_date: '',
+        window_width: 1,
+        window_height: 1,
+        additional_services: '',
+        comment: '',
+    });
+    const editFormRef = useRef(editForm);
+
+    editFormRef.current = editForm;
+
+    useEffect(() => {
+        if (!selectedLead) {
+            return;
+        }
+
+        editFormRef.current.setData({
+            city: selectedLead.city,
+            district: selectedLead.districtValue ?? '',
+            installation_date: selectedLead.installationDateValue ?? '',
+            window_width: selectedLead.width,
+            window_height: selectedLead.height,
+            additional_services: selectedLead.extras.join(', '),
+            comment: selectedLead.commentValue ?? '',
+        });
+        editFormRef.current.clearErrors();
+    }, [selectedLead?.id]);
 
     const leadStats = [
         {
@@ -204,6 +282,31 @@ export default function VendorRequestsPage({
     const openChatForLead = (leadId: string) => {
         setSelectedLeadId(leadId);
         setChatLeadId(leadId);
+    };
+
+    const submitAmendment = (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+
+        if (!selectedLead || !canProposeAmendment(selectedLead)) {
+            return;
+        }
+
+        editForm.patch(updateRequest.url(Number(selectedLead.id)), {
+            preserveScroll: true,
+        });
+    };
+
+    const selectFilter = (status: 'all' | RequestStatus) => {
+        router.get(
+            vendorRequestsPage.url({
+                query: status === 'all' ? {} : { status },
+            }),
+            {},
+            {
+                preserveScroll: true,
+                replace: true,
+            },
+        );
     };
 
     return (
@@ -266,7 +369,7 @@ export default function VendorRequestsPage({
                                             size="sm"
                                             type="button"
                                             onClick={() =>
-                                                setActiveFilter(filter.key)
+                                                selectFilter(filter.key)
                                             }
                                         >
                                             {filter.label}
@@ -413,9 +516,7 @@ export default function VendorRequestsPage({
                                                         type="button"
                                                         variant="outline"
                                                         onClick={() =>
-                                                            setActiveFilter(
-                                                                'all',
-                                                            )
+                                                            selectFilter('all')
                                                         }
                                                     >
                                                         Показать все
@@ -623,6 +724,294 @@ export default function VendorRequestsPage({
                                                 </div>
                                             </div>
                                         </div>
+
+                                        {selectedLead.pendingAmendment && (
+                                            <div className="space-y-4 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4">
+                                                <div>
+                                                    <p className="font-medium">
+                                                        Правки ожидают
+                                                        подтверждения
+                                                    </p>
+                                                    <p className="mt-1 text-sm text-muted-foreground">
+                                                        {selectedLead
+                                                            .pendingAmendment
+                                                            .proposedByRole ===
+                                                        'vendor'
+                                                            ? 'Правки отправлены клиенту. Параметры заявки обновятся после его подтверждения.'
+                                                            : `${selectedLead.pendingAmendment.proposedByName} предложил(а) изменить заявку.`}
+                                                    </p>
+                                                </div>
+                                                <div className="grid gap-3 sm:grid-cols-2">
+                                                    {selectedLead.pendingAmendment.changes.map(
+                                                        (change) => (
+                                                            <div
+                                                                className="rounded-xl bg-background/80 p-3"
+                                                                key={
+                                                                    change.label
+                                                                }
+                                                            >
+                                                                <p className="text-xs text-muted-foreground">
+                                                                    {
+                                                                        change.label
+                                                                    }
+                                                                </p>
+                                                                <p className="mt-1 text-sm font-medium">
+                                                                    {
+                                                                        change.value
+                                                                    }
+                                                                </p>
+                                                            </div>
+                                                        ),
+                                                    )}
+                                                </div>
+                                                {selectedLead.pendingAmendment
+                                                    .proposedByRole !==
+                                                    'vendor' &&
+                                                    !selectedLead
+                                                        .pendingAmendment
+                                                        .vendorAccepted && (
+                                                        <div className="flex flex-wrap gap-2">
+                                                            <Button
+                                                                size="sm"
+                                                                type="button"
+                                                                onClick={() =>
+                                                                    decideVendorAmendment(
+                                                                        selectedLead.id,
+                                                                        selectedLead
+                                                                            .pendingAmendment!
+                                                                            .id,
+                                                                        'accept',
+                                                                    )
+                                                                }
+                                                            >
+                                                                Подтвердить
+                                                                правки
+                                                            </Button>
+                                                            <Button
+                                                                size="sm"
+                                                                type="button"
+                                                                variant="outline"
+                                                                onClick={() =>
+                                                                    decideVendorAmendment(
+                                                                        selectedLead.id,
+                                                                        selectedLead
+                                                                            .pendingAmendment!
+                                                                            .id,
+                                                                        'reject',
+                                                                    )
+                                                                }
+                                                            >
+                                                                Отклонить
+                                                            </Button>
+                                                        </div>
+                                                    )}
+                                            </div>
+                                        )}
+
+                                        {canProposeAmendment(selectedLead) && (
+                                            <form
+                                                className="grid gap-3 border-t border-border/70 pt-4 sm:grid-cols-2"
+                                                onSubmit={submitAmendment}
+                                            >
+                                                <div className="sm:col-span-2">
+                                                    <p className="font-medium">
+                                                        Предложить правки
+                                                    </p>
+                                                    <p className="mt-1 text-sm text-muted-foreground">
+                                                        Клиент должен
+                                                        подтвердить изменения до
+                                                        их применения.
+                                                    </p>
+                                                </div>
+                                                <div className="grid gap-2">
+                                                    <Label htmlFor="vendor-request-city">
+                                                        Город
+                                                    </Label>
+                                                    <Input
+                                                        id="vendor-request-city"
+                                                        value={
+                                                            editForm.data.city
+                                                        }
+                                                        onChange={(event) =>
+                                                            editForm.setData(
+                                                                'city',
+                                                                event.target
+                                                                    .value,
+                                                            )
+                                                        }
+                                                    />
+                                                </div>
+                                                <div className="grid gap-2">
+                                                    <Label htmlFor="vendor-request-district">
+                                                        Район
+                                                    </Label>
+                                                    <Input
+                                                        id="vendor-request-district"
+                                                        value={
+                                                            editForm.data
+                                                                .district
+                                                        }
+                                                        onChange={(event) =>
+                                                            editForm.setData(
+                                                                'district',
+                                                                event.target
+                                                                    .value,
+                                                            )
+                                                        }
+                                                    />
+                                                </div>
+                                                <div className="grid gap-2">
+                                                    <Label htmlFor="vendor-request-date">
+                                                        Дата работ
+                                                    </Label>
+                                                    <Input
+                                                        id="vendor-request-date"
+                                                        type="date"
+                                                        value={
+                                                            editForm.data
+                                                                .installation_date
+                                                        }
+                                                        onChange={(event) =>
+                                                            editForm.setData(
+                                                                'installation_date',
+                                                                event.target
+                                                                    .value,
+                                                            )
+                                                        }
+                                                    />
+                                                </div>
+                                                <div className="grid gap-2">
+                                                    <Label htmlFor="vendor-request-extras">
+                                                        Доп. работы
+                                                    </Label>
+                                                    <Input
+                                                        id="vendor-request-extras"
+                                                        placeholder="Через запятую"
+                                                        value={
+                                                            editForm.data
+                                                                .additional_services
+                                                        }
+                                                        onChange={(event) =>
+                                                            editForm.setData(
+                                                                'additional_services',
+                                                                event.target
+                                                                    .value,
+                                                            )
+                                                        }
+                                                    />
+                                                </div>
+                                                {!selectedLead.items
+                                                    ?.length && (
+                                                    <>
+                                                        <div className="grid gap-2">
+                                                            <Label htmlFor="vendor-request-width">
+                                                                Ширина, см
+                                                            </Label>
+                                                            <Input
+                                                                id="vendor-request-width"
+                                                                min={1}
+                                                                type="number"
+                                                                value={
+                                                                    editForm
+                                                                        .data
+                                                                        .window_width
+                                                                }
+                                                                onChange={(
+                                                                    event,
+                                                                ) =>
+                                                                    editForm.setData(
+                                                                        'window_width',
+                                                                        Number(
+                                                                            event
+                                                                                .target
+                                                                                .value,
+                                                                        ),
+                                                                    )
+                                                                }
+                                                            />
+                                                        </div>
+                                                        <div className="grid gap-2">
+                                                            <Label htmlFor="vendor-request-height">
+                                                                Высота, см
+                                                            </Label>
+                                                            <Input
+                                                                id="vendor-request-height"
+                                                                min={1}
+                                                                type="number"
+                                                                value={
+                                                                    editForm
+                                                                        .data
+                                                                        .window_height
+                                                                }
+                                                                onChange={(
+                                                                    event,
+                                                                ) =>
+                                                                    editForm.setData(
+                                                                        'window_height',
+                                                                        Number(
+                                                                            event
+                                                                                .target
+                                                                                .value,
+                                                                        ),
+                                                                    )
+                                                                }
+                                                            />
+                                                        </div>
+                                                    </>
+                                                )}
+                                                <div className="grid gap-2 sm:col-span-2">
+                                                    <Label htmlFor="vendor-request-comment">
+                                                        Комментарий
+                                                    </Label>
+                                                    <textarea
+                                                        className="min-h-24 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                                                        id="vendor-request-comment"
+                                                        value={
+                                                            editForm.data
+                                                                .comment
+                                                        }
+                                                        onChange={(event) =>
+                                                            editForm.setData(
+                                                                'comment',
+                                                                event.target
+                                                                    .value,
+                                                            )
+                                                        }
+                                                    />
+                                                </div>
+                                                {(
+                                                    editForm.errors as Record<
+                                                        string,
+                                                        string
+                                                    >
+                                                ).request && (
+                                                    <p className="text-sm text-destructive sm:col-span-2">
+                                                        {
+                                                            (
+                                                                editForm.errors as Record<
+                                                                    string,
+                                                                    string
+                                                                >
+                                                            ).request
+                                                        }
+                                                    </p>
+                                                )}
+                                                <div className="sm:col-span-2">
+                                                    <Button
+                                                        disabled={
+                                                            editForm.processing
+                                                        }
+                                                        type="submit"
+                                                    >
+                                                        <Pencil
+                                                            aria-hidden="true"
+                                                            className="size-4"
+                                                        />
+                                                        Отправить правки
+                                                    </Button>
+                                                </div>
+                                            </form>
+                                        )}
 
                                         {(canAcceptRequest(
                                             selectedLead.status,

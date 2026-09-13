@@ -98,6 +98,7 @@ class ServiceCatalog
                 'description' => $data['description'] ?? null,
                 'min_price' => $option->pricing_type === 'quote' ? 0 : $default['price'],
                 'price_type' => $option->pricing_type,
+                'warranty_months' => $data['warranty_months'],
                 'is_active' => $data['is_active'],
             ])->save();
             $ids = [];

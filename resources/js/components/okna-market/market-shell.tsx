@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react';
 import { useEffect, useRef } from 'react';
 import '../../../css/okna-market.css';
+import { ThemeToggle } from '@/components/theme-toggle';
 import { MarketFooter } from './market-footer';
 import { MarketHeader } from './market-header';
 // import { MarketThemeToggle } from './market-theme-toggle';
-import { ThemeToggle } from '@/components/theme-toggle';
 
 import type { MarketActivePage } from './market-types';
 

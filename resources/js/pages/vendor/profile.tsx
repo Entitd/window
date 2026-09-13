@@ -63,6 +63,7 @@ export default function VendorProfilePage() {
             email: vendorProfile.email,
             districts: vendorProfile.districts.join(', '),
             description: vendorProfile.description,
+            warranty_description: vendorProfile.warrantyDescription ?? '',
         });
     const {
         data: logoData,
@@ -106,6 +107,11 @@ export default function VendorProfilePage() {
             title: 'Логотип компании',
             done: Boolean(logoPreview),
             note: 'Загружен логотип компании.',
+        },
+        {
+            title: 'Условия гарантии',
+            done: Boolean(data.warranty_description.trim()),
+            note: 'Срок указывается для каждой услуги, а эти условия будут зафиксированы в талоне после завершения заказа.',
         },
     ];
 
@@ -162,7 +168,9 @@ export default function VendorProfilePage() {
         }
 
         setLogoData('logo', logo);
-        setLogoPreview(logo ? URL.createObjectURL(logo) : vendorProfile.logoUrl);
+        setLogoPreview(
+            logo ? URL.createObjectURL(logo) : vendorProfile.logoUrl,
+        );
     }
 
     return (
@@ -334,8 +342,35 @@ export default function VendorProfilePage() {
                                     <ErrorText message={errors.description} />
                                 </div>
 
+                                <div className="grid gap-2">
+                                    <Label htmlFor="warranty_description">
+                                        Условия гарантии
+                                    </Label>
+                                    <textarea
+                                        id="warranty_description"
+                                        className="min-h-24 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                                        value={data.warranty_description}
+                                        onChange={(event) =>
+                                            setData(
+                                                'warranty_description',
+                                                event.target.value,
+                                            )
+                                        }
+                                        placeholder="Какие работы и комплектующие покрывает гарантия"
+                                    />
+                                    <p className="text-sm text-muted-foreground">
+                                        Срок гарантии настраивается отдельно для
+                                        каждой услуги.
+                                    </p>
+                                    <ErrorText
+                                        message={errors.warranty_description}
+                                    />
+                                </div>
+
                                 <div className="grid gap-3">
-                                    <Label htmlFor="logo">Логотип компании</Label>
+                                    <Label htmlFor="logo">
+                                        Логотип компании
+                                    </Label>
                                     <div className="flex items-center gap-3">
                                         <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-primary text-lg font-semibold text-primary-foreground shadow-sm">
                                             {logoPreview ? (
@@ -372,7 +407,9 @@ export default function VendorProfilePage() {
                                         type="button"
                                         variant="outline"
                                         onClick={submitLogo}
-                                        disabled={!logoData.logo || logoProcessing}
+                                        disabled={
+                                            !logoData.logo || logoProcessing
+                                        }
                                         className="w-fit"
                                     >
                                         {logoProcessing

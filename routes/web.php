@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminRequestController;
 use App\Http\Controllers\AdminServiceCatalogController;
 use App\Http\Controllers\AdminVendorModerationController;
 use App\Http\Controllers\Auth\RegisterClientController;
@@ -89,7 +90,7 @@ Route::inertia('user-agreement', 'user-agreement')->name('agreement');
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
         return match (auth()->user()?->role) {
-            'admin' => redirect()->route('admin.vendors.moderation'),
+            'admin' => redirect()->route('admin.requests'),
             'vendor' => redirect()->route('vendor.dashboard'),
             'client' => redirect()->route('client.dashboard'),
             default => Inertia::render('dashboard'),
@@ -104,6 +105,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     Route::middleware('role:admin')->group(function () {
+        Route::get('admin/requests', [AdminRequestController::class, 'index'])->name('admin.requests');
+        Route::patch('admin/requests/{serviceRequest}', [AdminRequestController::class, 'update'])
+            ->name('admin.requests.update');
         Route::get('admin/services', [AdminServiceCatalogController::class, 'index'])->name('admin.services.index');
         Route::post('admin/services', [AdminServiceCatalogController::class, 'store'])->name('admin.services.store');
         Route::patch('admin/services/{service}', [AdminServiceCatalogController::class, 'update'])->name('admin.services.update');
@@ -124,6 +128,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('client/requests/{requestId}', [ClientRequestController::class, 'show'])->name('client.requests.show');
         Route::patch('client/requests/{serviceRequest}', [ClientRequestController::class, 'update'])
             ->name('client.requests.update');
+        Route::patch('client/requests/{serviceRequest}/amendments/{amendment}/accept', [ClientRequestController::class, 'acceptAmendment'])
+            ->name('client.requests.amendments.accept');
+        Route::patch('client/requests/{serviceRequest}/amendments/{amendment}/reject', [ClientRequestController::class, 'rejectAmendment'])
+            ->name('client.requests.amendments.reject');
         Route::post('client/requests/{serviceRequest}/repeat', [ClientRequestController::class, 'repeat'])
             ->name('client.requests.repeat');
         Route::patch('client/requests/{serviceRequest}/cancel', [ClientRequestController::class, 'cancel'])
@@ -145,6 +153,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('vendor/services/{service}/toggle', [VendorServiceController::class, 'toggle'])->name('vendor.services.toggle');
         Route::delete('vendor/services/{service}', [VendorServiceController::class, 'destroy'])->name('vendor.services.destroy');
         Route::get('vendor/requests', [VendorRequestController::class, 'index'])->name('vendor.requests');
+        Route::patch('vendor/requests/{serviceRequest}', [VendorRequestController::class, 'update'])
+            ->name('vendor.requests.update');
+        Route::patch('vendor/requests/{serviceRequest}/amendments/{amendment}/accept', [VendorRequestController::class, 'acceptAmendment'])
+            ->name('vendor.requests.amendments.accept');
+        Route::patch('vendor/requests/{serviceRequest}/amendments/{amendment}/reject', [VendorRequestController::class, 'rejectAmendment'])
+            ->name('vendor.requests.amendments.reject');
         Route::patch('vendor/requests/{serviceRequest}/accept', [VendorRequestController::class, 'accept'])
             ->name('vendor.requests.accept');
         Route::patch('vendor/requests/{serviceRequest}/reject', [VendorRequestController::class, 'reject'])

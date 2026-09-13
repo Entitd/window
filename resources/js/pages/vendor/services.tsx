@@ -42,6 +42,7 @@ function OfferingEditor({
     const form = useForm({
         service_id: String(offering?.service_id ?? ''),
         description: offering?.description ?? '',
+        warranty_months: String(offering?.warranty_months ?? ''),
         is_active: offering?.is_active ?? true,
         rates:
             offering?.rates.map((r) => ({
@@ -314,6 +315,19 @@ function OfferingEditor({
                     value={form.data.description}
                     onChange={(e) =>
                         form.setData('description', e.target.value)
+                    }
+                />
+            </Field>
+            <Field title="Гарантия, месяцев">
+                <input
+                    className={fieldClass}
+                    type="number"
+                    min="1"
+                    max="120"
+                    required
+                    value={form.data.warranty_months}
+                    onChange={(e) =>
+                        form.setData('warranty_months', e.target.value)
                     }
                 />
             </Field>

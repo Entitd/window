@@ -28,6 +28,25 @@ export type ClientRequest = {
     status: RequestStatus;
     company: string | null;
     estimatedPrice: string;
+    pendingAmendment: {
+        id: string;
+        proposedByRole: 'client' | 'vendor' | 'admin';
+        proposedByName: string;
+        clientAccepted: boolean | null;
+        vendorAccepted: boolean | null;
+        changes: Array<{
+            label: string;
+            value: string;
+        }>;
+    } | null;
+    warranty: {
+        companyName: string;
+        contactPhone: string | null;
+        contactEmail: string | null;
+        startsAt: string;
+        expiresAt: string;
+        description: string;
+    } | null;
     review: {
         id: string;
         stars: number;
@@ -59,6 +78,7 @@ export type VendorLead = {
     comment: string;
     estimatedPrice: string;
     status: RequestStatus;
+    pendingAmendment: ClientRequest['pendingAmendment'];
 };
 
 export type VendorService = {
@@ -82,6 +102,7 @@ export type VendorProfile = {
     logoUrl: string | null;
     logoInitials: string;
     gallery: string[];
+    warrantyDescription: string | null;
 };
 
 export function getStatusLabel(status: RequestStatus): string {

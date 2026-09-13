@@ -73,6 +73,12 @@ class ServiceRequest extends Model
             ->orderBy('id');
     }
 
+    public function amendments(): HasMany
+    {
+        return $this->hasMany(ServiceRequestAmendment::class)
+            ->latest('id');
+    }
+
     public function chat(): HasOne
     {
         return $this->hasOne(Chat::class, 'request_id');
@@ -96,5 +102,10 @@ class ServiceRequest extends Model
     public function review(): HasOne
     {
         return $this->hasOne(Review::class, 'request_id');
+    }
+
+    public function warranty(): HasOne
+    {
+        return $this->hasOne(ServiceRequestWarranty::class);
     }
 }

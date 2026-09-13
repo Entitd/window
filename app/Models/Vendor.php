@@ -24,6 +24,7 @@ class Vendor extends Model
         'moderation_note',
         'moderated_at',
         'moderated_by',
+        'warranty_description',
     ];
 
     protected function casts(): array
@@ -61,5 +62,10 @@ class Vendor extends Model
     public function reviews(): HasMany
     {
         return $this->hasMany(Review::class, 'vendor_id');
+    }
+
+    public function hasWarrantyDescription(): bool
+    {
+        return filled($this->warranty_description);
     }
 }

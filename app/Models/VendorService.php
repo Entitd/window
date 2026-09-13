@@ -11,6 +11,10 @@ class VendorService extends Model
 {
     use HasFactory;
 
+    protected $attributes = [
+        'warranty_months' => 0,
+    ];
+
     protected $fillable = [
         'vendor_id',
         'service_id',
@@ -18,11 +22,13 @@ class VendorService extends Model
         'description',
         'min_price',
         'price_type',
+        'warranty_months',
         'is_active',
     ];
 
     protected $casts = [
         'min_price' => 'decimal:2',
+        'warranty_months' => 'integer',
         'is_active' => 'boolean',
     ];
 

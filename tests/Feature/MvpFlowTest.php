@@ -50,6 +50,7 @@ test('client vendor and admin can complete the main mvp request flow', function 
         ->post(route('vendor.services.store'), [
             'service_id' => $service->id,
             'description' => 'Flow test service.',
+            'warranty_months' => 24,
             'is_active' => true,
             'rates' => [['service_option_id' => $option->id, 'price' => 12345, 'is_default' => true]],
         ])

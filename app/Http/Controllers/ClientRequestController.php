@@ -2,10 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\FilterServiceRequestsRequest;
+use App\Http\Requests\StoreServiceRequestAmendmentRequest;
 use App\Models\Service;
 use App\Models\ServiceRequest;
+use App\Models\ServiceRequestAmendment;
+use App\Services\ServiceRequestAmendmentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -14,10 +19,13 @@ use Inertia\Response;
 
 class ClientRequestController extends Controller
 {
-    public function index(Request $request): Response
+    public function __construct(private ServiceRequestAmendmentService $amendments) {}
+
+    public function index(FilterServiceRequestsRequest $request): Response
     {
-        $requests = ServiceRequest::with(['service', 'vendor', 'statusHistories', 'review', 'items.values'])
+        $requests = ServiceRequest::with(['service', 'vendor', 'warranty', 'statusHistories', 'review', 'items.values', 'amendments.proposer'])
             ->where('client_id', $request->user()->id)
+            ->when($request->selectedStatus(), fn ($query, string $status) => $query->where('status', $status))
             ->latest()
             ->get()
             ->map(fn (ServiceRequest $serviceRequest) => $this->serializeRequest($serviceRequest))
@@ -25,6 +33,7 @@ class ClientRequestController extends Controller
 
         return Inertia::render('client/dashboard', [
             'requests' => $requests,
+            'selectedStatus' => $request->selectedStatus(),
         ]);
     }
 
@@ -95,7 +104,7 @@ class ClientRequestController extends Controller
 
     public function show(Request $request, string $requestId): Response
     {
-        $serviceRequest = ServiceRequest::with(['service', 'vendor', 'statusHistories', 'review', 'items.values'])
+        $serviceRequest = ServiceRequest::with(['service', 'vendor', 'warranty', 'statusHistories', 'review', 'items.values', 'amendments.proposer'])
             ->where('client_id', $request->user()->id)
             ->findOrFail($requestId);
 
@@ -105,55 +114,29 @@ class ClientRequestController extends Controller
         ]);
     }
 
-    public function update(Request $request, ServiceRequest $serviceRequest): RedirectResponse
+    public function update(StoreServiceRequestAmendmentRequest $request, ServiceRequest $serviceRequest): RedirectResponse
     {
-        abort_unless($serviceRequest->client_id === $request->user()->id, 403);
+        $this->amendments->propose($serviceRequest, $request->user(), $request->validated());
 
-        if ($serviceRequest->items()->exists()) {
-            return back()->withErrors(['request' => 'Параметры и тариф этой заявки зафиксированы. Для другого расчёта создайте новую заявку из каталога.']);
-        }
+        return back();
+    }
 
-        if (! in_array($serviceRequest->status, ['new', 'awaiting_confirmation'], true)) {
-            return back()->withErrors([
-                'request' => 'Эту заявку уже нельзя изменить.',
-            ]);
-        }
+    public function acceptAmendment(
+        Request $request,
+        ServiceRequest $serviceRequest,
+        ServiceRequestAmendment $amendment,
+    ): RedirectResponse {
+        $this->amendments->decide($serviceRequest, $amendment, $request->user(), true);
 
-        $validated = $request->validate([
-            'city' => ['required', 'string', 'max:255'],
-            'district' => ['nullable', 'string', 'max:255'],
-            'installation_date' => ['nullable', 'date'],
-            'window_width' => ['required', 'integer', 'min:1'],
-            'window_height' => ['required', 'integer', 'min:1'],
-            'additional_services' => ['nullable', 'string', 'max:1000'],
-            'comment' => ['nullable', 'string', 'max:2000'],
-        ]);
+        return back();
+    }
 
-        $additionalServices = collect(explode(',', $validated['additional_services'] ?? ''))
-            ->map(fn (string $item) => trim($item))
-            ->filter()
-            ->values()
-            ->all();
-
-        $serviceRequest->update([
-            'city' => $validated['city'],
-            'district' => $validated['district'] ?: null,
-            'installation_date' => $validated['installation_date'] ?: null,
-            'window_width' => $validated['window_width'],
-            'window_height' => $validated['window_height'],
-            'additional_services' => $additionalServices,
-            'comment' => $validated['comment'] ?: null,
-        ]);
-
-        $this->recordStatusHistory(
-            serviceRequest: $serviceRequest,
-            actorId: $request->user()->id,
-            actorRole: 'client',
-            fromStatus: $serviceRequest->status,
-            toStatus: $serviceRequest->status,
-            label: 'Заявка изменена',
-            note: 'Клиент обновил параметры заявки.',
-        );
+    public function rejectAmendment(
+        Request $request,
+        ServiceRequest $serviceRequest,
+        ServiceRequestAmendment $amendment,
+    ): RedirectResponse {
+        $this->amendments->decide($serviceRequest, $amendment, $request->user(), false);
 
         return back();
     }
@@ -257,6 +240,17 @@ class ClientRequestController extends Controller
             'extras' => $serviceRequest->additional_services ?? [],
             'comment' => $serviceRequest->comment ?? 'Комментарий не указан',
             'commentValue' => $serviceRequest->comment,
+            'pendingAmendment' => $this->serializePendingAmendment($serviceRequest),
+            'warranty' => $serviceRequest->warranty
+                ? [
+                    'companyName' => $serviceRequest->warranty->company_name,
+                    'contactPhone' => $serviceRequest->warranty->contact_phone,
+                    'contactEmail' => $serviceRequest->warranty->contact_email,
+                    'startsAt' => $serviceRequest->warranty->starts_at->format('d.m.Y'),
+                    'expiresAt' => $serviceRequest->warranty->expires_at->format('d.m.Y'),
+                    'description' => $serviceRequest->warranty->description,
+                ]
+                : null,
             'review' => $serviceRequest->review
                 ? [
                     'id' => (string) $serviceRequest->review->id,
@@ -282,6 +276,56 @@ class ClientRequestController extends Controller
                     ],
                 ],
         ];
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function serializePendingAmendment(ServiceRequest $serviceRequest): ?array
+    {
+        $amendment = $serviceRequest->amendments->firstWhere('status', 'pending');
+
+        if (! $amendment) {
+            return null;
+        }
+
+        return [
+            'id' => (string) $amendment->id,
+            'proposedByRole' => $amendment->proposed_by_role,
+            'proposedByName' => $amendment->proposer?->name ?? 'Другая сторона',
+            'clientAccepted' => $amendment->client_accepted,
+            'vendorAccepted' => $amendment->vendor_accepted,
+            'changes' => $this->serializeAmendmentChanges($amendment->changes ?? []),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $changes
+     * @return array<int, array{label: string, value: string}>
+     */
+    private function serializeAmendmentChanges(array $changes): array
+    {
+        $labels = [
+            'city' => 'Город',
+            'district' => 'Район',
+            'installation_date' => 'Дата работ',
+            'window_width' => 'Ширина, см',
+            'window_height' => 'Высота, см',
+            'additional_services' => 'Дополнительные работы',
+            'comment' => 'Комментарий',
+        ];
+
+        return collect($changes)
+            ->map(fn (mixed $value, string $field) => [
+                'label' => $labels[$field],
+                'value' => match ($field) {
+                    'additional_services' => implode(', ', $value),
+                    'installation_date' => $value ? Carbon::parse($value)->format('d.m.Y') : 'Не выбрана',
+                    default => filled($value) ? (string) $value : 'Не указан',
+                },
+            ])
+            ->values()
+            ->all();
     }
 
     /**

@@ -83,24 +83,29 @@ test('vendor selects multiple tariffs with a single default and cannot duplicate
     $service = Service::factory()->create();
     $sqm = ServiceOption::factory()->create(['service_id' => $service->id]);
     $unit = ServiceOption::factory()->create(['service_id' => $service->id, 'input_type' => 'selection', 'pricing_type' => 'unit']);
-    $payload = ['service_id' => $service->id, 'is_active' => true, 'rates' => [
+    $payload = ['service_id' => $service->id, 'warranty_months' => 24, 'is_active' => true, 'rates' => [
         ['service_option_id' => $sqm->id, 'price' => 1000, 'is_default' => true],
         ['service_option_id' => $unit->id, 'price' => 2500, 'is_default' => false],
     ]];
     $this->actingAs($vendor->user)->post(route('vendor.services.store'), $payload)->assertSessionHasNoErrors();
     $offering = $vendor->services()->firstOrFail();
-    expect($offering->rates)->toHaveCount(2)->and($offering->service_id)->toBe($service->id);
+    expect($offering->rates)->toHaveCount(2)->and($offering->service_id)->toBe($service->id)->and($offering->warranty_months)->toBe(24);
     $this->post(route('vendor.services.store'), $payload)->assertSessionHasErrors('service_id');
+    $payload['warranty_months'] = 0;
+    $this->patch(route('vendor.services.update', $offering), $payload)->assertSessionHasErrors('warranty_months');
+    $payload['warranty_months'] = 121;
+    $this->patch(route('vendor.services.update', $offering), $payload)->assertSessionHasErrors('warranty_months');
+    $payload['warranty_months'] = 24;
     $payload['rates'][1]['is_default'] = true;
     $this->patch(route('vendor.services.update', $offering), $payload)->assertSessionHasErrors('rates');
-    $this->get(route('vendor.services'))->assertInertia(fn (Assert $p) => $p->component('vendor/services')->has('catalog', 1)->has('services.0.rates', 2));
+    $this->get(route('vendor.services'))->assertInertia(fn (Assert $p) => $p->component('vendor/services')->has('catalog', 1)->has('services.0.rates', 2)->where('services.0.warranty_months', 24));
 });
 
 test('vendor cannot select foreign options or edit another vendor offering', function () {
     $rate = VendorServiceRate::factory()->create();
     $offering = $rate->vendorService;
     $foreign = ServiceOption::factory()->create();
-    $payload = ['service_id' => $offering->service_id, 'is_active' => true, 'rates' => [['service_option_id' => $foreign->id, 'price' => 500, 'is_default' => true]]];
+    $payload = ['service_id' => $offering->service_id, 'warranty_months' => 12, 'is_active' => true, 'rates' => [['service_option_id' => $foreign->id, 'price' => 500, 'is_default' => true]]];
     $this->actingAs($offering->vendor->user)->patch(route('vendor.services.update', $offering), $payload)->assertSessionHasErrors('rates.0.service_option_id');
     $other = Vendor::factory()->create();
     $this->actingAs($other->user)->patch(route('vendor.services.update', $offering), $payload)->assertForbidden();
@@ -113,7 +118,7 @@ test('legacy offering can be explicitly mapped without losing its identity', fun
     $legacy = VendorService::factory()->create(['vendor_id' => $vendor->id, 'service_id' => null, 'service_name' => 'Произвольное старое имя']);
     $option = ServiceOption::factory()->create();
     $this->actingAs($vendor->user)->patch(route('vendor.services.update', $legacy), [
-        'service_id' => $option->service_id, 'is_active' => true,
+        'service_id' => $option->service_id, 'warranty_months' => 12, 'is_active' => true,
         'rates' => [['service_option_id' => $option->id, 'price' => 1234, 'is_default' => true]],
     ])->assertSessionHasNoErrors();
     expect($legacy->fresh()->service_id)->toBe($option->service_id)->and($legacy->fresh()->service_name)->toBe($option->service->name);
@@ -127,7 +132,7 @@ test('archived ancestor hides offers and prevents booking and vendor selection',
     $this->get(route('catalog.index'))->assertInertia(fn (Assert $p) => $p->component('catalog')->has('services', 0)->has('offerings', 0));
     $this->actingAs(User::factory()->create(['role' => 'client']))->post(route('catalog.store'), bookingPayload($rate))->assertSessionHasErrors('rate_id');
     $this->actingAs($rate->vendorService->vendor->user)->patch(route('vendor.services.update', $rate->vendorService), [
-        'service_id' => $service->id, 'is_active' => true, 'rates' => [['service_option_id' => $rate->service_option_id, 'price' => 100, 'is_default' => true]],
+        'service_id' => $service->id, 'warranty_months' => 12, 'is_active' => true, 'rates' => [['service_option_id' => $rate->service_option_id, 'price' => 100, 'is_default' => true]],
     ])->assertSessionHasErrors('service_id');
 });
 
@@ -242,7 +247,7 @@ test('catalog request cannot be repriced through the legacy edit or repeat endpo
 test('a quote tariff clears price and a priced option requires a price', function () {
     $vendor = Vendor::factory()->create();
     $option = ServiceOption::factory()->create(['pricing_type' => 'quote', 'input_type' => 'selection']);
-    $payload = ['service_id' => $option->service_id, 'is_active' => true, 'rates' => [['service_option_id' => $option->id, 'price' => 1234, 'is_default' => true]]];
+    $payload = ['service_id' => $option->service_id, 'warranty_months' => 12, 'is_active' => true, 'rates' => [['service_option_id' => $option->id, 'price' => 1234, 'is_default' => true]]];
     $this->actingAs($vendor->user)->post(route('vendor.services.store'), $payload)->assertSessionHasNoErrors();
     $offering = $vendor->services()->firstOrFail();
     expect($offering->rates->first()->price)->toBeNull();

@@ -70,6 +70,7 @@ class VendorProfileController extends Controller
                 'city' => $cityName,
                 'phone' => $validated['phone'],
                 'email' => Str::lower($validated['email']),
+                'warranty_description' => $validated['warranty_description'] ?? null,
             ];
 
             $vendor->fill($profileData);
@@ -133,6 +134,7 @@ class VendorProfileController extends Controller
                 ? Str::substr($vendor->company_name, 0, 2)
                 : ($vendor->logo ?? Str::substr($vendor->company_name, 0, 2)),
             'gallery' => [],
+            'warrantyDescription' => $vendor->warranty_description,
         ];
     }
 }

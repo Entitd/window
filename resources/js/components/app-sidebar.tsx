@@ -23,9 +23,11 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
+import { requests as adminRequests } from '@/routes/admin';
 import type { Auth, NavItem } from '@/types';
 
 const adminNavItems: NavItem[] = [
+    { title: 'Все заявки', href: adminRequests(), icon: ClipboardList },
     { title: 'Каталог услуг', href: adminServices(), icon: Wrench },
     {
         title: 'Модерация компаний',

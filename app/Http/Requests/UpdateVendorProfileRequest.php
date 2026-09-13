@@ -39,6 +39,7 @@ class UpdateVendorProfileRequest extends FormRequest
             ],
             'districts' => ['required', 'string', 'max:500'],
             'description' => ['required', 'string', 'max:2000'],
+            'warranty_description' => ['nullable', 'string', 'max:2000'],
         ];
     }
 }

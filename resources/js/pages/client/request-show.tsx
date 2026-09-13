@@ -39,6 +39,10 @@ import {
     repeat as repeatRequest,
     update as updateRequest,
 } from '@/routes/client/requests';
+import {
+    accept as acceptRequestAmendment,
+    reject as rejectRequestAmendment,
+} from '@/routes/client/requests/amendments';
 import type { Auth } from '@/types';
 
 type PageProps = {
@@ -92,7 +96,7 @@ const requestSteps = [
 ];
 
 function canEditRequest(status: string) {
-    return ['new', 'awaiting_confirmation'].includes(status);
+    return ['new', 'awaiting_confirmation', 'confirmed'].includes(status);
 }
 
 function canCancelRequest(status: string) {
@@ -112,6 +116,25 @@ function cancelClientRequest(requestId: string) {
 function repeatClientRequest(requestId: string) {
     router.post(
         repeatRequest.url(Number(requestId)),
+        {},
+        {
+            preserveScroll: true,
+        },
+    );
+}
+
+function decideClientAmendment(
+    requestId: string,
+    amendmentId: string,
+    decision: 'accept' | 'reject',
+) {
+    const action = {
+        accept: acceptRequestAmendment,
+        reject: rejectRequestAmendment,
+    }[decision];
+
+    router.patch(
+        action.url([Number(requestId), Number(amendmentId)]),
         {},
         {
             preserveScroll: true,
@@ -183,7 +206,11 @@ export default function ClientRequestShow() {
     }
 
     const requestProgress = getRequestProgress(request.status);
-    const canEdit = canEditRequest(request.status) && !request.items?.length;
+    const pendingAmendment = request.pendingAmendment;
+    const canEdit =
+        canEditRequest(request.status) &&
+        Boolean(request.company) &&
+        !pendingAmendment;
     const statusDetails = [
         {
             label: 'Статус',
@@ -388,6 +415,71 @@ export default function ClientRequestShow() {
                         </Card>
 
                         <RequestCatalogItems items={request.items} />
+                        {pendingAmendment && (
+                            <Card className="border-amber-500/30 bg-amber-500/5 shadow-sm">
+                                <CardHeader>
+                                    <CardTitle>
+                                        Правки ожидают подтверждения
+                                    </CardTitle>
+                                    <CardDescription>
+                                        {pendingAmendment.proposedByRole ===
+                                        'client'
+                                            ? 'Правки отправлены компании. Параметры заявки обновятся после её подтверждения.'
+                                            : `${pendingAmendment.proposedByName} предложил(а) изменить заявку. Проверьте новые значения.`}
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="grid gap-3 sm:grid-cols-2">
+                                        {pendingAmendment.changes.map(
+                                            (change) => (
+                                                <div
+                                                    className="rounded-xl bg-background/80 p-3"
+                                                    key={change.label}
+                                                >
+                                                    <p className="text-sm text-muted-foreground">
+                                                        {change.label}
+                                                    </p>
+                                                    <p className="mt-1 font-medium">
+                                                        {change.value}
+                                                    </p>
+                                                </div>
+                                            ),
+                                        )}
+                                    </div>
+                                    {pendingAmendment.proposedByRole !==
+                                        'client' &&
+                                        !pendingAmendment.clientAccepted && (
+                                            <div className="flex flex-wrap gap-2">
+                                                <Button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        decideClientAmendment(
+                                                            request.id,
+                                                            pendingAmendment.id,
+                                                            'accept',
+                                                        )
+                                                    }
+                                                >
+                                                    Подтвердить правки
+                                                </Button>
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    onClick={() =>
+                                                        decideClientAmendment(
+                                                            request.id,
+                                                            pendingAmendment.id,
+                                                            'reject',
+                                                        )
+                                                    }
+                                                >
+                                                    Отклонить
+                                                </Button>
+                                            </div>
+                                        )}
+                                </CardContent>
+                            </Card>
+                        )}
                         {canEdit && (
                             <Card
                                 id="edit-request"
@@ -396,8 +488,10 @@ export default function ClientRequestShow() {
                                 <CardHeader>
                                     <CardTitle>Изменить заявку</CardTitle>
                                     <CardDescription>
-                                        Параметры можно менять до передачи
-                                        заявки в работу.
+                                        Правки будут отправлены компании и
+                                        вступят в силу после её подтверждения.
+                                        Для заявок с тарифом размер
+                                        зафиксирован.
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent>
@@ -476,65 +570,75 @@ export default function ClientRequestShow() {
                                             )}
                                         </div>
 
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="request-width">
-                                                Ширина, см
-                                            </Label>
-                                            <Input
-                                                id="request-width"
-                                                type="number"
-                                                min={1}
-                                                value={
-                                                    editForm.data.window_width
-                                                }
-                                                onChange={(event) =>
-                                                    editForm.setData(
-                                                        'window_width',
-                                                        Number(
-                                                            event.target.value,
-                                                        ),
-                                                    )
-                                                }
-                                            />
-                                            {editForm.errors.window_width && (
-                                                <p className="text-sm text-destructive">
-                                                    {
-                                                        editForm.errors
-                                                            .window_width
-                                                    }
-                                                </p>
-                                            )}
-                                        </div>
+                                        {!request.items?.length && (
+                                            <>
+                                                <div className="grid gap-2">
+                                                    <Label htmlFor="request-width">
+                                                        Ширина, см
+                                                    </Label>
+                                                    <Input
+                                                        id="request-width"
+                                                        type="number"
+                                                        min={1}
+                                                        value={
+                                                            editForm.data
+                                                                .window_width
+                                                        }
+                                                        onChange={(event) =>
+                                                            editForm.setData(
+                                                                'window_width',
+                                                                Number(
+                                                                    event.target
+                                                                        .value,
+                                                                ),
+                                                            )
+                                                        }
+                                                    />
+                                                    {editForm.errors
+                                                        .window_width && (
+                                                        <p className="text-sm text-destructive">
+                                                            {
+                                                                editForm.errors
+                                                                    .window_width
+                                                            }
+                                                        </p>
+                                                    )}
+                                                </div>
 
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="request-height">
-                                                Высота, см
-                                            </Label>
-                                            <Input
-                                                id="request-height"
-                                                type="number"
-                                                min={1}
-                                                value={
-                                                    editForm.data.window_height
-                                                }
-                                                onChange={(event) =>
-                                                    editForm.setData(
-                                                        'window_height',
-                                                        Number(
-                                                            event.target.value,
-                                                        ),
-                                                    )
-                                                }
-                                            />
-                                            {editForm.errors.window_height && (
-                                                <p className="text-sm text-destructive">
-                                                    {
-                                                        editForm.errors
-                                                            .window_height
-                                                    }
-                                                </p>
-                                            )}
-                                        </div>
+                                                <div className="grid gap-2">
+                                                    <Label htmlFor="request-height">
+                                                        Высота, см
+                                                    </Label>
+                                                    <Input
+                                                        id="request-height"
+                                                        type="number"
+                                                        min={1}
+                                                        value={
+                                                            editForm.data
+                                                                .window_height
+                                                        }
+                                                        onChange={(event) =>
+                                                            editForm.setData(
+                                                                'window_height',
+                                                                Number(
+                                                                    event.target
+                                                                        .value,
+                                                                ),
+                                                            )
+                                                        }
+                                                    />
+                                                    {editForm.errors
+                                                        .window_height && (
+                                                        <p className="text-sm text-destructive">
+                                                            {
+                                                                editForm.errors
+                                                                    .window_height
+                                                            }
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </>
+                                        )}
 
                                         <div className="grid gap-2">
                                             <Label htmlFor="request-extras">
@@ -614,7 +718,7 @@ export default function ClientRequestShow() {
                                                     className="size-4"
                                                     aria-hidden="true"
                                                 />
-                                                Сохранить заявку
+                                                Отправить правки
                                             </Button>
                                         </div>
                                     </form>
@@ -623,12 +727,92 @@ export default function ClientRequestShow() {
                         )}
 
                         {request.status === 'completed' && (
-                            <ReviewFormCard
-                                requestId={request.id}
-                                service={request.service}
-                                company={request.company}
-                                existingReview={request.review}
-                            />
+                            <>
+                                {request.warranty && (
+                                    <Card className="border-primary/25 bg-primary/5 shadow-sm">
+                                        <CardHeader>
+                                            <div className="flex items-start gap-3">
+                                                <ShieldCheck
+                                                    className="mt-0.5 size-5 text-primary"
+                                                    aria-hidden="true"
+                                                />
+                                                <div>
+                                                    <CardTitle>
+                                                        Гарантийный талон
+                                                    </CardTitle>
+                                                    <CardDescription className="mt-1">
+                                                        Гарантия по выполненной
+                                                        заявке от{' '}
+                                                        {
+                                                            request.warranty
+                                                                .companyName
+                                                        }
+                                                        .
+                                                    </CardDescription>
+                                                </div>
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent className="space-y-4">
+                                            <div className="grid gap-3 sm:grid-cols-2">
+                                                <div className="rounded-2xl bg-background/80 p-3">
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Начало гарантии
+                                                    </p>
+                                                    <p className="mt-1 font-medium">
+                                                        {
+                                                            request.warranty
+                                                                .startsAt
+                                                        }
+                                                    </p>
+                                                </div>
+                                                <div className="rounded-2xl bg-background/80 p-3">
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Окончание гарантии
+                                                    </p>
+                                                    <p className="mt-1 font-medium">
+                                                        {
+                                                            request.warranty
+                                                                .expiresAt
+                                                        }
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="rounded-2xl bg-background/80 p-3">
+                                                <p className="text-sm text-muted-foreground">
+                                                    Условия
+                                                </p>
+                                                <p className="mt-1 font-medium">
+                                                    {
+                                                        request.warranty
+                                                            .description
+                                                    }
+                                                </p>
+                                            </div>
+                                            {(request.warranty.contactPhone ||
+                                                request.warranty
+                                                    .contactEmail) && (
+                                                <p className="text-sm text-muted-foreground">
+                                                    Для обращения:{' '}
+                                                    {[
+                                                        request.warranty
+                                                            .contactPhone,
+                                                        request.warranty
+                                                            .contactEmail,
+                                                    ]
+                                                        .filter(Boolean)
+                                                        .join(' · ')}
+                                                </p>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                )}
+                                <ReviewFormCard
+                                    requestId={request.id}
+                                    service={request.service}
+                                    company={request.company}
+                                    existingReview={request.review}
+                                />
+                            </>
                         )}
 
                         <Card className="border-border/70 shadow-sm">

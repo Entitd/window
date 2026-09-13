@@ -2,17 +2,29 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\FilterServiceRequestsRequest;
+use App\Http\Requests\StoreServiceRequestAmendmentRequest;
 use App\Models\ChatMessage;
 use App\Models\ServiceRequest;
+use App\Models\ServiceRequestAmendment;
 use App\Models\Vendor;
+use App\Services\ServiceRequestAmendmentService;
+use App\Services\WarrantyIssuer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class VendorRequestController extends Controller
 {
-    public function index(Request $request): Response
+    public function __construct(
+        private ServiceRequestAmendmentService $amendments,
+        private WarrantyIssuer $warranties,
+    ) {}
+
+    public function index(FilterServiceRequestsRequest $request): Response
     {
         $vendor = $this->vendorFor($request);
 
@@ -22,8 +34,10 @@ class VendorRequestController extends Controller
                 'service:id,name',
                 'items.values',
                 'chat.messages.sender:id,name,email',
+                'amendments.proposer',
             ])
             ->where('vendor_id', $vendor->id)
+            ->when($request->selectedStatus(), fn ($query, string $status) => $query->where('status', $status))
             ->latest()
             ->get()
             ->map(fn (ServiceRequest $serviceRequest) => $this->serializeRequest($serviceRequest))
@@ -31,6 +45,7 @@ class VendorRequestController extends Controller
 
         return Inertia::render('vendor/requests', [
             'requests' => $requests,
+            'selectedStatus' => $request->selectedStatus(),
         ]);
     }
 
@@ -78,7 +93,7 @@ class VendorRequestController extends Controller
 
     public function complete(Request $request, ServiceRequest $serviceRequest): RedirectResponse
     {
-        $this->requestForVendor($request, $serviceRequest);
+        $vendor = $this->requestForVendor($request, $serviceRequest);
 
         return $this->transition(
             request: $request,
@@ -87,7 +102,35 @@ class VendorRequestController extends Controller
             nextStatus: 'completed',
             label: 'Заявка завершена',
             note: 'Компания отметила заявку как завершенную.',
+            warrantyVendor: $vendor,
         );
+    }
+
+    public function update(StoreServiceRequestAmendmentRequest $request, ServiceRequest $serviceRequest): RedirectResponse
+    {
+        $this->amendments->propose($serviceRequest, $request->user(), $request->validated());
+
+        return back();
+    }
+
+    public function acceptAmendment(
+        Request $request,
+        ServiceRequest $serviceRequest,
+        ServiceRequestAmendment $amendment,
+    ): RedirectResponse {
+        $this->amendments->decide($serviceRequest, $amendment, $request->user(), true);
+
+        return back();
+    }
+
+    public function rejectAmendment(
+        Request $request,
+        ServiceRequest $serviceRequest,
+        ServiceRequestAmendment $amendment,
+    ): RedirectResponse {
+        $this->amendments->decide($serviceRequest, $amendment, $request->user(), false);
+
+        return back();
     }
 
     private function vendorFor(Request $request): Vendor
@@ -97,11 +140,13 @@ class VendorRequestController extends Controller
         return $request->user()->vendor()->firstOrFail();
     }
 
-    private function requestForVendor(Request $request, ServiceRequest $serviceRequest): void
+    private function requestForVendor(Request $request, ServiceRequest $serviceRequest): Vendor
     {
         $vendor = $this->vendorFor($request);
 
         abort_unless($serviceRequest->vendor_id === $vendor->id, 403);
+
+        return $vendor;
     }
 
     /**
@@ -114,6 +159,7 @@ class VendorRequestController extends Controller
         string $nextStatus,
         string $label,
         string $note,
+        ?Vendor $warrantyVendor = null,
     ): RedirectResponse {
         if (! in_array($serviceRequest->status, $allowedStatuses, true)) {
             return back()->withErrors([
@@ -121,16 +167,22 @@ class VendorRequestController extends Controller
             ]);
         }
 
-        $fromStatus = $serviceRequest->status;
-        $serviceRequest->update(['status' => $nextStatus]);
-        $serviceRequest->statusHistories()->create([
-            'actor_id' => $request->user()->id,
-            'actor_role' => 'vendor',
-            'from_status' => $fromStatus,
-            'to_status' => $nextStatus,
-            'label' => $label,
-            'note' => $note,
-        ]);
+        DB::transaction(function () use ($label, $nextStatus, $note, $request, $serviceRequest, $warrantyVendor): void {
+            $fromStatus = $serviceRequest->status;
+            $serviceRequest->update(['status' => $nextStatus]);
+            $serviceRequest->statusHistories()->create([
+                'actor_id' => $request->user()->id,
+                'actor_role' => 'vendor',
+                'from_status' => $fromStatus,
+                'to_status' => $nextStatus,
+                'label' => $label,
+                'note' => $note,
+            ]);
+
+            if ($nextStatus === 'completed' && $warrantyVendor) {
+                $this->warranties->issue($serviceRequest, $warrantyVendor);
+            }
+        });
 
         return back();
     }
@@ -148,6 +200,7 @@ class VendorRequestController extends Controller
             'installationDate' => $serviceRequest->installation_date
                 ? $serviceRequest->installation_date->format('d.m.Y')
                 : 'Не выбрана',
+            'installationDateValue' => $serviceRequest->installation_date?->format('Y-m-d'),
             'width' => $serviceRequest->window_width,
             'height' => $serviceRequest->window_height,
             'service' => $serviceRequest->items->first()?->service_name ?? $serviceRequest->service?->name ?? 'Услуга',
@@ -155,6 +208,8 @@ class VendorRequestController extends Controller
             'dimensionUnit' => $serviceRequest->items->isNotEmpty() ? 'мм' : 'см',
             'extras' => $serviceRequest->additional_services ?? [],
             'comment' => $serviceRequest->comment ?? 'Комментарий не указан',
+            'districtValue' => $serviceRequest->district,
+            'commentValue' => $serviceRequest->comment,
             'estimatedPrice' => $serviceRequest->estimated_price
                 ? number_format((float) $serviceRequest->estimated_price, 0, ',', ' ').' ₽'
                 : 'После уточнения',
@@ -162,6 +217,7 @@ class VendorRequestController extends Controller
             'clientName' => $serviceRequest->client?->name ?? 'Клиент',
             'clientPhone' => $serviceRequest->client?->phone,
             'clientEmail' => $serviceRequest->client?->email,
+            'pendingAmendment' => $this->serializePendingAmendment($serviceRequest),
             'chat' => $serviceRequest->chat
                 ? [
                     'id' => (string) $serviceRequest->chat->id,
@@ -179,5 +235,55 @@ class VendorRequestController extends Controller
                 ]
                 : null,
         ];
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function serializePendingAmendment(ServiceRequest $serviceRequest): ?array
+    {
+        $amendment = $serviceRequest->amendments->firstWhere('status', 'pending');
+
+        if (! $amendment) {
+            return null;
+        }
+
+        return [
+            'id' => (string) $amendment->id,
+            'proposedByRole' => $amendment->proposed_by_role,
+            'proposedByName' => $amendment->proposer?->name ?? 'Другая сторона',
+            'clientAccepted' => $amendment->client_accepted,
+            'vendorAccepted' => $amendment->vendor_accepted,
+            'changes' => $this->serializeAmendmentChanges($amendment->changes ?? []),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $changes
+     * @return array<int, array{label: string, value: string}>
+     */
+    private function serializeAmendmentChanges(array $changes): array
+    {
+        $labels = [
+            'city' => 'Город',
+            'district' => 'Район',
+            'installation_date' => 'Дата работ',
+            'window_width' => 'Ширина, см',
+            'window_height' => 'Высота, см',
+            'additional_services' => 'Дополнительные работы',
+            'comment' => 'Комментарий',
+        ];
+
+        return collect($changes)
+            ->map(fn (mixed $value, string $field) => [
+                'label' => $labels[$field],
+                'value' => match ($field) {
+                    'additional_services' => implode(', ', $value),
+                    'installation_date' => $value ? Carbon::parse($value)->format('d.m.Y') : 'Не выбрана',
+                    default => filled($value) ? (string) $value : 'Не указан',
+                },
+            ])
+            ->values()
+            ->all();
     }
 }

@@ -48,6 +48,7 @@ export type Offering = {
     service_id: number | null;
     service_name: string;
     description: string | null;
+    warranty_months: number;
     is_active: boolean;
     rates: Rate[];
 };
