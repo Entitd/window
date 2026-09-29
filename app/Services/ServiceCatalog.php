@@ -6,6 +6,7 @@ use App\Models\Service;
 use App\Models\ServiceCategory;
 use App\Models\Vendor;
 use App\Models\VendorService;
+use App\Models\VendorServiceRate;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -51,9 +52,10 @@ class ServiceCatalog
     public function searchServices(): Collection
     {
         return $this->availableQuery()
+            ->with(['options' => fn ($query) => $query->where('is_active', true)->orderBy('id')->select(['id', 'service_id', 'name', 'input_type'])])
             ->orderBy('sort_order')
             ->orderBy('name')
-            ->get(['id', 'name']);
+            ->get(['id', 'name', 'description']);
     }
 
     private function availableQuery(): Builder
@@ -61,6 +63,50 @@ class ServiceCatalog
         return Service::where('is_active', true)
             ->whereIn('category_id', $this->activeCategoryIds())
             ->whereHas('options', fn ($query) => $query->where('is_active', true));
+    }
+
+    /**
+     * @param  Collection<int, VendorService>  $offerings
+     * @param  array<int, array<string, mixed>>  $selections
+     * @return array<int, array<string, mixed>>
+     */
+    public function selectionItems(Collection $offerings, array $selections): array
+    {
+        $selectedItems = [];
+        foreach ($selections as $selection) {
+            $selectedOffering = $offerings->firstWhere('service_id', (int) $selection['service_id']);
+            $selectedRate = filled($selection['option_id'] ?? null)
+                ? $selectedOffering->rates->firstWhere('service_option_id', (int) $selection['option_id'])
+                : $selectedOffering->rates->firstWhere('is_default', true);
+            $width = filled($selection['width'] ?? null) ? (int) round((float) $selection['width'] * 10) : null;
+            $height = filled($selection['height'] ?? null) ? (int) round((float) $selection['height'] * 10) : null;
+            $selectedItems[] = [
+                'rate_id' => $selectedRate->id, 'service_id' => $selectedOffering->service_id,
+                'service_name' => $selectedOffering->service_name, 'option_id' => $selectedRate->service_option_id,
+                'quantity' => (int) $selection['quantity'],
+                'width_mm' => $selectedRate->option->input_type === 'dimensions' ? $width : null,
+                'height_mm' => $selectedRate->option->input_type === 'dimensions' ? $height : null,
+                'total' => $this->estimate($selectedRate, (int) $selection['quantity'], $width, $height),
+            ];
+        }
+
+        return $selectedItems;
+    }
+
+    public function estimate(VendorServiceRate $rate, int $quantity, ?int $width, ?int $height): ?float
+    {
+        if ($rate->price === null || ($rate->option->input_type === 'dimensions' && (! $width || ! $height))) {
+            return null;
+        }
+
+        $price = (float) $rate->price;
+
+        return match ($rate->option->pricing_type) {
+            'fixed' => $price,
+            'unit' => round($price * $quantity, 2),
+            'sqm' => round($price * $width * $height * $quantity / 1000000, 2),
+            default => null,
+        };
     }
 
     public function saveService(?Service $service, array $data): Service

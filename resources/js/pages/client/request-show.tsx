@@ -19,7 +19,11 @@ import {
     DashboardMetric,
     DashboardPage,
 } from '@/components/dashboard/dashboard-ui';
+import { AgreedTermsSummary } from '@/components/request-agreed-terms';
 import { RequestCatalogItems } from '@/components/request-catalog-items';
+import { RequestPhotos } from '@/components/request-photos';
+import { RecoveryActions } from '@/components/request-recovery';
+import { VisitFields, VisitSummary } from '@/components/request-visit-details';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -31,6 +35,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { WarrantyClaims } from '@/components/warranty-claims';
 import { getStatusLabel, getStatusVariant } from '@/lib/dashboard-format';
 import type { ClientRequest } from '@/lib/dashboard-format';
 import { dashboard as clientDashboard } from '@/routes/client';
@@ -53,6 +58,11 @@ type PageProps = {
 
 type ClientRequestEditForm = {
     city: string;
+    address: string;
+    contact_name: string;
+    contact_phone: string;
+    arrival_from: string;
+    arrival_until: string;
     district: string;
     installation_date: string;
     window_width: number;
@@ -154,6 +164,11 @@ export default function ClientRequestShow() {
     const { auth, requestId, request } = usePage<PageProps>().props;
     const editForm = useForm<ClientRequestEditForm>({
         city: request?.city ?? '',
+        address: request?.address ?? '',
+        contact_name: request?.contact_name ?? '',
+        contact_phone: request?.contact_phone ?? '',
+        arrival_from: request?.arrival_from ?? '',
+        arrival_until: request?.arrival_until ?? '',
         district: request?.districtValue ?? '',
         installation_date: request?.installationDateValue ?? '',
         window_width: request?.width ?? 1,
@@ -277,6 +292,8 @@ export default function ClientRequestShow() {
                         </>
                     }
                 />
+
+                <RecoveryActions key={request.id} order={request} />
 
                 <div className="grid auto-rows-min gap-4 md:grid-cols-2 xl:grid-cols-4">
                     {statusDetails.map((item) => (
@@ -520,6 +537,13 @@ export default function ClientRequestShow() {
                                             )}
                                         </div>
 
+                                        <VisitFields
+                                            errors={editForm.errors}
+                                            data={editForm.data}
+                                            onChange={(field, value) =>
+                                                editForm.setData(field, value)
+                                            }
+                                        />
                                         <div className="grid gap-2">
                                             <Label htmlFor="request-district">
                                                 Район
@@ -728,6 +752,26 @@ export default function ClientRequestShow() {
 
                         {request.status === 'completed' && (
                             <>
+                                <AgreedTermsSummary data={request} />
+                                <VisitSummary data={request} />
+                                <RequestPhotos
+                                    orderId={request.id}
+                                    photos={request.photos}
+                                    canUpload={[
+                                        'new',
+                                        'awaiting_confirmation',
+                                        'confirmed',
+                                    ].includes(request.status)}
+                                />
+                                <WarrantyClaims
+                                    orderId={request.id}
+                                    claims={request.warrantyClaims}
+                                    role="client"
+                                    canCreate={
+                                        request.status === 'completed' &&
+                                        !!request.warranty
+                                    }
+                                />
                                 {request.warranty && (
                                     <Card className="border-primary/25 bg-primary/5 shadow-sm">
                                         <CardHeader>
@@ -767,7 +811,10 @@ export default function ClientRequestShow() {
                                                 </div>
                                                 <div className="rounded-2xl bg-background/80 p-3">
                                                     <p className="text-sm text-muted-foreground">
-                                                        Окончание гарантии
+                                                        {(request.items
+                                                            ?.length ?? 0) > 1
+                                                            ? 'Общий срок для всех работ до'
+                                                            : 'Окончание гарантии'}
                                                     </p>
                                                     <p className="mt-1 font-medium">
                                                         {
@@ -781,7 +828,7 @@ export default function ClientRequestShow() {
                                                 <p className="text-sm text-muted-foreground">
                                                     Условия
                                                 </p>
-                                                <p className="mt-1 font-medium">
+                                                <p className="mt-1 font-medium whitespace-pre-line">
                                                     {
                                                         request.warranty
                                                             .description

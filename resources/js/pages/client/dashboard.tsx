@@ -213,7 +213,10 @@ function RequestSummaryCard({
                         aria-hidden="true"
                     />
                     <span>
-                        Гарантия действует до {request.warranty.expiresAt}
+                        {(request.items?.length ?? 0) > 1
+                            ? 'Общая гарантия на все работы до'
+                            : 'Гарантия действует до'}{' '}
+                        {request.warranty.expiresAt}
                     </span>
                 </div>
             )}

@@ -1,3 +1,4 @@
+import { CompanyDetails } from '@/components/okna-market/company-details';
 import type { MarketplaceCompany, RequestFormState } from '@/lib/okna-market';
 
 type Props = {
@@ -23,10 +24,11 @@ export function CompanyCard({ company, actionLabel }: Props) {
                     <li>
                         Услуга: {company.matchedServiceName ?? 'уточняется'}
                     </li>
-                    <li>Срок: {company.availabilityLabel}</li>
+                    <li>Дата работ: {company.availabilityLabel}</li>
                     <li>Районы: {company.districts.join(', ')}</li>
                     <li>{company.feature}</li>
                 </ul>
+                <CompanyDetails company={company} />
             </div>
             <div className="company-action">
                 <span>Цена компании</span>

@@ -23,6 +23,7 @@ class FilterServiceRequestsRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'needs_attention' => ['sometimes', 'boolean'],
             'status' => [
                 'nullable',
                 'string',

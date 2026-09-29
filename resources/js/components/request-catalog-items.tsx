@@ -28,7 +28,7 @@ export function RequestCatalogItems({
     return (
         items.length > 0 && (
             <section className="grid gap-3 rounded-xl border bg-card p-4">
-                <h3 className="font-semibold">Услуга и параметры заявки</h3>
+                <h3 className="font-semibold">Работы и параметры заявки</h3>
                 {items.map((item) => (
                     <div className="grid gap-2 text-sm" key={item.id}>
                         <p className="font-medium">

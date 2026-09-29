@@ -17,8 +17,14 @@ import {
     DashboardMetric,
     DashboardPage,
 } from '@/components/dashboard/dashboard-ui';
+import {
+    AgreedTermsSummary,
+    AgreedTermsFields,
+} from '@/components/request-agreed-terms';
 import { RequestCatalogItems } from '@/components/request-catalog-items';
 import type { CatalogRequestItem } from '@/components/request-catalog-items';
+import { RequestPhotos } from '@/components/request-photos';
+import { VisitFields, VisitSummary } from '@/components/request-visit-details';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -32,6 +38,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RequestClientChatDialog } from '@/components/vendor/request-client-chat-dialog';
 import type { RequestClientChatLead } from '@/components/vendor/request-client-chat-dialog';
+import { WarrantyClaims } from '@/components/warranty-claims';
+import type { WarrantyClaim } from '@/components/warranty-claims';
 import { getStatusLabel, getStatusVariant } from '@/lib/dashboard-format';
 import type { RequestStatus } from '@/lib/dashboard-format';
 import {
@@ -51,10 +59,19 @@ import {
 } from '@/routes/vendor/requests/amendments';
 
 type VendorLead = RequestClientChatLead & {
+    final_price?: string | null;
+    work_scope?: string | null;
+    photos?: { id: number }[];
+    warrantyClaims?: WarrantyClaim[];
     items?: CatalogRequestItem[];
     dimensionUnit?: string;
     createdAt: string;
     extras: string[];
+    address?: string | null;
+    contact_name?: string | null;
+    contact_phone?: string | null;
+    arrival_from?: string | null;
+    arrival_until?: string | null;
     districtValue?: string | null;
     installationDateValue?: string | null;
     commentValue?: string | null;
@@ -69,7 +86,14 @@ type VendorLead = RequestClientChatLead & {
 };
 
 type VendorRequestEditForm = {
+    final_price: string;
+    work_scope: string;
     city: string;
+    address: string;
+    contact_name: string;
+    contact_phone: string;
+    arrival_from: string;
+    arrival_until: string;
     district: string;
     installation_date: string;
     window_width: number;
@@ -162,26 +186,6 @@ function canProposeAmendment(lead: VendorLead) {
     );
 }
 
-function patchRequestStatus(
-    requestId: string,
-    action: 'accept' | 'reject' | 'start' | 'complete',
-) {
-    const actionUrl = {
-        accept: acceptRequest.url(Number(requestId)),
-        reject: rejectRequest.url(Number(requestId)),
-        start: startRequest.url(Number(requestId)),
-        complete: completeRequest.url(Number(requestId)),
-    }[action];
-
-    router.patch(
-        actionUrl,
-        {},
-        {
-            preserveScroll: true,
-        },
-    );
-}
-
 function decideVendorAmendment(
     requestId: string,
     amendmentId: string,
@@ -206,6 +210,37 @@ export default function VendorRequestsPage({
     selectedStatus,
 }: VendorRequestsPageProps) {
     const activeFilter = selectedStatus ?? 'all';
+    const [statusErrors, setStatusErrors] = useState<Record<string, string>>(
+        {},
+    );
+    const [pendingStatusId, setPendingStatusId] = useState<string | null>(null);
+
+    function patchRequestStatus(
+        requestId: string,
+        action: 'accept' | 'reject' | 'start' | 'complete',
+    ) {
+        const actions = {
+            accept: acceptRequest,
+            reject: rejectRequest,
+            start: startRequest,
+            complete: completeRequest,
+        };
+        setStatusErrors((errors) => ({ ...errors, [requestId]: '' }));
+        setPendingStatusId(requestId);
+        router.patch(
+            actions[action].url(Number(requestId)),
+            {},
+            {
+                preserveScroll: true,
+                onError: (errors) =>
+                    setStatusErrors((current) => ({
+                        ...current,
+                        [requestId]: Object.values(errors).join(' '),
+                    })),
+                onFinish: () => setPendingStatusId(null),
+            },
+        );
+    }
 
     const sortedLeads = useMemo(
         () =>
@@ -230,7 +265,14 @@ export default function VendorRequestsPage({
         ? (requests.find((lead) => lead.id === chatLeadId) ?? null)
         : null;
     const editForm = useForm<VendorRequestEditForm>({
+        final_price: '',
+        work_scope: '',
         city: '',
+        address: '',
+        contact_name: '',
+        contact_phone: '',
+        arrival_from: '',
+        arrival_until: '',
         district: '',
         installation_date: '',
         window_width: 1,
@@ -240,7 +282,9 @@ export default function VendorRequestsPage({
     });
     const editFormRef = useRef(editForm);
 
-    editFormRef.current = editForm;
+    useEffect(() => {
+        editFormRef.current = editForm;
+    }, [editForm]);
 
     useEffect(() => {
         if (!selectedLead) {
@@ -248,7 +292,14 @@ export default function VendorRequestsPage({
         }
 
         editFormRef.current.setData({
+            final_price: selectedLead.final_price ?? '',
+            work_scope: selectedLead.work_scope ?? '',
             city: selectedLead.city,
+            address: selectedLead.address ?? '',
+            contact_name: selectedLead.contact_name ?? '',
+            contact_phone: selectedLead.contact_phone ?? '',
+            arrival_from: selectedLead.arrival_from ?? '',
+            arrival_until: selectedLead.arrival_until ?? '',
             district: selectedLead.districtValue ?? '',
             installation_date: selectedLead.installationDateValue ?? '',
             window_width: selectedLead.width,
@@ -257,7 +308,7 @@ export default function VendorRequestsPage({
             comment: selectedLead.commentValue ?? '',
         });
         editFormRef.current.clearErrors();
-    }, [selectedLead?.id]);
+    }, [selectedLead]);
 
     const leadStats = [
         {
@@ -642,6 +693,21 @@ export default function VendorRequestsPage({
                                                     </p>
                                                 </div>
                                             </div>
+                                            <AgreedTermsSummary
+                                                data={selectedLead}
+                                            />
+                                            <VisitSummary data={selectedLead} />
+                                            <RequestPhotos
+                                                orderId={selectedLead.id}
+                                                photos={selectedLead.photos}
+                                            />
+                                            <WarrantyClaims
+                                                orderId={selectedLead.id}
+                                                claims={
+                                                    selectedLead.warrantyClaims
+                                                }
+                                                role="vendor"
+                                            />
                                             <RequestCatalogItems
                                                 items={selectedLead.items}
                                             />
@@ -841,6 +907,26 @@ export default function VendorRequestsPage({
                                                         }
                                                     />
                                                 </div>
+                                                <AgreedTermsFields
+                                                    data={editForm.data}
+                                                    errors={editForm.errors}
+                                                    onChange={(field, value) =>
+                                                        editForm.setData(
+                                                            field,
+                                                            value,
+                                                        )
+                                                    }
+                                                />
+                                                <VisitFields
+                                                    errors={editForm.errors}
+                                                    data={editForm.data}
+                                                    onChange={(field, value) =>
+                                                        editForm.setData(
+                                                            field,
+                                                            value,
+                                                        )
+                                                    }
+                                                />
                                                 <div className="grid gap-2">
                                                     <Label htmlFor="vendor-request-district">
                                                         Район
@@ -1013,6 +1099,23 @@ export default function VendorRequestsPage({
                                             </form>
                                         )}
 
+                                        {statusErrors[selectedLead.id] && (
+                                            <p
+                                                role="alert"
+                                                className="text-sm text-destructive"
+                                            >
+                                                {statusErrors[selectedLead.id]}
+                                            </p>
+                                        )}
+                                        {selectedLead.pendingAmendment &&
+                                            selectedLead.status ===
+                                                'confirmed' && (
+                                                <p className="text-sm text-muted-foreground">
+                                                    Перед началом работ нужно
+                                                    подтвердить или отклонить
+                                                    предложенные правки.
+                                                </p>
+                                            )}
                                         {(canAcceptRequest(
                                             selectedLead.status,
                                         ) ||
@@ -1064,6 +1167,11 @@ export default function VendorRequestsPage({
                                                         size="sm"
                                                         variant="secondary"
                                                         disabled={
+                                                            pendingStatusId ===
+                                                                selectedLead.id ||
+                                                            Boolean(
+                                                                selectedLead.pendingAmendment,
+                                                            ) ||
                                                             !canStartRequest(
                                                                 selectedLead.status,
                                                             )
@@ -1084,6 +1192,8 @@ export default function VendorRequestsPage({
                                                         size="sm"
                                                         variant="secondary"
                                                         disabled={
+                                                            pendingStatusId ===
+                                                                selectedLead.id ||
                                                             !canCompleteRequest(
                                                                 selectedLead.status,
                                                             )

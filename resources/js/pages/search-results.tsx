@@ -1,9 +1,11 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
 import { index as catalogIndex } from '@/actions/App/Http/Controllers/CatalogController';
+import { CompanyDetails } from '@/components/okna-market/company-details';
 import { FindCompanyForm } from '@/components/okna-market/find-company-form';
 import type { SearchService } from '@/components/okna-market/find-company-form';
 import { MarketShell } from '@/components/okna-market/market-shell';
+import { queryItems } from '@/lib/catalog-booking';
 import type {
     MarketplaceCompany,
     PriceFilterKey,
@@ -27,6 +29,7 @@ type CreatedRequest = {
 type PageProps = {
     companies: MarketplaceCompany[];
     services: SearchService[];
+    bookingDefaults: Record<string, string | number | null>;
 };
 export default function SearchResults() {
     const { url, props } = usePage<PageProps>();
@@ -55,7 +58,7 @@ export default function SearchResults() {
             .filter((company) => {
                 if (
                     priceFilter !== 'all' &&
-                    (!company.sortPrice ||
+                    (company.sortPrice === null ||
                         company.sortPrice > Number(priceFilter))
                 ) {
                     return false;
@@ -91,8 +94,42 @@ export default function SearchResults() {
             router.get(
                 catalogIndex.url({
                     query: {
-                        service_id: company.catalogServiceId,
-                        rate_id: company.catalogRateId,
+                        ...props.bookingDefaults,
+                        district:
+                            districtFilter === 'all'
+                                ? props.bookingDefaults.district
+                                : districtFilter,
+                        service_id:
+                            company.catalogItems?.[0]?.service_id ??
+                            company.catalogServiceId,
+                        rate_id:
+                            company.catalogItems?.[0]?.rate_id ??
+                            company.catalogRateId,
+                        ...(company.catalogItems?.length
+                            ? {
+                                  items: Object.fromEntries(
+                                      company.catalogItems.map(
+                                          (
+                                              {
+                                                  rate_id,
+                                                  quantity,
+                                                  width_mm,
+                                                  height_mm,
+                                              },
+                                              index,
+                                          ) => [
+                                              index,
+                                              {
+                                                  rate_id,
+                                                  quantity,
+                                                  width_mm,
+                                                  height_mm,
+                                              },
+                                          ],
+                                      ),
+                                  ),
+                              }
+                            : {}),
                     },
                 }),
             );
@@ -235,7 +272,55 @@ export default function SearchResults() {
 
                 <section className="summary-section">
                     <div className="container">
-                        <FindCompanyForm services={services} />
+                        <details
+                            className="rounded-2xl border bg-card p-5"
+                            open={
+                                Object.keys(props.errors).length > 0 ||
+                                undefined
+                            }
+                        >
+                            <summary className="flex cursor-pointer flex-wrap items-center justify-between gap-3">
+                                <span className="font-medium">
+                                    {queryItems(url).length
+                                        ? queryItems(url)
+                                              .map(
+                                                  (item) =>
+                                                      services.find(
+                                                          (service) =>
+                                                              service.id ===
+                                                              Number(
+                                                                  item.service_id,
+                                                              ),
+                                                      )?.name,
+                                              )
+                                              .filter(Boolean)
+                                              .join(', ')
+                                        : (services.find(
+                                              (service) =>
+                                                  service.id ===
+                                                  Number(
+                                                      new URL(
+                                                          url,
+                                                          'https://local.invalid',
+                                                      ).searchParams.get(
+                                                          'service_id',
+                                                      ),
+                                                  ),
+                                          )?.name ?? 'Все услуги')}{' '}
+                                    ·{' '}
+                                    {props.bookingDefaults.city || 'Все города'}
+                                </span>
+                                <span className="text-sm text-primary">
+                                    Изменить запрос
+                                </span>
+                            </summary>
+                            <div className="mt-4">
+                                <FindCompanyForm
+                                    key={url}
+                                    services={services}
+                                />
+                            </div>
+                        </details>
                     </div>
                 </section>
 
@@ -379,6 +464,14 @@ export default function SearchResults() {
                                 ))}
                             </div>
 
+                            {visibleCompanies.length === 0 && (
+                                <p className="rounded-xl border bg-card p-5">
+                                    Не нашли компанию для выбранного набора
+                                    работ в этом городе. Откройте «Изменить
+                                    запрос» и уберите часть услуг или измените
+                                    город.
+                                </p>
+                            )}
                             <div className="results-count">
                                 Найдено компаний: {visibleCompanies.length}
                             </div>
@@ -432,7 +525,7 @@ export default function SearchResults() {
                                                     )}
                                             </li>
                                             <li>
-                                                Срок:{' '}
+                                                Дата работ:{' '}
                                                 {company.availabilityLabel}
                                             </li>
                                             <li>
@@ -449,10 +542,17 @@ export default function SearchResults() {
                                             </li>
                                             <li>{company.feature}</li>
                                         </ul>
+                                        <CompanyDetails company={company} />
                                     </div>
                                     <div className="company-action">
                                         <span>Цена компании</span>
                                         <strong>{company.priceLabel}</strong>
+                                        {company.estimateBasis && (
+                                            <p>
+                                                {company.estimateBasis} · Точная
+                                                цена после замера
+                                            </p>
+                                        )}
                                         <button
                                             className="btn btn-primary"
                                             disabled={

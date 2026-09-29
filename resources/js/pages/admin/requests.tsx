@@ -16,6 +16,10 @@ import {
     DashboardMetric,
     DashboardPage,
 } from '@/components/dashboard/dashboard-ui';
+import { AgreedTermsSummary } from '@/components/request-agreed-terms';
+import { RequestPhotos } from '@/components/request-photos';
+import { RecoveryActions } from '@/components/request-recovery';
+import { VisitFields, VisitSummary } from '@/components/request-visit-details';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,12 +31,22 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { WarrantyClaims } from '@/components/warranty-claims';
+import type { WarrantyClaim } from '@/components/warranty-claims';
 import { getStatusLabel, getStatusVariant } from '@/lib/dashboard-format';
 import type { RequestStatus } from '@/lib/dashboard-format';
 import { requests as adminRequests } from '@/routes/admin';
 import { update as updateRequest } from '@/routes/admin/requests';
 
 type AdminRequest = {
+    needsRecovery?: boolean;
+    replacementRequestId?: number | null;
+    assistanceRequested?: boolean;
+    assistanceNote?: string | null;
+    final_price?: string | null;
+    work_scope?: string | null;
+    photos?: { id: number }[];
+    warrantyClaims?: WarrantyClaim[];
     id: string;
     createdAt: string;
     status: RequestStatus;
@@ -43,6 +57,11 @@ type AdminRequest = {
     vendorName: string | null;
     vendorContactName: string | null;
     city: string;
+    address?: string | null;
+    contact_name?: string | null;
+    contact_phone?: string | null;
+    arrival_from?: string | null;
+    arrival_until?: string | null;
     district: string | null;
     installationDate: string;
     installationDateValue: string | null;
@@ -62,11 +81,17 @@ type AdminRequest = {
 
 type PageProps = {
     requests: AdminRequest[];
+    needsAttention: boolean;
     selectedStatus: RequestStatus | null;
 };
 
 type CorrectionForm = {
     city: string;
+    address: string;
+    contact_name: string;
+    contact_phone: string;
+    arrival_from: string;
+    arrival_until: string;
     district: string;
     installation_date: string;
     window_width: number;
@@ -107,7 +132,11 @@ function canCorrectRequest(request: AdminRequest) {
     );
 }
 
-export default function AdminRequests({ requests, selectedStatus }: PageProps) {
+export default function AdminRequests({
+    requests,
+    selectedStatus,
+    needsAttention,
+}: PageProps) {
     const [search, setSearch] = useState('');
     const [selectedRequestId, setSelectedRequestId] = useState(
         requests[0]?.id ?? '',
@@ -142,6 +171,11 @@ export default function AdminRequests({ requests, selectedStatus }: PageProps) {
         null;
     const correctionForm = useForm<CorrectionForm>({
         city: '',
+        address: '',
+        contact_name: '',
+        contact_phone: '',
+        arrival_from: '',
+        arrival_until: '',
         district: '',
         installation_date: '',
         window_width: 0,
@@ -152,7 +186,9 @@ export default function AdminRequests({ requests, selectedStatus }: PageProps) {
     });
     const correctionFormRef = useRef(correctionForm);
 
-    correctionFormRef.current = correctionForm;
+    useEffect(() => {
+        correctionFormRef.current = correctionForm;
+    }, [correctionForm]);
 
     useEffect(() => {
         if (!selectedRequest) {
@@ -161,6 +197,11 @@ export default function AdminRequests({ requests, selectedStatus }: PageProps) {
 
         correctionFormRef.current.setData({
             city: selectedRequest.city,
+            address: selectedRequest.address ?? '',
+            contact_name: selectedRequest.contact_name ?? '',
+            contact_phone: selectedRequest.contact_phone ?? '',
+            arrival_from: selectedRequest.arrival_from ?? '',
+            arrival_until: selectedRequest.arrival_until ?? '',
             district: selectedRequest.district ?? '',
             installation_date: selectedRequest.installationDateValue ?? '',
             window_width: selectedRequest.width,
@@ -170,7 +211,7 @@ export default function AdminRequests({ requests, selectedStatus }: PageProps) {
             admin_note: '',
         });
         correctionFormRef.current.clearErrors();
-    }, [selectedRequest?.id]);
+    }, [selectedRequest]);
 
     const selectFilter = (status: 'all' | RequestStatus) => {
         router.get(
@@ -235,6 +276,22 @@ export default function AdminRequests({ requests, selectedStatus }: PageProps) {
                     <Card className="border-border/70 shadow-sm">
                         <CardHeader>
                             <CardTitle>Очередь заявок</CardTitle>
+                            <Button
+                                variant={needsAttention ? 'default' : 'outline'}
+                                onClick={() =>
+                                    router.get(
+                                        adminRequests.url({
+                                            query: needsAttention
+                                                ? {}
+                                                : { needs_attention: true },
+                                        }),
+                                    )
+                                }
+                            >
+                                {needsAttention
+                                    ? 'Показать все заявки'
+                                    : 'Без результата и запросы поддержки'}
+                            </Button>
                             <CardDescription>
                                 Поиск работает по номеру, услуге, клиенту,
                                 компании и городу.
@@ -401,6 +458,24 @@ export default function AdminRequests({ requests, selectedStatus }: PageProps) {
                                         </div>
                                     </div>
 
+                                    <RecoveryActions
+                                        key={selectedRequest.id}
+                                        order={selectedRequest}
+                                        admin
+                                    />
+                                    <AgreedTermsSummary
+                                        data={selectedRequest}
+                                    />
+                                    <VisitSummary data={selectedRequest} />
+                                    <RequestPhotos
+                                        orderId={selectedRequest.id}
+                                        photos={selectedRequest.photos}
+                                    />
+                                    <WarrantyClaims
+                                        orderId={selectedRequest.id}
+                                        claims={selectedRequest.warrantyClaims}
+                                        role="admin"
+                                    />
                                     {selectedRequest.pendingAmendment && (
                                         <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-sm">
                                             <p className="font-medium">
@@ -462,6 +537,16 @@ export default function AdminRequests({ requests, selectedStatus }: PageProps) {
                                                     }
                                                 />
                                             </div>
+                                            <VisitFields
+                                                errors={correctionForm.errors}
+                                                data={correctionForm.data}
+                                                onChange={(field, value) =>
+                                                    correctionForm.setData(
+                                                        field,
+                                                        value,
+                                                    )
+                                                }
+                                            />
                                             <div className="grid gap-2">
                                                 <Label htmlFor="admin-district">
                                                     Район

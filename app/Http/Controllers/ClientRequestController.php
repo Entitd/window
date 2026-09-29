@@ -3,27 +3,29 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\FilterServiceRequestsRequest;
+use App\Http\Requests\StoreLegacyServiceRequest;
 use App\Http\Requests\StoreServiceRequestAmendmentRequest;
 use App\Models\Service;
 use App\Models\ServiceRequest;
 use App\Models\ServiceRequestAmendment;
+use App\Models\Vendor;
 use App\Services\ServiceRequestAmendmentService;
+use App\Services\WarrantyIssuer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class ClientRequestController extends Controller
 {
-    public function __construct(private ServiceRequestAmendmentService $amendments) {}
+    public function __construct(private ServiceRequestAmendmentService $amendments, private WarrantyIssuer $warranties) {}
 
     public function index(FilterServiceRequestsRequest $request): Response
     {
-        $requests = ServiceRequest::with(['service', 'vendor', 'warranty', 'statusHistories', 'review', 'items.values', 'amendments.proposer'])
+        $requests = ServiceRequest::with(['service', 'vendor', 'warranty', 'statusHistories', 'review', 'items.values', 'photos', 'warrantyClaims.responder', 'amendments.proposer'])
             ->where('client_id', $request->user()->id)
             ->when($request->selectedStatus(), fn ($query, string $status) => $query->where('status', $status))
             ->latest()
@@ -37,27 +39,9 @@ class ClientRequestController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreLegacyServiceRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'vendor_id' => [
-                'nullable',
-                Rule::exists('vendors', 'id')->where('status', 'approved'),
-            ],
-            'service_id' => ['nullable', 'exists:services,id'],
-            'service_key' => [
-                'required_without:service_id',
-                'string',
-                Rule::in(array_keys($this->serviceNamesByKey())),
-            ],
-            'city' => ['required', 'string', 'max:255'],
-            'district' => ['nullable', 'string', 'max:255'],
-            'installation_date' => ['nullable', 'date'],
-            'window_width' => ['required', 'integer', 'min:1'],
-            'window_height' => ['required', 'integer', 'min:1'],
-            'additional_services' => ['nullable', 'array'],
-            'comment' => ['nullable', 'string', 'max:2000'],
-        ]);
+        $validated = $request->validated();
 
         $service = $this->resolveService($validated);
         if ($service->category_id !== null) {
@@ -80,6 +64,7 @@ class ClientRequestController extends Controller
             'client_id' => $request->user()->id,
             'status' => 'new',
             'estimated_price' => $estimatedPrice,
+            'warranty_terms' => $this->warranties->snapshotFor(Vendor::find($validated['vendor_id'] ?? null), $service),
         ]);
 
         if ($serviceRequest->vendor_id !== null) {
@@ -104,7 +89,7 @@ class ClientRequestController extends Controller
 
     public function show(Request $request, string $requestId): Response
     {
-        $serviceRequest = ServiceRequest::with(['service', 'vendor', 'warranty', 'statusHistories', 'review', 'items.values', 'amendments.proposer'])
+        $serviceRequest = ServiceRequest::with(['service', 'vendor', 'warranty', 'statusHistories', 'review', 'items.values', 'photos', 'warrantyClaims.responder', 'amendments.proposer'])
             ->where('client_id', $request->user()->id)
             ->findOrFail($requestId);
 
@@ -160,7 +145,13 @@ class ClientRequestController extends Controller
             'vendor_id' => $vendorId,
             'service_id' => $serviceRequest->service_id,
             'calculation_id' => $serviceRequest->calculation_id,
+            'warranty_terms' => $this->warranties->snapshotFor($vendorId ? $serviceRequest->vendor : null, $serviceRequest->service),
             'city' => $serviceRequest->city,
+            'address' => $serviceRequest->address,
+            'contact_name' => $serviceRequest->contact_name,
+            'contact_phone' => $serviceRequest->contact_phone,
+            'arrival_from' => $serviceRequest->arrival_from,
+            'arrival_until' => $serviceRequest->arrival_until,
             'district' => $serviceRequest->district,
             'installation_date' => $serviceRequest->installation_date,
             'window_width' => $serviceRequest->window_width,
@@ -217,14 +208,31 @@ class ClientRequestController extends Controller
     private function serializeRequest(ServiceRequest $serviceRequest): array
     {
         return [
+            'needsRecovery' => $serviceRequest->needsRecovery(),
+            'replacementRequestId' => $serviceRequest->replacement_request_id,
+            'assistanceRequested' => $serviceRequest->assistance_requested_at !== null,
+            'assistanceNote' => $serviceRequest->assistance_note,
+            'photos' => $serviceRequest->photos->map(fn ($photo) => ['id' => $photo->id])->values(),
+            'warrantyClaims' => $serviceRequest->warrantyClaims->map(fn ($claim) => [
+                'id' => $claim->id, 'description' => $claim->description, 'status' => $claim->status,
+                'supportRequested' => $claim->support_requested, 'response' => $claim->response,
+                'responder' => $claim->responder?->role === 'admin' ? 'Поддержка сервиса' : 'Компания',
+                'createdAt' => $claim->created_at->format('d.m.Y H:i'),
+            ])->values(),
             'id' => (string) $serviceRequest->id,
             'status' => $serviceRequest->status,
-            'service' => $serviceRequest->items->first()?->service_name ?? $serviceRequest->service?->name ?? 'Услуга',
+            'service' => $serviceRequest->items->isNotEmpty() ? $serviceRequest->items->pluck('service_name')->unique()->join(', ') : ($serviceRequest->service?->name ?? 'Услуга'),
             'items' => $serviceRequest->items,
             'dimensionUnit' => $serviceRequest->items->isNotEmpty() ? 'мм' : 'см',
             'city' => $serviceRequest->city,
+            'final_price' => $serviceRequest->final_price,
+            'work_scope' => $serviceRequest->work_scope,
+            'address' => $serviceRequest->address,
+            'contact_name' => $serviceRequest->contact_name,
+            'contact_phone' => $serviceRequest->contact_phone,
+            'arrival_from' => $serviceRequest->arrival_from,
+            'arrival_until' => $serviceRequest->arrival_until,
             'district' => $serviceRequest->district ?? 'Не указан',
-            'address' => $serviceRequest->district ?? 'Адрес уточняется',
             'width' => $serviceRequest->window_width,
             'height' => $serviceRequest->window_height,
             'installationDate' => $serviceRequest->installation_date
@@ -306,7 +314,14 @@ class ClientRequestController extends Controller
     private function serializeAmendmentChanges(array $changes): array
     {
         $labels = [
+            'final_price' => 'Итоговая стоимость, ₽',
+            'work_scope' => 'Состав работ',
             'city' => 'Город',
+            'address' => 'Точный адрес',
+            'contact_name' => 'Контактное лицо',
+            'contact_phone' => 'Телефон для связи',
+            'arrival_from' => 'Время с',
+            'arrival_until' => 'Время до',
             'district' => 'Район',
             'installation_date' => 'Дата работ',
             'window_width' => 'Ширина, см',

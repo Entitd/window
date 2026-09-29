@@ -52,6 +52,16 @@ export type ExtraWorkOption = {
 export type MarketplaceCompany = {
     catalogServiceId?: number | null;
     catalogRateId?: number | null;
+    catalogItems?: {
+        rate_id: number;
+        service_id: number;
+        service_name: string;
+        option_id: number;
+        quantity: number;
+        width_mm: number | null;
+        height_mm: number | null;
+        total: number | null;
+    }[];
     id?: number;
     initials: string;
     logoUrl?: string | null;
@@ -60,9 +70,14 @@ export type MarketplaceCompany = {
     description: string;
     matchedServiceName: string | null;
     priceLabel: string;
+    estimateBasis?: string | null;
     sortPrice: number | null;
     availabilityLabel: string;
     reviewsLabel: string;
+    reviews?: { id: number; stars: number; comment: string }[];
+    completedOrders?: number;
+    warrantyMonths?: number | null;
+    warrantyDescription?: string | null;
     districts: string[];
     badge: string;
     feature: string;

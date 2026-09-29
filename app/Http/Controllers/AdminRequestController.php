@@ -24,9 +24,10 @@ class AdminRequestController extends Controller
                 'vendor.user:id,name,email,phone',
                 'service:id,name',
                 'items',
-                'amendments.proposer',
+                'photos', 'warrantyClaims.responder', 'amendments.proposer',
             ])
             ->when($request->selectedStatus(), fn ($query, string $status) => $query->where('status', $status))
+            ->when($request->boolean('needs_attention'), fn ($query) => $query->needsAttention())
             ->latest()
             ->get()
             ->map(fn (ServiceRequest $serviceRequest) => $this->serializeRequest($serviceRequest))
@@ -34,6 +35,7 @@ class AdminRequestController extends Controller
 
         return Inertia::render('admin/requests', [
             'requests' => $requests,
+            'needsAttention' => $request->boolean('needs_attention'),
             'selectedStatus' => $request->selectedStatus(),
         ]);
     }
@@ -55,16 +57,34 @@ class AdminRequestController extends Controller
         $pendingAmendment = $serviceRequest->amendments->firstWhere('status', 'pending');
 
         return [
+            'needsRecovery' => $serviceRequest->needsRecovery(),
+            'replacementRequestId' => $serviceRequest->replacement_request_id,
+            'assistanceRequested' => $serviceRequest->assistance_requested_at !== null,
+            'assistanceNote' => $serviceRequest->assistance_note,
+            'photos' => $serviceRequest->photos->map(fn ($photo) => ['id' => $photo->id])->values(),
+            'warrantyClaims' => $serviceRequest->warrantyClaims->map(fn ($claim) => [
+                'id' => $claim->id, 'description' => $claim->description, 'status' => $claim->status,
+                'supportRequested' => $claim->support_requested, 'response' => $claim->response,
+                'responder' => $claim->responder?->role === 'admin' ? 'Поддержка сервиса' : 'Компания',
+                'createdAt' => $claim->created_at->format('d.m.Y H:i'),
+            ])->values(),
             'id' => (string) $serviceRequest->id,
             'createdAt' => $serviceRequest->created_at?->format('d.m.Y H:i') ?? '',
             'status' => $serviceRequest->status,
-            'service' => $serviceRequest->items->first()?->service_name ?? $serviceRequest->service?->name ?? 'Услуга',
+            'service' => $serviceRequest->items->isNotEmpty() ? $serviceRequest->items->pluck('service_name')->unique()->join(', ') : ($serviceRequest->service?->name ?? 'Услуга'),
             'clientName' => $serviceRequest->client?->name ?? 'Клиент',
             'clientPhone' => $serviceRequest->client?->phone,
             'clientEmail' => $serviceRequest->client?->email,
             'vendorName' => $serviceRequest->vendor?->company_name,
             'vendorContactName' => $serviceRequest->vendor?->user?->name,
             'city' => $serviceRequest->city,
+            'final_price' => $serviceRequest->final_price,
+            'work_scope' => $serviceRequest->work_scope,
+            'address' => $serviceRequest->address,
+            'contact_name' => $serviceRequest->contact_name,
+            'contact_phone' => $serviceRequest->contact_phone,
+            'arrival_from' => $serviceRequest->arrival_from,
+            'arrival_until' => $serviceRequest->arrival_until,
             'district' => $serviceRequest->district,
             'installationDate' => $serviceRequest->installation_date?->format('d.m.Y') ?? 'Не выбрана',
             'installationDateValue' => $serviceRequest->installation_date?->format('Y-m-d'),

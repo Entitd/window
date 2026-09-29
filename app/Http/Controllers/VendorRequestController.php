@@ -9,11 +9,10 @@ use App\Models\ServiceRequest;
 use App\Models\ServiceRequestAmendment;
 use App\Models\Vendor;
 use App\Services\ServiceRequestAmendmentService;
-use App\Services\WarrantyIssuer;
+use App\Services\ServiceRequestWorkflow;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -21,7 +20,7 @@ class VendorRequestController extends Controller
 {
     public function __construct(
         private ServiceRequestAmendmentService $amendments,
-        private WarrantyIssuer $warranties,
+        private ServiceRequestWorkflow $workflow,
     ) {}
 
     public function index(FilterServiceRequestsRequest $request): Response
@@ -34,7 +33,7 @@ class VendorRequestController extends Controller
                 'service:id,name',
                 'items.values',
                 'chat.messages.sender:id,name,email',
-                'amendments.proposer',
+                'photos', 'warrantyClaims.responder', 'amendments.proposer',
             ])
             ->where('vendor_id', $vendor->id)
             ->when($request->selectedStatus(), fn ($query, string $status) => $query->where('status', $status))
@@ -161,28 +160,9 @@ class VendorRequestController extends Controller
         string $note,
         ?Vendor $warrantyVendor = null,
     ): RedirectResponse {
-        if (! in_array($serviceRequest->status, $allowedStatuses, true)) {
-            return back()->withErrors([
-                'request' => 'Для текущего статуса заявки это действие недоступно.',
-            ]);
-        }
-
-        DB::transaction(function () use ($label, $nextStatus, $note, $request, $serviceRequest, $warrantyVendor): void {
-            $fromStatus = $serviceRequest->status;
-            $serviceRequest->update(['status' => $nextStatus]);
-            $serviceRequest->statusHistories()->create([
-                'actor_id' => $request->user()->id,
-                'actor_role' => 'vendor',
-                'from_status' => $fromStatus,
-                'to_status' => $nextStatus,
-                'label' => $label,
-                'note' => $note,
-            ]);
-
-            if ($nextStatus === 'completed' && $warrantyVendor) {
-                $this->warranties->issue($serviceRequest, $warrantyVendor);
-            }
-        });
+        $this->workflow->transition(
+            $serviceRequest, $request->user(), $allowedStatuses, $nextStatus, $label, $note, $warrantyVendor,
+        );
 
         return back();
     }
@@ -193,8 +173,22 @@ class VendorRequestController extends Controller
     private function serializeRequest(ServiceRequest $serviceRequest): array
     {
         return [
+            'photos' => $serviceRequest->photos->map(fn ($photo) => ['id' => $photo->id])->values(),
+            'warrantyClaims' => $serviceRequest->warrantyClaims->map(fn ($claim) => [
+                'id' => $claim->id, 'description' => $claim->description, 'status' => $claim->status,
+                'supportRequested' => $claim->support_requested, 'response' => $claim->response,
+                'responder' => $claim->responder?->role === 'admin' ? 'Поддержка сервиса' : 'Компания',
+                'createdAt' => $claim->created_at->format('d.m.Y H:i'),
+            ])->values(),
             'id' => (string) $serviceRequest->id,
             'createdAt' => $serviceRequest->created_at?->format('d.m.Y H:i') ?? '',
+            'final_price' => $serviceRequest->final_price,
+            'work_scope' => $serviceRequest->work_scope,
+            'address' => $serviceRequest->address,
+            'contact_name' => $serviceRequest->contact_name,
+            'contact_phone' => $serviceRequest->contact_phone,
+            'arrival_from' => $serviceRequest->arrival_from,
+            'arrival_until' => $serviceRequest->arrival_until,
             'district' => $serviceRequest->district ?? 'Не указан',
             'city' => $serviceRequest->city,
             'installationDate' => $serviceRequest->installation_date
@@ -203,7 +197,7 @@ class VendorRequestController extends Controller
             'installationDateValue' => $serviceRequest->installation_date?->format('Y-m-d'),
             'width' => $serviceRequest->window_width,
             'height' => $serviceRequest->window_height,
-            'service' => $serviceRequest->items->first()?->service_name ?? $serviceRequest->service?->name ?? 'Услуга',
+            'service' => $serviceRequest->items->isNotEmpty() ? $serviceRequest->items->pluck('service_name')->unique()->join(', ') : ($serviceRequest->service?->name ?? 'Услуга'),
             'items' => $serviceRequest->items,
             'dimensionUnit' => $serviceRequest->items->isNotEmpty() ? 'мм' : 'см',
             'extras' => $serviceRequest->additional_services ?? [],
@@ -265,7 +259,14 @@ class VendorRequestController extends Controller
     private function serializeAmendmentChanges(array $changes): array
     {
         $labels = [
+            'final_price' => 'Итоговая стоимость, ₽',
+            'work_scope' => 'Состав работ',
             'city' => 'Город',
+            'address' => 'Точный адрес',
+            'contact_name' => 'Контактное лицо',
+            'contact_phone' => 'Телефон для связи',
+            'arrival_from' => 'Время с',
+            'arrival_until' => 'Время до',
             'district' => 'Район',
             'installation_date' => 'Дата работ',
             'window_width' => 'Ширина, см',

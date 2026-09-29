@@ -64,6 +64,11 @@ class Vendor extends Model
         return $this->hasMany(Review::class, 'vendor_id');
     }
 
+    public function publicReviews(): HasMany
+    {
+        return $this->reviews()->where('is_public', true)->where('status', Review::STATUS_APPROVED);
+    }
+
     public function hasWarrantyDescription(): bool
     {
         return filled($this->warranty_description);

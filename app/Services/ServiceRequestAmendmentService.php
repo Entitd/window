@@ -13,7 +13,14 @@ class ServiceRequestAmendmentService
 {
     /** @var array<int, string> */
     private const EditableFields = [
+        'final_price',
+        'work_scope',
         'city',
+        'address',
+        'contact_name',
+        'contact_phone',
+        'arrival_from',
+        'arrival_until',
         'district',
         'installation_date',
         'window_width',
@@ -35,6 +42,9 @@ class ServiceRequestAmendmentService
 
             $this->ensureMayAmend($serviceRequest);
             $role = $this->roleFor($serviceRequest, $proposer);
+            if ($role !== 'vendor' && (filled($data['final_price'] ?? null) || filled($data['work_scope'] ?? null))) {
+                abort(403);
+            }
             $changes = $this->changesFor($serviceRequest, $data);
 
             if ($serviceRequest->items()->exists() && array_intersect(array_keys($changes), ['window_width', 'window_height']) !== []) {
@@ -53,6 +63,11 @@ class ServiceRequestAmendmentService
                 throw ValidationException::withMessages([
                     'request' => 'Укажите хотя бы одно изменение в заявке.',
                 ]);
+            }
+
+            if (isset($changes['final_price']) || isset($changes['work_scope'])) {
+                $changes['final_price'] = number_format((float) $data['final_price'], 2, '.', '');
+                $changes['work_scope'] = $data['work_scope'];
             }
 
             $amendment = $serviceRequest->amendments()->create([
@@ -74,6 +89,10 @@ class ServiceRequestAmendmentService
 
             if ($role === 'admin' && filled($data['admin_note'] ?? null)) {
                 $note .= ' Причина: '.$data['admin_note'];
+            }
+
+            if (isset($changes['final_price'])) {
+                $note .= ' Предложена итоговая стоимость: '.$changes['final_price'].' ₽. Состав работ: '.$changes['work_scope'];
             }
 
             $serviceRequest->statusHistories()->create([
@@ -139,6 +158,9 @@ class ServiceRequestAmendmentService
             }
 
             $status = $amendment->fresh()->status;
+            $agreedTerms = $status === 'accepted' && isset($amendment->changes['final_price'])
+                ? ' Итоговая стоимость: '.$amendment->changes['final_price'].' ₽. Состав работ: '.$amendment->changes['work_scope']
+                : '';
 
             $serviceRequest->statusHistories()->create([
                 'actor_id' => $decider->id,
@@ -151,7 +173,7 @@ class ServiceRequestAmendmentService
                 'note' => ! $accept
                     ? 'Изменения в заявке остались без применения.'
                     : ($status === 'accepted'
-                        ? 'Изменения в заявке применены после подтверждения обеих сторон.'
+                        ? 'Изменения в заявке применены после подтверждения обеих сторон.'.$agreedTerms
                         : 'Ожидается подтверждение второй стороны.'),
             ]);
         });
@@ -210,6 +232,17 @@ class ServiceRequestAmendmentService
             'additional_services' => $additionalServices,
             'comment' => filled($data['comment'] ?? null) ? $data['comment'] : null,
         ];
+
+        foreach (['address', 'contact_name', 'contact_phone', 'arrival_from', 'arrival_until'] as $field) {
+            if (array_key_exists($field, $data)) {
+                $proposed[$field] = filled($data[$field]) ? $data[$field] : null;
+            }
+        }
+
+        if (filled($data['final_price'] ?? null) && filled($data['work_scope'] ?? null)) {
+            $proposed['final_price'] = number_format((float) $data['final_price'], 2, '.', '');
+            $proposed['work_scope'] = $data['work_scope'];
+        }
 
         return collect($proposed)
             ->filter(fn (mixed $value, string $field) => $this->normalizedValue($serviceRequest, $field) !== $value)

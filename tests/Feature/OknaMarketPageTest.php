@@ -27,7 +27,10 @@ test('home page exposes only services available for client search', function () 
     $this->get(route('home'))
         ->assertSuccessful()
         ->assertInertia(fn (Assert $page) => $page
-            ->where('services', [['id' => $availableService->id, 'name' => 'Доступная услуга']]));
+            ->has('services', 1)
+            ->where('services.0.id', $availableService->id)
+            ->where('services.0.name', 'Доступная услуга')
+            ->has('services.0.options', 1));
 });
 
 test('company search filters offers by selected catalog service ID', function () {

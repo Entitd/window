@@ -6,15 +6,19 @@ use App\Http\Controllers\AdminVendorModerationController;
 use App\Http\Controllers\Auth\RegisterClientController;
 use App\Http\Controllers\Auth\RegisterVendorController;
 use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\CatalogDraftController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ClientRequestController;
 use App\Http\Controllers\MarketplaceController;
+use App\Http\Controllers\RequestPhotoController;
+use App\Http\Controllers\RequestRecoveryController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SearchResultsController;
 use App\Http\Controllers\VendorDashboardController;
 use App\Http\Controllers\VendorProfileController;
 use App\Http\Controllers\VendorRequestController;
 use App\Http\Controllers\VendorServiceController;
+use App\Http\Controllers\WarrantyClaimController;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -22,6 +26,7 @@ use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 Route::get('/', [MarketplaceController::class, 'home'])->name('home');
+Route::post('catalog-draft', CatalogDraftController::class)->middleware('throttle:20,1')->name('catalog.draft');
 Route::get('services', [CatalogController::class, 'index'])->name('catalog.index');
 Route::get('calculate', function (Request $request): RedirectResponse {
     return redirect()->route('search-results', $request->query());
@@ -171,3 +176,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 require __DIR__.'/settings.php';
+
+Route::middleware(['auth', 'verified'])->scopeBindings()->group(function () {
+    Route::get('requests/{serviceRequest}/recovery', [RequestRecoveryController::class, 'show'])->name('request-recovery.show');
+    Route::post('requests/{serviceRequest}/recovery', [RequestRecoveryController::class, 'store'])->name('request-recovery.store');
+    Route::post('requests/{serviceRequest}/assistance', [RequestRecoveryController::class, 'assistance'])->name('request-recovery.assistance');
+    Route::patch('requests/{serviceRequest}/assistance', [RequestRecoveryController::class, 'note'])->name('request-recovery.note');
+    Route::post('requests/{serviceRequest}/photos', [RequestPhotoController::class, 'store'])->middleware('throttle:20,1')->name('request-photos.store');
+    Route::get('requests/{serviceRequest}/photos/{photo}', [RequestPhotoController::class, 'show'])->name('request-photos.show');
+    Route::post('requests/{serviceRequest}/warranty-claims', [WarrantyClaimController::class, 'store'])->name('warranty-claims.store');
+    Route::patch('requests/{serviceRequest}/warranty-claims/{warrantyClaim}', [WarrantyClaimController::class, 'update'])->name('warranty-claims.update');
+    Route::patch('requests/{serviceRequest}/warranty-claims/{warrantyClaim}/support', [WarrantyClaimController::class, 'escalate'])->name('warranty-claims.escalate');
+});

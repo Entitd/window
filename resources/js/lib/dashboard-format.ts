@@ -1,4 +1,5 @@
 import type { CatalogRequestItem } from '@/components/request-catalog-items';
+import type { WarrantyClaim } from '@/components/warranty-claims';
 export type RequestStatus =
     | 'new'
     | 'awaiting_confirmation'
@@ -9,12 +10,24 @@ export type RequestStatus =
     | 'cancelled';
 
 export type ClientRequest = {
+    needsRecovery?: boolean;
+    replacementRequestId?: number | null;
+    assistanceRequested?: boolean;
+    assistanceNote?: string | null;
+    final_price?: string | null;
+    work_scope?: string | null;
+    photos?: { id: number }[];
+    warrantyClaims?: WarrantyClaim[];
     id: string;
     createdAt: string;
     city: string;
     district: string;
     districtValue?: string | null;
-    address: string;
+    address: string | null;
+    contact_name?: string | null;
+    contact_phone?: string | null;
+    arrival_from?: string | null;
+    arrival_until?: string | null;
     installationDate: string;
     installationDateValue?: string | null;
     items?: CatalogRequestItem[];
